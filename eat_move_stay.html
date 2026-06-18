@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Local Eyes — Hành Trình Thực Tế, Không Quảng Cáo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #C8102E;
+    --gold: #DAA520;
+    --cream: #FDF6EC;
+    --dark: #1A1208;
+    --warm: #3D2B1F;
+    --muted: #7A6652;
+    --accent: #E8C547;
+    --base-font: 17px;
+  }
+
+  html { scroll-behavior: smooth; font-size: var(--base-font); }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ── FONT SIZE CONTROLS ── */
+  .font-controls {
+    position: fixed;
+    bottom: 1.2rem;
+    right: 1.2rem;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    background: var(--dark);
+    border-radius: 14px;
+    padding: 0.6rem 0.7rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .font-controls span {
+    color: rgba(253,246,236,0.45);
+    font-size: 0.62rem;
+    text-align: center;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.1rem;
+  }
+  .fc-btn {
+    background: rgba(253,246,236,0.1);
+    border: 1px solid rgba(253,246,236,0.2);
+    color: var(--cream);
+    border-radius: 8px;
+    width: 38px; height: 38px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation;
+  }
+  .fc-btn:hover { background: rgba(253,246,236,0.22); }
+  .fc-btn.active { background: var(--red); border-color: var(--red); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    background: var(--dark);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 1.5rem 3rem;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,16,46,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(218,165,32,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .flag-stripe {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red) 60%, var(--gold) 100%);
+  }
+
+  /* ── HERO ICON: Compass ── */
+  .hero-icon {
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .compass-svg {
+    width: 90px;
+    height: 90px;
+    filter: drop-shadow(0 0 18px rgba(218,165,32,0.45));
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 7vw, 4.8rem);
+    color: var(--cream);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    max-width: 800px;
+    position: relative; z-index: 1;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    margin-top: 1.25rem;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: rgba(253,246,236,0.65);
+    max-width: 540px;
+    line-height: 1.7;
+    font-weight: 300;
+    position: relative; z-index: 1;
+  }
+
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 2.2rem;
+    position: relative; z-index: 1;
+  }
+  .pill {
+    background: rgba(253,246,236,0.08);
+    border: 1px solid rgba(253,246,236,0.15);
+    color: rgba(253,246,236,0.8);
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    font-size: clamp(0.78rem, 1.8vw, 0.88rem);
+    letter-spacing: 0.02em;
+  }
+
+  .hero-cta {
+    margin-top: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--red);
+    color: #fff;
+    padding: 0.95rem 2.2rem;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 24px rgba(200,16,46,0.35);
+    position: relative; z-index: 1;
+  }
+  .hero-cta:hover { background: #a50d25; transform: translateY(-2px); }
+
+  .free-badge {
+    margin-top: 0.9rem;
+    color: var(--gold);
+    font-size: clamp(0.8rem, 1.8vw, 0.88rem);
+    letter-spacing: 0.04em;
+    position: relative; z-index: 1;
+  }
+
+  /* ── SECTION BASE ── */
+  section { padding: 4.5rem 1.5rem; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .section-label {
+    font-size: clamp(0.7rem, 1.5vw, 0.78rem);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--red);
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    color: var(--warm);
+    line-height: 1.2;
+    margin-bottom: 1.4rem;
+  }
+
+  /* ── FEATURED REVIEW ── */
+  .review-section { background: #fff; }
+  .review-card {
+    background: linear-gradient(135deg, var(--cream) 0%, #fff8f0 100%);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 16px 16px 0;
+    padding: 2rem 2rem 2rem 1.75rem;
+    margin-top: 2rem;
+    position: relative;
+    box-shadow: 0 2px 16px rgba(26,18,8,0.07);
+  }
+  .review-card::before {
+    content: '❝';
+    position: absolute;
+    top: -0.5rem;
+    left: 1.5rem;
+    font-size: 4rem;
+    color: var(--gold);
+    opacity: 0.25;
+    line-height: 1;
+    font-family: Georgia, serif;
+  }
+  .review-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .review-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .review-info h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--warm);
+  }
+  .review-info span {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .review-stars { color: var(--gold); font-size: 1rem; letter-spacing: 2px; }
+  .review-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+    color: var(--warm);
+    margin-bottom: 0.6rem;
+  }
+  .review-card p {
+    color: var(--muted);
+    font-size: clamp(0.88rem, 2vw, 0.95rem);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+  .review-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--red);
+    font-weight: 500;
+    font-size: clamp(0.85rem, 2vw, 0.92rem);
+    text-decoration: none;
+    border-bottom: 1.5px dashed var(--red);
+    padding-bottom: 1px;
+    transition: color 0.15s;
+  }
+  .review-link:hover { color: #a50d25; }
+  .review-tag {
+    display: inline-block;
+    background: rgba(200,16,46,0.08);
+    color: var(--red);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── WHY US ── */
+  .why { background: var(--cream); }
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.75rem;
+    margin-top: 2.5rem;
+  }
+  .why-card {
+    border-left: 3px solid var(--gold);
+    padding-left: 1.25rem;
+  }
+  .why-card .icon { font-size: 1.8rem; margin-bottom: 0.65rem; display: block; }
+  .why-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 2.5vw, 1.1rem);
+    color: var(--warm);
+    margin-bottom: 0.4rem;
+  }
+  .why-card p { font-size: clamp(0.85rem, 1.8vw, 0.92rem); color: var(--muted); line-height: 1.65; }
+
+  /* ── SERVICES ── */
+  .services { background: #fff; }
+  .service-list { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .service-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 1.4rem;
+    box-shadow: 0 2px 10px rgba(26,18,8,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .service-item:hover { transform: translateY(-3px); box-shadow: 0 6px 22px rgba(26,18,8,0.1); }
+  .service-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    width: 50px; height: 50px;
+    background: #fff;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .service-text h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 2.5vw, 1.1rem);
+    color: var(--warm);
+    margin-bottom: 0.35rem;
+  }
+  .service-text p { font-size: clamp(0.84rem, 1.8vw, 0.9rem); color: var(--muted); line-height: 1.65; }
+
+  /* ── HOW IT WORKS ── */
+  .how { background: var(--dark); }
+  .how .section-title { color: var(--cream); }
+  .how .section-label { color: var(--gold); }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+  .step { text-align: center; }
+  .step-num {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--red);
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.9rem;
+  }
+  .step h3 {
+    color: var(--cream);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+  }
+  .step p { font-size: clamp(0.8rem, 1.7vw, 0.85rem); color: rgba(253,246,236,0.5); line-height: 1.65; }
+
+  /* ── PAYMENT ── */
+  .payment { background: var(--cream); }
+  .payment-box {
+    background: linear-gradient(135deg, #fff 0%, var(--cream) 100%);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-top: 2rem;
+    text-align: center;
+  }
+  .payment-box .big { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 4vw, 2rem); color: var(--warm); margin-bottom: 1rem; }
+  .payment-box p { color: var(--muted); line-height: 1.75; font-size: clamp(0.88rem, 2vw, 0.95rem); max-width: 520px; margin: 0 auto; }
+  .pi-logo { font-size: 2.2rem; margin-bottom: 0.5rem; display: block; color: var(--gold); }
+
+  /* ── CONTACT ── */
+  .contact { background: #fff; text-align: center; }
+  .contact-card {
+    background: var(--red);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    color: #fff;
+    margin-top: 2rem;
+  }
+  .contact-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    margin-bottom: 1rem;
+  }
+  .contact-card p { opacity: 0.85; line-height: 1.75; max-width: 480px; margin: 0 auto 2rem; font-size: clamp(0.9rem, 2vw, 1rem); }
+  .contact-methods { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+  .contact-btn {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.4);
+    color: #fff;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    font-size: clamp(0.85rem, 1.8vw, 0.92rem);
+    text-decoration: none;
+    transition: background 0.2s;
+    font-weight: 500;
+  }
+  .contact-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark);
+    color: rgba(253,246,236,0.4);
+    text-align: center;
+    padding: 2rem 1.5rem;
+    font-size: clamp(0.75rem, 1.6vw, 0.82rem);
+    line-height: 1.85;
+  }
+  footer span { color: var(--gold); }
+
+  /* ── ANIMATIONS ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in { transition: none; opacity: 1; transform: none; }
+    .hero-icon { animation: none; }
+    .compass-svg { filter: none; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    section { padding: 3.5rem 1.2rem; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .why-grid { grid-template-columns: 1fr; }
+    .payment-box { padding: 1.75rem 1.25rem; }
+    .contact-card { padding: 2rem 1.2rem; }
+    .review-card { padding: 1.5rem 1.25rem 1.5rem 1.4rem; }
+    .font-controls { bottom: 0.8rem; right: 0.8rem; }
+  }
+  @media (max-width: 400px) {
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- FONT SIZE CONTROLS -->
+<div class="font-controls" role="group" aria-label="Cỡ chữ">
+  <span>Chữ</span>
+  <button class="fc-btn" id="fc-sm" onclick="setFont(15)" title="Nhỏ" aria-label="Chữ nhỏ">A</button>
+  <button class="fc-btn active" id="fc-md" onclick="setFont(17)" title="Vừa" aria-label="Chữ vừa" style="font-size:1.1rem">A</button>
+  <button class="fc-btn" id="fc-lg" onclick="setFont(20)" title="Lớn" aria-label="Chữ lớn" style="font-size:1.3rem">A</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="flag-stripe"></div>
+
+  <!-- Compass Icon (thay ngôi sao) -->
+  <div class="hero-icon" aria-hidden="true">
+    <svg class="compass-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outer ring -->
+      <circle cx="50" cy="50" r="46" stroke="#DAA520" stroke-width="2.5" opacity="0.5"/>
+      <circle cx="50" cy="50" r="38" stroke="#DAA520" stroke-width="1.2" opacity="0.25"/>
+      <!-- Cardinal marks -->
+      <line x1="50" y1="8" x2="50" y2="17" stroke="#DAA520" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="50" y1="83" x2="50" y2="92" stroke="#DAA520" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="8" y1="50" x2="17" y2="50" stroke="#DAA520" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="83" y1="50" x2="92" y2="50" stroke="#DAA520" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- N label -->
+      <text x="50" y="6" text-anchor="middle" font-family="serif" font-size="7" fill="#DAA520" font-weight="bold">N</text>
+      <!-- Needle North (red) -->
+      <polygon points="50,18 54,50 50,46 46,50" fill="#C8102E"/>
+      <!-- Needle South (cream) -->
+      <polygon points="50,82 54,50 50,54 46,50" fill="rgba(253,246,236,0.55)"/>
+      <!-- Center dot -->
+      <circle cx="50" cy="50" r="4.5" fill="#DAA520"/>
+      <circle cx="50" cy="50" r="2" fill="#1A1208"/>
+    </svg>
+  </div>
+
+  <h1>Hành Trình Thực Tế<br><em>Không Quảng Cáo</em></h1>
+  <p class="hero-sub">
+    Một người đi thật. Ghi chép thật.<br>
+    Hỏi gì cũng được — chúng tôi là người địa phương, không phải sách hướng dẫn.
+  </p>
+  <div class="pill-row">
+    <span class="pill">🗺️ Địa Điểm Ẩn</span>
+    <span class="pill">📋 Visa & Thủ Tục</span>
+    <span class="pill">🍜 Ẩm Thực & Văn Hóa</span>
+    <span class="pill">🏠 Sống Xa Nhà</span>
+    <span class="pill">💼 Digital Nomad</span>
+  </div>
+  <a href="#contact" class="hero-cta">💬 Hỏi Người Địa Phương Ngay</a>
+  <p class="free-badge">✦ Miễn phí hỏi &nbsp;·&nbsp; Donate bằng Pi nếu bạn thấy hữu ích ✦</p>
+</section>
+
+<!-- FEATURED REVIEW -->
+<section class="review-section">
+  <div class="container fade-in">
+    <p class="section-label">Hành trình nổi bật</p>
+    <h2 class="section-title">Đọc trải nghiệm thực tế từ người đi trước</h2>
+
+    <div class="review-card">
+      <div class="review-meta">
+        <div class="review-avatar">M</div>
+        <div class="review-info">
+          <h4>Minh T. — Hà Nội → Đà Lạt</h4>
+          <span>Tháng 3, 2025 &nbsp;·&nbsp; 7 ngày</span>
+        </div>
+        <div class="review-stars">★★★★★</div>
+      </div>
+      <span class="review-tag">🌿 Thiên nhiên & Cà phê</span>
+      <h3 class="review-title">Đà Lạt tháng 3: Sương mù buổi sáng, cà phê rừng, và góc phố không ai biết</h3>
+      <p>
+        Mình đã đi Đà Lạt 3 lần rồi nhưng chuyến này là chân thực nhất — không theo tour, không theo guide tự động.
+        Nhờ ghi chép từ đây mình tìm được con đường nhỏ sau chợ Đà Lạt dẫn vào khu dân tộc, giá ăn sáng chỉ
+        15.000đ, cà phê view đồi mà Grab cũng không tìm được tên...
+      </p>
+      <a href="https://yoursite.com/review/dalat-thang-3" class="review-link" target="_blank" rel="noopener">
+        📖 Đọc toàn bộ hành trình →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why">
+  <div class="container fade-in">
+    <p class="section-label">Tại sao chọn chúng tôi</p>
+    <h2 class="section-title">Không phải công ty du lịch.<br>Bạn bè địa phương của bạn.</h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <span class="icon">🤝</span>
+        <h3>Thật & Không Lọc</h3>
+        <p>Chúng tôi nói thật — khu tốt, khu xấu, giá thực tế. Không hoa hồng, không ẩn ý.</p>
+      </div>
+      <div class="why-card">
+        <span class="icon">🌐</span>
+        <h3>Mọi Ngôn Ngữ</h3>
+        <p>Gửi tin bằng tiếng Việt, Anh, Pháp, Hàn, Nhật — chúng tôi hiểu và trả lời rõ ràng.</p>
+      </div>
+      <div class="why-card">
+        <span class="icon">⚖️</span>
+        <h3>Kinh Nghiệm Thực Tế</h3>
+        <p>Viết bởi người đã đi thật — không phải agency muốn bán tour cho bạn.</p>
+      </div>
+      <div class="why-card">
+        <span class="icon">📍</span>
+        <h3>Mạng Lưới Địa Phương</h3>
+        <p>Nhiều người địa phương tại nhiều thành phố — không chỉ góc nhìn của một người.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services">
+  <div class="container fade-in">
+    <p class="section-label">Chúng tôi giúp gì</p>
+    <h2 class="section-title">5 chủ đề chúng tôi biết rất rõ</h2>
+    <div class="service-list">
+      <div class="service-item">
+        <div class="service-icon">🗺️</div>
+        <div class="service-text">
+          <h3>Du Lịch & Địa Điểm Ẩn</h3>
+          <p>Góc khuất, giá thật, không ai trả tiền để chúng tôi nói điều này.</p>
+        </div>
+      </div>
+      <div class="service-item">
+        <div class="service-icon">🍜</div>
+        <div class="service-text">
+          <h3>Ẩm Thực, Văn Hóa & Đời Sống</h3>
+          <p>Ăn địa phương, đi phố địa phương. Mẹo văn hóa mà không sách hướng dẫn nào ghi.</p>
+        </div>
+      </div>
+      <div class="service-item">
+        <div class="service-icon">📋</div>
+        <div class="service-text">
+          <h3>Visa, Giấy Phép & Thủ Tục</h3>
+          <p>E-visa, gia hạn thị thực, work permit, đăng ký kinh doanh — giải thích đơn giản bởi người đã trải qua.</p>
+        </div>
+      </div>
+      <div class="service-item">
+        <div class="service-icon">🏠</div>
+        <div class="service-text">
+          <h3>Sống Lâu Dài & Expat</h3>
+          <p>Nhà ở, y tế, cuộc sống hàng ngày — ghi chép thật từ người đang sống thật.</p>
+        </div>
+      </div>
+      <div class="service-item">
+        <div class="service-icon">💻</div>
+        <div class="service-text">
+          <h3>Digital Nomad Setup</h3>
+          <p>Thành phố tốt nhất để làm việc từ xa, coworking, SIM, internet, chi phí sống theo từng thành phố.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="container fade-in">
+    <p class="section-label">Cách hoạt động</p>
+    <h2 class="section-title">Đơn giản như gửi một tin nhắn</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Gửi câu hỏi</h3>
+        <p>Bất kỳ ngôn ngữ nào. Không cần đăng ký.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Chúng tôi đọc & dịch</h3>
+        <p>Nhóm địa phương nhận tin và hiểu bạn cần gì.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Câu trả lời thật</h3>
+        <p>Trả lời thực tế, hữu ích — bằng ngôn ngữ của bạn.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Trả tuỳ tâm</h3>
+        <p>Hài lòng? Gửi Pi để cảm ơn. Chưa hài lòng? Không sao cả.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT -->
+<section class="payment">
+  <div class="container fade-in">
+    <p class="section-label">Mô hình thanh toán</p>
+    <h2 class="section-title">Không áp lực. Bao giờ cũng vậy.</h2>
+    <div class="payment-box">
+      <span class="pi-logo">π</span>
+      <p class="big">Thanh toán bằng Pi — chỉ khi bạn muốn</p>
+      <p>
+        Dịch vụ của chúng tôi hoàn toàn miễn phí. Chúng tôi tin vào cộng đồng và sự tin tưởng.<br><br>
+        Nếu lời khuyên của chúng tôi giúp bạn tiết kiệm tiền, thời gian hoặc căng thẳng —
+        bạn có thể chọn gửi <strong>Pi Network (π)</strong> như một lời cảm ơn.
+        Không tối thiểu. Không bắt buộc. Không ai phật lòng cả hai chiều.<br><br>
+        <em>Viết cho người bình thường. Hữu ích dù bạn đi 500k/ngày hay 5 triệu/ngày.</em>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="container fade-in">
+    <div class="contact-card">
+      <h2>Sẵn sàng đặt câu hỏi đầu tiên?</h2>
+      <p>
+        Nhắn qua bất kỳ nền tảng nào bên dưới. Viết bằng ngôn ngữ của bạn —
+        tiếng Việt, Anh, Pháp, Hàn, Nhật... Chúng tôi hiểu và sẽ trả lời.
+      </p>
+      <div class="contact-methods">
+        <a href="https://m.me/yourpage" class="contact-btn" target="_blank" rel="noopener">💬 Facebook Messenger</a>
+        <a href="https://t.me/yourusername" class="contact-btn" target="_blank" rel="noopener">✈️ Telegram</a>
+        <a href="https://wa.me/yourphone" class="contact-btn" target="_blank" rel="noopener">📱 WhatsApp</a>
+        <a href="#" class="contact-btn">π Pi Browser App</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><span>Local Eyes. Any Destination.</span> — Hướng dẫn thật từ người đang sống thật.</p>
+  <p style="margin-top:0.4rem">Powered by community &nbsp;·&nbsp; Liên hệ: eatmovestay@gmail.com</p>
+</footer>
+
+<script>
+  // ── Fade-in observer ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // ── Font size controls ──
+  const sizes = { 15: 'fc-sm', 17: 'fc-md', 20: 'fc-lg' };
+  function setFont(px) {
+    document.documentElement.style.setProperty('--base-font', px + 'px');
+    document.querySelectorAll('.fc-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(sizes[px]).classList.add('active');
+    try { localStorage.setItem('pref-font', px); } catch(e) {}
+  }
+  // Restore saved preference
+  try {
+    const saved = localStorage.getItem('pref-font');
+    if (saved && sizes[saved]) setFont(Number(saved));
+  } catch(e) {}
+</script>
+</body>
+</html>
