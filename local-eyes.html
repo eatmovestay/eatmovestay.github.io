@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local Eyes – Real Experiences from Real People</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:       #1a1a2e;
+      --paper:     #f7f4ef;
+      --accent:    #2e6b5e;
+      --highlight: #e8f4f1;
+      --muted:     #6b7280;
+      --rule:      #d1cec8;
+
+      /* Desktop type scale */
+      --fs-hero:   clamp(2rem, 4vw, 3.2rem);
+      --fs-title:  clamp(1.25rem, 2.2vw, 1.75rem);
+      --fs-body:   clamp(1rem, 1.2vw, 1.125rem);
+      --fs-small:  clamp(0.85rem, 1vw, 0.95rem);
+    }
+
+    /* ── Mobile: fluid font that fills the screen ── */
+    @media (max-width: 640px) {
+      :root {
+        --fs-hero:  8.5vw;
+        --fs-title: 5.5vw;
+        --fs-body:  4.2vw;
+        --fs-small: 3.6vw;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: var(--fs-body);
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 5vw, 4rem) clamp(1.2rem, 4vw, 2.5rem);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+      margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    .eyebrow {
+      font-size: var(--fs-small);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75em;
+    }
+
+    .hero-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: var(--fs-hero);
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    .hero-title em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      margin-top: 0.9em;
+      font-size: var(--fs-title);
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    /* ── Salutation ── */
+    .salutation {
+      font-size: var(--fs-body);
+      margin-bottom: 1.5em;
+    }
+
+    /* ── Body paragraphs ── */
+    p {
+      margin-bottom: 1.2em;
+    }
+
+    /* ── Section headings ── */
+    h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: var(--fs-title);
+      font-weight: 600;
+      line-height: 1.25;
+      margin-top: 2.2em;
+      margin-bottom: 0.6em;
+      color: var(--ink);
+    }
+
+    /* ── Callout box ── */
+    .callout {
+      background: var(--highlight);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3vw, 1.5rem);
+      margin: 1.8em 0;
+    }
+
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* ── Lists ── */
+    ul {
+      list-style: none;
+      margin: 0.8em 0 1.2em;
+      padding: 0;
+    }
+
+    ul li {
+      padding-left: 1.5em;
+      position: relative;
+      margin-bottom: 0.5em;
+    }
+
+    ul li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── Principle list (no-bullets style) ── */
+    .no-list {
+      list-style: none;
+      margin: 0.8em 0 1.2em;
+      padding: 0;
+    }
+
+    .no-list li {
+      padding-left: 1.5em;
+      position: relative;
+      margin-bottom: 0.5em;
+    }
+
+    .no-list li::before {
+      content: "✕";
+      position: absolute;
+      left: 0;
+      color: #c0392b;
+      font-size: 0.85em;
+      top: 0.15em;
+    }
+
+    .no-list.check li::before {
+      content: "✓";
+      color: var(--accent);
+    }
+
+    /* ── Quote block ── */
+    .dialogue {
+      margin: 1.5em 0;
+    }
+
+    .dialogue-item {
+      display: flex;
+      gap: 0.75em;
+      align-items: flex-start;
+      margin-bottom: 1em;
+    }
+
+    .dialogue-label {
+      font-size: var(--fs-small);
+      font-weight: 500;
+      color: var(--accent);
+      white-space: nowrap;
+      padding-top: 0.1em;
+      min-width: 5em;
+    }
+
+    .dialogue-text {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: calc(var(--fs-body) * 1.05);
+      line-height: 1.6;
+      color: var(--ink);
+    }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 2em 0;
+    }
+
+    /* ── Sign-off ── */
+    .signoff {
+      margin-top: 2.5em;
+      padding-top: 1.5em;
+      border-top: 2px solid var(--ink);
+      font-size: var(--fs-small);
+      color: var(--muted);
+    }
+
+    .signoff strong {
+      display: block;
+      font-size: var(--fs-body);
+      color: var(--ink);
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      margin-bottom: 0.3em;
+    }
+
+    /* ── Responsive fine-tuning ── */
+    @media (max-width: 640px) {
+      .dialogue-item { flex-direction: column; gap: 0.3em; }
+      .dialogue-label { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <header class="hero">
+    <p class="eyebrow">A Community Idea for Honest Local Experiences</p>
+    <h1 class="hero-title">
+      Sharing an Early Idea<br>
+      with a <em>Pioneer Friend</em>
+    </h1>
+    <p class="hero-sub">Local Eyes – Real Experiences from Real People</p>
+  </header>
+
+  <!-- OPENING -->
+  <p class="salutation">Hello my Pioneer friend,</p>
+
+  <p>I would like to share with you an early idea that I am building and would love to hear your honest thoughts and perspective.</p>
+
+  <p>The idea is called <strong>Local Eyes</strong>.</p>
+
+  <div class="callout">
+    <p><strong>The concept is simple:</strong></p>
+    <p>When people travel to a new place, they often search online for information. However, much of the available content today may come from advertising, commercial interests, or general information that does not always reflect real-life situations.</p>
+    <p>I believe there is another valuable source of information: <strong>real experiences from real people who have actually been there.</strong></p>
+  </div>
+
+  <p>For example:</p>
+  <ul>
+    <li>Where can travelers experience local food at a reasonable cost?</li>
+    <li>Which places feel safe and comfortable?</li>
+    <li>What interesting experiences are available beyond typical tourist recommendations?</li>
+    <li>What practical things should visitors know before coming to a new area?</li>
+  </ul>
+
+  <p>The idea is to create a community where local people can share what they have personally experienced.</p>
+
+  <hr>
+
+  <!-- PRINCIPLES -->
+  <h2>The Core Principles</h2>
+
+  <p>The most important principle is <strong>authenticity</strong>:</p>
+
+  <ul class="no-list">
+    <li>No fake reviews.</li>
+    <li>No invented experiences.</li>
+    <li>No misleading information.</li>
+    <li>No paid promotions presented as personal opinions.</li>
+    <li>No exaggeration beyond what has actually been experienced.</li>
+  </ul>
+
+  <p>If someone shares information, it should come from something they personally saw, visited, or experienced.</p>
+
+  <p>The purpose is not to replace professional travel services. It is to create a place where people can connect through honest experiences and local knowledge.</p>
+
+  <hr>
+
+  <!-- TESTNET -->
+  <h2>An Early Testnet dApp Experiment</h2>
+
+  <p>I am currently building a very early version of this idea as a <strong>Testnet dApp on Pi Network</strong>, following the community movement around creating and experimenting with dApp ideas through Vibe Coding.</p>
+
+  <p>At this stage, it is only a small prototype.</p>
+
+  <p>I am learning step by step, improving the idea gradually, and using technology as a tool to support the community concept.</p>
+
+  <div class="callout">
+    <p>The technology is not the most important part.</p>
+    <p><strong>The most important part is building trust through real human experiences.</strong></p>
+  </div>
+
+  <hr>
+
+  <!-- HOW IT WORKS -->
+  <h2>How I Imagine It Working</h2>
+
+  <div class="dialogue">
+    <div class="dialogue-item">
+      <span class="dialogue-label">Traveler →</span>
+      <span class="dialogue-text">"I want to visit your area. Can you share your real experience?"</span>
+    </div>
+    <div class="dialogue-item">
+      <span class="dialogue-label">Local →</span>
+      <span class="dialogue-text">"I have been there. This is what I saw, this is what I experienced, and these are my personal observations."</span>
+    </div>
+  </div>
+
+  <p>The value comes from honest sharing between people.</p>
+
+  <hr>
+
+  <!-- NOT A BUSINESS -->
+  <h2>This Is Not a Travel Business</h2>
+
+  <p>I would like to clearly clarify:</p>
+
+  <ul class="no-list">
+    <li>This is not a travel agency.</li>
+    <li>This is not a tour service.</li>
+    <li>This is not a paid consulting service.</li>
+  </ul>
+
+  <p>There are:</p>
+
+  <ul class="no-list">
+    <li>No service fees.</li>
+    <li>No paid reviews.</li>
+    <li>No selling of rankings or recommendations.</li>
+    <li>No obligation for anyone to participate.</li>
+  </ul>
+
+  <p>The idea is based on <strong>freely sharing useful experiences</strong>.</p>
+
+  <p>If someone finds the information helpful and wants to support a contributor voluntarily, that is their personal choice. The core value remains the sharing of authentic experiences.</p>
+
+  <hr>
+
+  <!-- FEEDBACK -->
+  <h2>Learning Through Community Feedback</h2>
+
+  <p>At this early stage, I am simply sharing this idea with other Pioneers around the world to understand different perspectives.</p>
+
+  <p>I would like to hear your thoughts:</p>
+
+  <ul>
+    <li>Would you find this type of local experience-sharing platform useful when traveling?</li>
+    <li>Would you trust recommendations from real local people more than commercial travel content?</li>
+    <li>What features would make you feel comfortable using such a platform?</li>
+    <li>What challenges do you think this idea may face?</li>
+  </ul>
+
+  <p>This is only the beginning of a long journey.</p>
+
+  <p>I am not trying to build everything at once. I am starting with a small idea, testing it, listening to feedback, and improving gradually.</p>
+
+  <!-- SIGN OFF -->
+  <div class="signoff">
+    <strong>Local Eyes · Early Stage Idea</strong>
+    Thank you for taking the time to read and discuss this idea with me. I truly appreciate your honest opinion as a Pioneer from another country.
+  </div>
+
+</div>
+</body>
+</html>
