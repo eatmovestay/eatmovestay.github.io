@@ -1,67 +1,95 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
 
-<title>Karaoke</title>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0">
+
+<title>Karaoke Player</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    background: #111;
+    background: #101010;
     color: white;
     font-family: Arial, sans-serif;
 }
 
 .header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
     background: #202020;
-    padding: 16px;
+    padding: 18px;
     text-align: center;
-    font-size: 24px;
+    font-size: 25px;
     font-weight: bold;
 }
 
-.path {
-    padding: 12px 16px;
+.folder {
+    margin: 12px;
+    padding: 16px;
     background: #292929;
-    color: #aaa;
-    font-size: 14px;
+    border-radius: 12px;
+}
+
+button {
+    width: calc(100% - 24px);
+    margin: 0 12px 12px;
+    padding: 16px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: #3a3a3a;
+    color: white;
+
+    font-size: 18px;
+}
+
+button:active {
+    background: #666;
 }
 
 .search {
     padding: 12px;
-    background: #181818;
 }
 
 .search input {
     width: 100%;
     padding: 14px;
+
     border: 0;
     border-radius: 10px;
-    background: #333;
+
+    background: #292929;
     color: white;
+
     font-size: 17px;
-    outline: none;
+}
+
+.status {
+    padding: 5px 15px 15px;
+    color: #aaa;
+    font-size: 14px;
 }
 
 .song {
-    display: block;
-    margin: 8px 10px;
+    margin: 7px 10px;
     padding: 16px;
-    background: #252525;
+
+    background: #242424;
+
     border-radius: 10px;
-    color: white;
-    text-decoration: none;
+
     font-size: 18px;
+
+    cursor: pointer;
 }
 
 .song:active {
@@ -73,12 +101,31 @@ body {
     margin-right: 8px;
 }
 
-.empty {
-    text-align: center;
-    color: #888;
-    padding: 30px;
+.player {
+    display: none;
+    padding: 10px;
+    background: #000;
 }
+
+video {
+    width: 100%;
+    max-height: 60vh;
+}
+
+.now {
+    padding: 12px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.empty {
+    padding: 30px;
+    text-align: center;
+    color: #777;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -87,128 +134,429 @@ body {
     🎤 KARAOKE
 </div>
 
-<div class="path">
-    📁 Bộ nhớ trong / Karaoke
+
+<div class="folder">
+
+    📁 <b id="folderName">
+        Bộ nhớ trong / Karaoke
+    </b>
+
 </div>
+
+
+<button onclick="chooseFolder()">
+    📂 CHỌN THƯ MỤC KARAOKE
+</button>
+
+
+<div class="status" id="status">
+    Chưa chọn thư mục
+</div>
+
+
+<div class="player" id="player">
+
+    <div class="now" id="nowPlaying"></div>
+
+    <video
+        id="video"
+        controls
+        playsinline>
+    </video>
+
+</div>
+
 
 <div class="search">
+
     <input
-        type="text"
         id="search"
-        placeholder="🔍 Tìm tên bài hát..."
+        type="text"
+        placeholder="🔍 Tìm bài hát..."
         oninput="searchSong()">
+
 </div>
 
-<div id="songs"></div>
+
+<div id="songs">
+
+    <div class="empty">
+        Hãy chọn thư mục Karaoke
+    </div>
+
+</div>
+
 
 <script>
 
-/*
-    DANH SÁCH FILE MP4
+let folderHandle = null;
 
-    Tên trong "file" phải giống 100% tên file thật,
-    ngoại trừ phần mã hóa khoảng trắng trong URL.
-*/
-
-const songs = [
-
-    {
-        name: "Happy New Year",
-        file: "Happy New Year.mp4"
-    },
-
-    {
-        name: "Merry Christmas",
-        file: "Merry Christmas.mp4"
-    },
-
-    {
-        name: "My Way",
-        file: "My Way.mp4"
-    },
-
-    {
-        name: "Hotel California",
-        file: "Hotel California.mp4"
-    },
-
-    {
-        name: "Yesterday",
-        file: "Yesterday.mp4"
-    }
-
-];
+let songs = [];
 
 
 /*
-    Hiển thị danh sách
+    CHỌN THƯ MỤC
 */
-function showSongs(list) {
+async function chooseFolder() {
 
-    const container = document.getElementById("songs");
+    /*
+        Kiểm tra trình duyệt
+    */
 
-    container.innerHTML = "";
+    if (!window.showDirectoryPicker) {
 
-    if (list.length === 0) {
-
-        container.innerHTML =
-            '<div class="empty">Không tìm thấy bài hát</div>';
+        alert(
+            "Trình duyệt này không hỗ trợ " +
+            "chọn thư mục trực tiếp."
+        );
 
         return;
     }
 
-    list.forEach((song, index) => {
 
-        const a = document.createElement("a");
-
-        a.className = "song";
+    try {
 
         /*
-            encodeURIComponent giúp xử lý:
-            khoảng trắng
-            tiếng Việt
-            ký tự đặc biệt
+            Mở hộp thoại chọn thư mục
         */
 
-        a.href = "./" + encodeURIComponent(song.file)
-            .replace(/%2F/g, "/");
+        folderHandle =
+            await window.showDirectoryPicker();
 
-        a.innerHTML =
-            '<span class="number">' +
-            (index + 1) +
-            '.</span>' +
-            '🎵 ' +
-            song.name;
 
-        container.appendChild(a);
+        /*
+            Kiểm tra quyền đọc
+        */
 
-    });
+        const permission =
+            await folderHandle.requestPermission({
+                mode: "read"
+            });
+
+
+        if (permission !== "granted") {
+
+            alert(
+                "Bạn chưa cấp quyền đọc thư mục."
+            );
+
+            return;
+        }
+
+
+        document.getElementById(
+            "folderName"
+        ).textContent =
+            "📁 " + folderHandle.name;
+
+
+        /*
+            Đọc MP4
+        */
+
+        await scanFolder();
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+        document.getElementById(
+            "status"
+        ).textContent =
+            "Đã hủy chọn thư mục.";
+
+    }
+
 }
 
 
 /*
-    Tìm kiếm
+    QUÉT THƯ MỤC
+*/
+async function scanFolder() {
+
+    songs = [];
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "⏳ Đang tìm file MP4...";
+
+
+    /*
+        Đọc toàn bộ file trong thư mục
+    */
+
+    for await (
+        const entry
+        of folderHandle.values()
+    ) {
+
+        /*
+            Chỉ lấy file
+        */
+
+        if (entry.kind !== "file")
+            continue;
+
+
+        /*
+            Chỉ lấy MP4
+        */
+
+        if (
+            !entry.name
+            .toLowerCase()
+            .endsWith(".mp4")
+        )
+            continue;
+
+
+        songs.push({
+
+            name:
+                entry.name.replace(
+                    /\.mp4$/i,
+                    ""
+                ),
+
+            fileName:
+                entry.name,
+
+            handle:
+                entry
+
+        });
+
+    }
+
+
+    /*
+        Sắp xếp A-Z
+    */
+
+    songs.sort(
+        (a, b) =>
+            a.name.localeCompare(
+                b.name,
+                "vi"
+            )
+    );
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "🎵 Tìm thấy " +
+        songs.length +
+        " bài hát";
+
+
+    showSongs(songs);
+
+}
+
+
+/*
+    HIỂN THỊ DANH SÁCH
+*/
+function showSongs(list) {
+
+    const container =
+        document.getElementById(
+            "songs"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (list.length === 0) {
+
+        container.innerHTML =
+            '<div class="empty">' +
+            'Không tìm thấy file MP4' +
+            '</div>';
+
+        return;
+    }
+
+
+    list.forEach(
+        (song, index) => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "song";
+
+
+            div.innerHTML =
+                '<span class="number">' +
+                (index + 1) +
+                '.</span>' +
+                '🎵 ' +
+                escapeHTML(song.name);
+
+
+            /*
+                Khi bấm bài hát
+            */
+
+            div.onclick =
+                () => playSong(song);
+
+
+            container.appendChild(div);
+
+        }
+    );
+
+}
+
+
+/*
+    PHÁT BÀI
+*/
+async function playSong(song) {
+
+    try {
+
+        /*
+            Lấy file thật
+        */
+
+        const file =
+            await song.handle.getFile();
+
+
+        /*
+            Tạo URL tạm
+        */
+
+        const url =
+            URL.createObjectURL(file);
+
+
+        const video =
+            document.getElementById(
+                "video"
+            );
+
+
+        video.src = url;
+
+
+        document.getElementById(
+            "nowPlaying"
+        ).textContent =
+            "🎵 " + song.name;
+
+
+        document.getElementById(
+            "player"
+        ).style.display =
+            "block";
+
+
+        /*
+            Cuộn lên trình phát
+        */
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+
+        /*
+            Phát
+        */
+
+        try {
+
+            await video.play();
+
+        }
+
+        catch (e) {
+
+            /*
+                Một số trình duyệt
+                yêu cầu người dùng
+                bấm Play.
+            */
+
+            console.log(
+                "Cần bấm Play."
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        alert(
+            "Không thể mở file."
+        );
+
+        console.error(error);
+
+    }
+
+}
+
+
+/*
+    TÌM KIẾM
 */
 function searchSong() {
 
     const keyword =
-        document.getElementById("search")
+        document.getElementById(
+            "search"
+        )
         .value
         .toLowerCase()
         .trim();
 
-    const result = songs.filter(song =>
-        song.name.toLowerCase().includes(keyword)
-    );
+
+    const result =
+        songs.filter(song =>
+            song.name
+            .toLowerCase()
+            .includes(keyword)
+        );
+
 
     showSongs(result);
+
 }
 
 
 /*
-    Khởi động
+    Bảo vệ HTML
 */
-showSongs(songs);
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
 
 </script>
 
