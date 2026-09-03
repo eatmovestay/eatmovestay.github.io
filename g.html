@@ -1,1 +1,1221 @@
-hshsbsbzx
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Karaoke Plus</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    background:#101010;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:#202020;
+    padding:14px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.folder-bar{
+    padding:10px 14px;
+    background:#292929;
+    color:#bbb;
+    font-size:14px;
+    text-align:center;
+}
+
+.toolbar{
+    padding:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:0;
+    border-radius:10px;
+    padding:12px;
+    background:#333;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+}
+
+button:active{
+    background:#666;
+}
+
+.main-button{
+    flex:1;
+    min-width:150px;
+}
+
+.search-box{
+    padding:10px;
+}
+
+.search-box input{
+    width:100%;
+    padding:15px;
+    border:0;
+    border-radius:12px;
+    background:#292929;
+    color:white;
+    font-size:17px;
+    outline:none;
+}
+
+.status{
+    padding:8px 15px;
+    color:#aaa;
+    font-size:14px;
+}
+
+.player{
+    display:none;
+    background:#000;
+    padding:10px;
+}
+
+.now-playing{
+    text-align:center;
+    padding:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+video{
+    width:100%;
+    max-height:60vh;
+    background:black;
+}
+
+.player-controls{
+    display:flex;
+    gap:8px;
+    padding-top:10px;
+}
+
+.player-controls button{
+    flex:1;
+}
+
+.tabs{
+    display:flex;
+    gap:5px;
+    padding:10px;
+}
+
+.tab{
+    flex:1;
+}
+
+.tab.active{
+    background:#666;
+}
+
+.song{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:7px 10px;
+    padding:15px;
+    background:#242424;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.song:active{
+    background:#555;
+}
+
+.song-number{
+    color:#888;
+    min-width:35px;
+}
+
+.song-name{
+    flex:1;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.favorite{
+    font-size:22px;
+    padding:5px;
+}
+
+.empty{
+    text-align:center;
+    padding:35px;
+    color:#777;
+}
+
+.footer-space{
+    height:40px;
+}
+
+@media (orientation:landscape){
+
+    .player{
+        max-width:100%;
+    }
+
+    video{
+        max-height:70vh;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    🎤 KARAOKE PLUS
+</div>
+
+<div class="folder-bar">
+    📁 <span id="folderName">
+        Chưa chọn thư mục
+    </span>
+</div>
+
+
+<div class="toolbar">
+
+    <button
+        class="main-button"
+        onclick="chooseFolder()">
+
+        📂 Chọn thư mục Karaoke
+
+    </button>
+
+
+    <button onclick="sortSongs()">
+
+        🔤 <span id="sortText">
+            A-Z
+        </span>
+
+    </button>
+
+
+    <button onclick="scanFolder()">
+
+        🔄 Quét lại
+
+    </button>
+
+</div>
+
+
+<div class="search-box">
+
+    <input
+        id="search"
+        type="text"
+        placeholder="🔍 Tìm bài hát..."
+        oninput="renderSongs()">
+
+</div>
+
+
+<div class="status" id="status">
+
+    Hãy chọn thư mục Karaoke
+
+</div>
+
+
+<div class="player" id="player">
+
+    <div
+        class="now-playing"
+        id="nowPlaying">
+
+        Chưa phát bài hát
+
+    </div>
+
+
+    <video
+        id="video"
+        controls
+        playsinline>
+    </video>
+
+
+    <div class="player-controls">
+
+        <button onclick="previousSong()">
+            ⏮️ Trước
+        </button>
+
+        <button onclick="nextSong()">
+            ⏭️ Tiếp
+        </button>
+
+        <button onclick="toggleAutoNext()">
+            🔄 <span id="autoText">
+                Tự động: Bật
+            </span>
+        </button>
+
+        <button onclick="fullscreenVideo()">
+            📺 Full
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="tabs">
+
+    <button
+        class="tab active"
+        id="tabAll"
+        onclick="setMode('all')">
+
+        🎵 Tất cả
+
+    </button>
+
+
+    <button
+        class="tab"
+        id="tabFavorites"
+        onclick="setMode('favorites')">
+
+        ❤️ Yêu thích
+
+    </button>
+
+
+    <button
+        class="tab"
+        id="tabRecent"
+        onclick="setMode('recent')">
+
+        🕘 Gần đây
+
+    </button>
+
+</div>
+
+
+<div id="songs">
+
+    <div class="empty">
+
+        📁 Hãy chọn thư mục Karaoke
+
+    </div>
+
+</div>
+
+
+<div class="footer-space"></div>
+
+
+<script>
+
+/*
+=====================================
+KARAOKE PLUS
+=====================================
+*/
+
+
+let folderHandle = null;
+
+let songs = [];
+
+let currentSongIndex = -1;
+
+let currentMode = "all";
+
+let sortAscending = true;
+
+let autoNext = true;
+
+
+/*
+-------------------------------------
+LOCAL STORAGE
+-------------------------------------
+*/
+
+let favorites =
+    JSON.parse(
+        localStorage.getItem(
+            "karaokeFavorites"
+        ) || "[]"
+    );
+
+
+let recentSongs =
+    JSON.parse(
+        localStorage.getItem(
+            "karaokeRecent"
+        ) || "[]"
+    );
+
+
+/*
+-------------------------------------
+CHỌN THƯ MỤC
+-------------------------------------
+*/
+
+async function chooseFolder(){
+
+    if(!window.showDirectoryPicker){
+
+        alert(
+            "Trình duyệt này không hỗ trợ " +
+            "chọn thư mục trực tiếp.\n\n" +
+            "Hãy thử Chrome phiên bản mới."
+        );
+
+        return;
+    }
+
+
+    try{
+
+        folderHandle =
+            await window.showDirectoryPicker();
+
+
+        const permission =
+            await folderHandle.requestPermission({
+                mode:"read"
+            });
+
+
+        if(permission !== "granted"){
+
+            alert(
+                "Chưa được cấp quyền đọc thư mục."
+            );
+
+            return;
+        }
+
+
+        document
+            .getElementById("folderName")
+            .textContent =
+                folderHandle.name;
+
+
+        await scanFolder();
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+
+/*
+-------------------------------------
+QUÉT THƯ MỤC
+-------------------------------------
+*/
+
+async function scanFolder(){
+
+    if(!folderHandle){
+
+        alert(
+            "Hãy chọn thư mục Karaoke trước."
+        );
+
+        return;
+    }
+
+
+    songs = [];
+
+
+    document
+        .getElementById("status")
+        .textContent =
+            "⏳ Đang quét file MP4...";
+
+
+    try{
+
+        for await(
+            const entry
+            of folderHandle.values()
+        ){
+
+            if(
+                entry.kind === "file" &&
+                entry.name
+                .toLowerCase()
+                .endsWith(".mp4")
+            ){
+
+                songs.push({
+
+                    name:
+                        entry.name.replace(
+                            /\.mp4$/i,
+                            ""
+                        ),
+
+                    fileName:
+                        entry.name,
+
+                    handle:
+                        entry
+
+                });
+
+            }
+
+        }
+
+
+        applySort();
+
+
+        document
+            .getElementById("status")
+            .textContent =
+                "🎵 Tìm thấy " +
+                songs.length +
+                " bài hát";
+
+
+        renderSongs();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        document
+            .getElementById("status")
+            .textContent =
+                "❌ Không thể đọc thư mục.";
+
+    }
+
+}
+
+
+/*
+-------------------------------------
+SẮP XẾP
+-------------------------------------
+*/
+
+function applySort(){
+
+    songs.sort(
+        (a,b)=>{
+
+            const result =
+                a.name.localeCompare(
+                    b.name,
+                    "vi"
+                );
+
+            return sortAscending
+                ? result
+                : -result;
+
+        }
+    );
+
+}
+
+
+function sortSongs(){
+
+    sortAscending =
+        !sortAscending;
+
+
+    document
+        .getElementById("sortText")
+        .textContent =
+            sortAscending
+                ? "A-Z"
+                : "Z-A";
+
+
+    applySort();
+
+    renderSongs();
+
+}
+
+
+/*
+-------------------------------------
+TAB MODE
+-------------------------------------
+*/
+
+function setMode(mode){
+
+    currentMode = mode;
+
+
+    document
+        .querySelectorAll(".tab")
+        .forEach(
+            tab =>
+                tab.classList
+                .remove("active")
+        );
+
+
+    if(mode === "all"){
+
+        document
+            .getElementById("tabAll")
+            .classList
+            .add("active");
+
+    }
+
+
+    if(mode === "favorites"){
+
+        document
+            .getElementById("tabFavorites")
+            .classList
+            .add("active");
+
+    }
+
+
+    if(mode === "recent"){
+
+        document
+            .getElementById("tabRecent")
+            .classList
+            .add("active");
+
+    }
+
+
+    renderSongs();
+
+}
+
+
+/*
+-------------------------------------
+LẤY DANH SÁCH HIỂN THỊ
+-------------------------------------
+*/
+
+function getDisplaySongs(){
+
+    const keyword =
+        document
+        .getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    let list = [...songs];
+
+
+    if(
+        currentMode === "favorites"
+    ){
+
+        list =
+            list.filter(
+                song =>
+                    favorites.includes(
+                        song.fileName
+                    )
+            );
+
+    }
+
+
+    if(
+        currentMode === "recent"
+    ){
+
+        list =
+            recentSongs
+            .map(
+                fileName =>
+                    songs.find(
+                        song =>
+                            song.fileName ===
+                            fileName
+                    )
+            )
+            .filter(Boolean);
+
+    }
+
+
+    if(keyword){
+
+        list =
+            list.filter(
+                song =>
+                    song.name
+                    .toLowerCase()
+                    .includes(keyword)
+            );
+
+    }
+
+
+    return list;
+
+}
+
+
+/*
+-------------------------------------
+HIỂN THỊ DANH SÁCH
+-------------------------------------
+*/
+
+function renderSongs(){
+
+    const container =
+        document
+        .getElementById("songs");
+
+
+    container.innerHTML = "";
+
+
+    const list =
+        getDisplaySongs();
+
+
+    if(list.length === 0){
+
+        container.innerHTML =
+            '<div class="empty">' +
+            'Không có bài hát phù hợp' +
+            '</div>';
+
+        return;
+
+    }
+
+
+    list.forEach(
+        (song,index)=>{
+
+            const row =
+                document
+                .createElement("div");
+
+
+            row.className =
+                "song";
+
+
+            const isFavorite =
+                favorites.includes(
+                    song.fileName
+                );
+
+
+            row.innerHTML =
+
+                '<div class="song-number">' +
+                (index + 1) +
+                '.</div>' +
+
+                '<div class="song-name">' +
+                escapeHTML(song.name) +
+                '</div>' +
+
+                '<div class="favorite">' +
+                (
+                    isFavorite
+                        ? "❤️"
+                        : "🤍"
+                ) +
+                '</div>';
+
+
+            row.onclick =
+                () =>
+                    playSong(song);
+
+
+            /*
+                Nút yêu thích
+            */
+
+            row
+            .querySelector(".favorite")
+            .onclick =
+                event => {
+
+                    event.stopPropagation();
+
+                    toggleFavorite(song);
+
+                };
+
+
+            container
+            .appendChild(row);
+
+        }
+    );
+
+}
+
+
+/*
+-------------------------------------
+YÊU THÍCH
+-------------------------------------
+*/
+
+function toggleFavorite(song){
+
+    const index =
+        favorites.indexOf(
+            song.fileName
+        );
+
+
+    if(index === -1){
+
+        favorites.push(
+            song.fileName
+        );
+
+    }
+
+    else{
+
+        favorites.splice(
+            index,
+            1
+        );
+
+    }
+
+
+    localStorage.setItem(
+        "karaokeFavorites",
+        JSON.stringify(
+            favorites
+        )
+    );
+
+
+    renderSongs();
+
+}
+
+
+/*
+-------------------------------------
+PHÁT BÀI HÁT
+-------------------------------------
+*/
+
+async function playSong(song){
+
+    try{
+
+        const file =
+            await song
+            .handle
+            .getFile();
+
+
+        const video =
+            document
+            .getElementById("video");
+
+
+        /*
+            Xóa URL cũ
+        */
+
+        if(video.dataset.url){
+
+            URL.revokeObjectURL(
+                video.dataset.url
+            );
+
+        }
+
+
+        const url =
+            URL.createObjectURL(file);
+
+
+        video.dataset.url =
+            url;
+
+
+        video.src =
+            url;
+
+
+        document
+        .getElementById("nowPlaying")
+        .textContent =
+            "🎵 " + song.name;
+
+
+        document
+        .getElementById("player")
+        .style.display =
+            "block";
+
+
+        /*
+            Tìm vị trí bài
+        */
+
+        currentSongIndex =
+            songs.findIndex(
+                item =>
+                    item.fileName ===
+                    song.fileName
+            );
+
+
+        /*
+            Lưu bài gần đây
+        */
+
+        addRecent(
+            song.fileName
+        );
+
+
+        window.scrollTo({
+
+            top:0,
+
+            behavior:"smooth"
+
+        });
+
+
+        try{
+
+            await video.play();
+
+        }
+
+        catch(error){
+
+            console.log(
+                "Chờ người dùng bấm Play."
+            );
+
+        }
+
+    }
+
+    catch(error){
+
+        alert(
+            "Không thể mở file MP4."
+        );
+
+        console.error(error);
+
+    }
+
+}
+
+
+/*
+-------------------------------------
+GẦN ĐÂY
+-------------------------------------
+*/
+
+function addRecent(fileName){
+
+    recentSongs =
+        recentSongs.filter(
+            item =>
+                item !== fileName
+        );
+
+
+    recentSongs.unshift(
+        fileName
+    );
+
+
+    /*
+        Chỉ lưu 30 bài
+    */
+
+    recentSongs =
+        recentSongs.slice(
+            0,
+            30
+        );
+
+
+    localStorage.setItem(
+
+        "karaokeRecent",
+
+        JSON.stringify(
+            recentSongs
+        )
+
+    );
+
+}
+
+
+/*
+-------------------------------------
+BÀI TIẾP
+-------------------------------------
+*/
+
+function nextSong(){
+
+    if(songs.length === 0)
+        return;
+
+
+    currentSongIndex++;
+
+
+    if(
+        currentSongIndex >=
+        songs.length
+    ){
+
+        currentSongIndex = 0;
+
+    }
+
+
+    playSong(
+        songs[
+            currentSongIndex
+        ]
+    );
+
+}
+
+
+/*
+-------------------------------------
+BÀI TRƯỚC
+-------------------------------------
+*/
+
+function previousSong(){
+
+    if(songs.length === 0)
+        return;
+
+
+    currentSongIndex--;
+
+
+    if(
+        currentSongIndex < 0
+    ){
+
+        currentSongIndex =
+            songs.length - 1;
+
+    }
+
+
+    playSong(
+        songs[
+            currentSongIndex
+        ]
+    );
+
+}
+
+
+/*
+-------------------------------------
+TỰ ĐỘNG BÀI TIẾP
+-------------------------------------
+*/
+
+function toggleAutoNext(){
+
+    autoNext =
+        !autoNext;
+
+
+    document
+    .getElementById("autoText")
+    .textContent =
+
+        autoNext
+            ? "Tự động: Bật"
+            : "Tự động: Tắt";
+
+}
+
+
+/*
+-------------------------------------
+KHI VIDEO KẾT THÚC
+-------------------------------------
+*/
+
+document
+.getElementById("video")
+.addEventListener(
+
+    "ended",
+
+    () => {
+
+        if(autoNext){
+
+            nextSong();
+
+        }
+
+    }
+
+);
+
+
+/*
+-------------------------------------
+FULLSCREEN
+-------------------------------------
+*/
+
+function fullscreenVideo(){
+
+    const video =
+        document
+        .getElementById("video");
+
+
+    if(
+        video.requestFullscreen
+    ){
+
+        video.requestFullscreen();
+
+    }
+
+    else if(
+        video.webkitEnterFullscreen
+    ){
+
+        video.webkitEnterFullscreen();
+
+    }
+
+}
+
+
+/*
+-------------------------------------
+ESCAPE HTML
+-------------------------------------
+*/
+
+function escapeHTML(text){
+
+    const div =
+        document
+        .createElement("div");
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
+
+
+/*
+-------------------------------------
+DỌN URL KHI ĐÓNG
+-------------------------------------
+*/
+
+window.addEventListener(
+
+    "beforeunload",
+
+    () => {
+
+        const video =
+            document
+            .getElementById("video");
+
+
+        if(video.dataset.url){
+
+            URL.revokeObjectURL(
+                video.dataset.url
+            );
+
+        }
+
+    }
+
+);
+
+</script>
+
+</body>
+</html>
