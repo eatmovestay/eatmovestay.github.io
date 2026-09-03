@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Karaoke</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #202020;
+    padding: 16px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.path {
+    padding: 12px 16px;
+    background: #292929;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.search {
+    padding: 12px;
+    background: #181818;
+}
+
+.search input {
+    width: 100%;
+    padding: 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #333;
+    color: white;
+    font-size: 17px;
+    outline: none;
+}
+
+.song {
+    display: block;
+    margin: 8px 10px;
+    padding: 16px;
+    background: #252525;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.song:active {
+    background: #555;
+}
+
+.number {
+    color: #888;
+    margin-right: 8px;
+}
+
+.empty {
+    text-align: center;
+    color: #888;
+    padding: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    🎤 KARAOKE
+</div>
+
+<div class="path">
+    📁 Bộ nhớ trong / Karaoke
+</div>
+
+<div class="search">
+    <input
+        type="text"
+        id="search"
+        placeholder="🔍 Tìm tên bài hát..."
+        oninput="searchSong()">
+</div>
+
+<div id="songs"></div>
+
+<script>
+
+/*
+    DANH SÁCH FILE MP4
+
+    Tên trong "file" phải giống 100% tên file thật,
+    ngoại trừ phần mã hóa khoảng trắng trong URL.
+*/
+
+const songs = [
+
+    {
+        name: "Happy New Year",
+        file: "Happy New Year.mp4"
+    },
+
+    {
+        name: "Merry Christmas",
+        file: "Merry Christmas.mp4"
+    },
+
+    {
+        name: "My Way",
+        file: "My Way.mp4"
+    },
+
+    {
+        name: "Hotel California",
+        file: "Hotel California.mp4"
+    },
+
+    {
+        name: "Yesterday",
+        file: "Yesterday.mp4"
+    }
+
+];
+
+
+/*
+    Hiển thị danh sách
+*/
+function showSongs(list) {
+
+    const container = document.getElementById("songs");
+
+    container.innerHTML = "";
+
+    if (list.length === 0) {
+
+        container.innerHTML =
+            '<div class="empty">Không tìm thấy bài hát</div>';
+
+        return;
+    }
+
+    list.forEach((song, index) => {
+
+        const a = document.createElement("a");
+
+        a.className = "song";
+
+        /*
+            encodeURIComponent giúp xử lý:
+            khoảng trắng
+            tiếng Việt
+            ký tự đặc biệt
+        */
+
+        a.href = "./" + encodeURIComponent(song.file)
+            .replace(/%2F/g, "/");
+
+        a.innerHTML =
+            '<span class="number">' +
+            (index + 1) +
+            '.</span>' +
+            '🎵 ' +
+            song.name;
+
+        container.appendChild(a);
+
+    });
+}
+
+
+/*
+    Tìm kiếm
+*/
+function searchSong() {
+
+    const keyword =
+        document.getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const result = songs.filter(song =>
+        song.name.toLowerCase().includes(keyword)
+    );
+
+    showSongs(result);
+}
+
+
+/*
+    Khởi động
+*/
+showSongs(songs);
+
+</script>
+
+</body>
+</html>
