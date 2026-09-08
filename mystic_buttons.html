@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bàn Chiêm Đoán Thời Gian Thực</title>
+<style>
+  :root{
+    --bg: #0b0c10;
+    --panel: #14161c;
+    --panel-2: #1b1e26;
+    --line: #2a2e38;
+    --amber: #d4a537;
+    --amber-dim: #8a712c;
+    --cyan: #3fd9c7;
+    --cyan-dim: #256b63;
+    --ink: #e9e6da;
+    --ink-dim: #8b8d97;
+    --danger: #d4626f;
+    --yang: #e9e6da;
+    --yin: #6b6f7d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{
+    font-family: 'Iowan Old Style','Palatino Linotype',Georgia,serif;
+    -webkit-font-smoothing:antialiased;
+    padding: 18px 14px 60px;
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(212,165,55,0.06), transparent 60%),
+      var(--bg);
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  header{margin-bottom:14px;}
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight:600;
+    font-size: 22px;
+    letter-spacing:0.01em;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .clock{
+    font-family: 'Courier New', monospace;
+    font-size:13px;
+    color:var(--cyan);
+    letter-spacing:0.04em;
+  }
+
+  .status{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--amber);
+    border-radius:4px;
+    padding:12px 14px;
+    margin:14px 0;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+  .status b{color:var(--amber);font-weight:600;}
+  .status .sub{color:var(--ink-dim);font-size:13px;display:block;margin-top:4px;}
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap:7px;
+    margin:16px 0;
+  }
+  .cell{
+    aspect-ratio: 1 / 1;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:5px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Courier New', monospace;
+    font-size:15px;
+    color:var(--cyan);
+    cursor:pointer;
+    user-select:none;
+    transition: transform 0.06s ease, border-color 0.15s ease, background 0.15s ease;
+    overflow:hidden;
+    padding:2px;
+  }
+  .cell:active{ transform: scale(0.93); }
+  .cell.picked{
+    border-color: var(--amber);
+    background: var(--panel-2);
+    color: var(--amber);
+  }
+  .cell.frozen{
+    color: var(--ink-dim);
+    cursor:default;
+  }
+  .cell.type-text{ font-size:11.5px; }
+  .cell.type-symbol{ font-size:19px; }
+
+  .controls{
+    display:flex; gap:10px; margin:16px 0 6px;
+  }
+  button.action{
+    flex:1;
+    font-family: Georgia, serif;
+    font-size:14px;
+    padding:11px 10px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--ink-dim);
+  }
+  button.action.reset{ color:var(--danger); border-color:#3a2226; }
+  button.action.reset:active{ background:#241417; }
+
+  .result{
+    display:none;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px;
+    margin-top:16px;
+  }
+  .result.show{display:block;}
+  .result h2{
+    font-size:17px;
+    margin:0 0 10px;
+    color:var(--amber);
+    font-weight:600;
+    border-bottom:1px solid var(--line);
+    padding-bottom:8px;
+  }
+  .result .row{
+    display:flex; justify-content:space-between; gap:10px;
+    font-size:14px; padding:5px 0; border-bottom:1px dashed var(--line);
+  }
+  .result .row .k{ color:var(--ink-dim); }
+  .result .row .v{ text-align:right; color:var(--ink); }
+
+  .cards-list{ margin:10px 0; }
+  .cards-list .card-item{
+    display:flex; align-items:baseline; gap:8px;
+    font-size:14px; padding:6px 0; border-bottom:1px dashed var(--line);
+  }
+  .cards-list .card-item .idx{ color:var(--amber-dim); font-family:'Courier New',monospace; width:20px; }
+  .cards-list .card-item .nm{ flex:1; }
+  .cards-list .card-item .src{ color:var(--ink-dim); font-size:12px; }
+
+  .hexagram{
+    display:flex; flex-direction:column-reverse; gap:6px; margin:12px 0;
+    align-items:center;
+  }
+  .hexline{
+    display:flex; align-items:center; gap:10px; width:100%;
+  }
+  .hexline .label{ width:64px; font-size:12px; color:var(--ink-dim); font-family:'Courier New',monospace; }
+  .hexline .bar{ flex:1; height:12px; display:flex; gap:6px; }
+  .hexline .bar span{ background:var(--yang); border-radius:2px; height:100%; }
+  .hexline.yin .bar{ }
+  .hexline.yin .bar span{ flex:1; background:var(--yin); }
+  .hexline.yang .bar span{ flex:1; background:var(--yang); }
+  .hexline .moving{ color:var(--danger); font-size:12px; width:60px; text-align:left; }
+
+  .save-btn{
+    width:100%; margin-top:14px; padding:12px;
+    background:var(--amber); color:#1a1305; border:none; border-radius:5px;
+    font-family:Georgia,serif; font-size:14.5px; font-weight:600;
+  }
+  .save-btn:active{ opacity:0.85; }
+
+  .footnote{
+    font-size:11.5px; color:var(--ink-dim); margin-top:18px; line-height:1.5;
+    border-top:1px solid var(--line); padding-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Bàn Chiêm Đoán — Dòng Chảy Thời Gian</h1>
+    <div class="clock" id="clock">00:00:00.000</div>
+  </header>
+
+  <div class="status" id="status">
+    <b>Bấm vào 1 ô bất kỳ</b> để xác lập phương pháp chiêm đoán.
+    <span class="sub">Nội dung mỗi ô đổi liên tục theo thời điểm bấm — không có ô nào mang ý nghĩa cố định trước.</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="controls">
+    <button class="action reset" id="resetBtn">↺ Bắt đầu lại</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <div class="footnote">
+    Cơ chế: mỗi ô lấy giá trị từ thời điểm hiện tại (mili-giây) trộn với vị trí ô + nhiễu ngẫu nhiên qua một hàm băm, việt hoá tinh thần "vật lý thời gian / dòng chảy ma trận" — không dùng dữ liệu cố định. Mỗi lần bấm phát một âm ngắn (tạo bằng Web Audio, không dùng file âm thanh) có tần số riêng theo giá trị bấm. Đây là công cụ giải trí mang tính biểu tượng, không phải công cụ tiên tri chính xác.
+  </div>
+</div>
+
+<script>
+/* ============ Real-time hash / pseudo-random "physics" engine ============ */
+function hash01(x){
+  const s = Math.sin(x) * 43758.5453123;
+  return s - Math.floor(s);
+}
+function pick(arr, seed){
+  return arr[Math.floor(hash01(seed) * arr.length) % arr.length];
+}
+
+/* ============ Audio engine (Web Audio API — không dùng file âm thanh) ============ */
+let actx = null;
+function ensureAudio(){
+  if(!actx){
+    try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; }
+  }
+  if(actx && actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function playTone(freq, dur, type, vol){
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol!=null?vol:0.12, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime + dur);
+}
+/* Tiếng bấm: tần số lấy từ hash theo vị trí + thời điểm -> mỗi ô "reo" khác nhau */
+function playPickTone(seed){
+  const f = 380 + hash01(seed*2.71) * 520; // 380–900 Hz
+  playTone(f, 0.09, 'sine', 0.1);
+  // lớp bồi âm mỏng cho cảm giác "huyền"
+  setTimeout(()=>playTone(f*1.5, 0.06, 'triangle', 0.04), 15);
+}
+/* Tiếng hoàn tất: hợp âm ngắn, trầm hơn, báo hiệu kết thúc phiên */
+function playFinishChime(){
+  [261.6, 329.6, 392.0].forEach((f,idx)=>{
+    setTimeout(()=>playTone(f, 0.35, 'sine', 0.09), idx*70);
+  });
+}
+
+/* ============ Content pools for the live grid ============ */
+const NUM_POOL = ["0","1","2","3","4","5","6","7","8","9",
+  "13","27","42","69","88","01","99","07","33","64","∞1","0%","100%",
+  "108","64","36","81","216","000","111","404","∅","1/2","2/3","999",
+  "0.5","π","√2","e","10¹","2ⁿ","³","∑0","-1","+1","000001","770"];
+const SYM_POOL = ["☯","✦","✧","§","※","†","卦","爻","♁","☉","☾","∴","∵","◐","◑","⌘",
+  "△","▽","◈","⟁","卍","巛","≋","𝔉","⚭","⚯","彡","川","炁","元",
+  "∮","∇","∑","λ","Ω","φ","ψ","∂","≠","≈","⊕","⊗","☲","☵","☶","☴","☱","☰","☷","☳",
+  "࿊","᛭","𓂀","𓅓","᚛","꩜","ᛝ","ᚦ","阝","靈","𝍇","𝍈"];
+const TXT_POOL = ["Dòng","Chảy","Hỗn Mang","Định Mệnh","Ma Trận","Thời","Khắc","Vô Cực",
+  "Ánh Sáng","Bóng Tối","Biến","Dịch","Cỏ Thi","Hào","Quẻ","ﾐ","ｼ","ﾅ","ﾓ","ｱ","ｹ","Ξ","Ψ","Δ",
+  "Cơ Duyên","Nghiệp","Luân Hồi","Sát Na","Vô Thường","Tịnh","Động","Khí","Thần","Mộng",
+  "Ẩn Số","Ngẫu Nhiên","Tần Số","Sóng","Điểm Kỳ Dị","Chân Không","Lượng Tử","Vực Sâu",
+  "Điềm Báo","Thiên Cơ","Huyền Vi","अ","ॐ","ᚠ","ᛟ","囗","無"];
+
+/* session phải khai báo TRƯỚC tickGrid() vì tickGrid() được gọi ngay khi tải trang */
+let session = null;
+
+const N_CELLS = 55;
+const gridEl = document.getElementById('grid');
+const cells = [];
+for(let i=0;i<N_CELLS;i++){
+  const c = document.createElement('div');
+  c.className = 'cell';
+  c.dataset.i = i;
+  gridEl.appendChild(c);
+  cells.push(c);
+}
+
+function tickGrid(){
+  if(!session || session.done) return;
+  const t = performance.now();
+  cells.forEach((c,i)=>{
+    const seed = i*13.371 + t*0.017;
+    const catR = hash01(seed);
+    let content, cls;
+    if(catR < 0.34){ content = pick(TXT_POOL, seed+1.11); cls='type-text'; }
+    else if(catR < 0.67){ content = pick(NUM_POOL, seed+2.22); cls='type-number'; }
+    else { content = pick(SYM_POOL, seed+3.33); cls='type-symbol'; }
+    c.textContent = content;
+    c.className = 'cell ' + cls + (c.classList.contains('picked') ? ' picked' : '');
+  });
+}
+setInterval(tickGrid, 100);
+tickGrid();
+
+/* ============ Clock ============ */
+function tickClock(){
+  const d = new Date();
+  const pad=(n,l=2)=>String(n).padStart(l,'0');
+  document.getElementById('clock').textContent =
+    pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+'.'+pad(d.getMilliseconds(),3);
+}
+setInterval(tickClock, 47);
+tickClock();
+
+/* ============ Decks ============ */
+const MAJOR = ["The Fool","The Magician","The High Priestess","The Empress","The Emperor",
+  "The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune",
+  "Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star",
+  "The Moon","The Sun","Judgement","The World"];
+const SUITS = ["Wands","Cups","Swords","Pentacles"];
+const RANKS = ["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
+  "Page","Knight","Queen","King"];
+function buildTarot(){
+  const d = MAJOR.map(n=>({name:n, src:"Tarot"}));
+  SUITS.forEach(s=>RANKS.forEach(r=>d.push({name:r+" of "+s, src:"Tarot"})));
+  return d;
+}
+const ORACLE_NAMES = ["Hy Vọng","Buông Bỏ","Chữa Lành","Khởi Đầu Mới","Kiên Nhẫn","Tin Tưởng",
+  "Dòng Chảy","Bình An","Can Đảm","Biết Ơn","Trực Giác","Chuyển Hóa","Ánh Sáng Nội Tâm",
+  "Ranh Giới","Tha Thứ","Sáng Tạo","Kết Nối","Tự Do","Cân Bằng","Đồng Hành",
+  "Vượt Qua Sợ Hãi","Nuôi Dưỡng Bản Thân","Lắng Nghe Trái Tim","Mở Rộng Trái Tim","Sự Thật",
+  "Giải Phóng Quá Khứ","Phép Màu","Kiên Định","Đón Nhận","Bảo Vệ","Trưởng Thành","May Mắn",
+  "Thịnh Vượng","Tình Yêu Vô Điều Kiện","Sự Rõ Ràng","Kết Thúc Một Chu Kỳ","Sức Mạnh Nội Tại",
+  "Hòa Hợp","Cơ Hội Mới","Tĩnh Lặng","Đổi Thay","Hành Động","Chữa Lành Tổ Tiên","Kết Nối Tâm Linh"];
+function buildOracle(){ return ORACLE_NAMES.map(n=>({name:n, src:"Oracle"})); }
+
+const LENORMAND_NAMES = ["Kỵ Sĩ","Cỏ Ba Lá","Con Thuyền","Ngôi Nhà","Cây","Mây","Con Rắn",
+  "Quan Tài","Bó Hoa","Cái Liềm","Roi Da","Chim","Trẻ Nhỏ","Cáo","Gấu","Sao","Cò","Chó",
+  "Tháp","Vườn","Núi","Ngã Ba Đường","Chuột","Trái Tim","Nhẫn","Sách","Thư","Quý Ông",
+  "Quý Bà","Hoa Huệ","Mặt Trời","Mặt Trăng","Chìa Khóa","Cá","Neo","Thánh Giá"];
+function buildLenormand(){ return LENORMAND_NAMES.map(n=>({name:n, src:"Lenormand"})); }
+
+/* ============ Session / state machine ============ */
+const METHODS = ["tarot","oracle","lenormand","combine","lienhoa","lucHao"];
+const METHOD_LABEL = {
+  tarot:"Tarot", oracle:"Oracle", lenormand:"Lenormand (Lá Thư)",
+  combine:"Kết hợp Tarot + Oracle + Lenormand",
+  lienhoa:"Kinh Dịch — Mai Hoa (Liên Hoa, 1 hào động)",
+  lucHao:"Kinh Dịch — Lục Hào"
+};
+function newSession(){
+  session = {
+    method:null, stage:0, done:false,
+    // cards
+    spread:null, deck:[], drawn:[],
+    // yi jing
+    movingLine:null,      // lienhoa: 1 số
+    movingLines:[],       // lucHao: mảng số
+    lines:[],             // 6 giá trị true(dương)/false(âm), index0=hào1(dưới)
+  };
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('result').innerHTML = '';
+  cells.forEach(c=>{ c.classList.remove('picked','frozen'); });
+  setStatus('<b>Bấm vào 1 ô bất kỳ</b> để xác lập phương pháp chiêm đoán.',
+    'Nội dung mỗi ô đổi liên tục theo thời điểm bấm — không có ô nào mang ý nghĩa cố định trước.');
+}
+function setStatus(mainHtml, subText){
+  document.getElementById('status').innerHTML =
+    mainHtml + (subText ? '<span class="sub">'+subText+'</span>' : '');
+}
+
+function decide(range, extraSeed){
+  // Dùng thời điểm bấm thực (ms) trộn với vị trí ô + seed phụ -> "vật lý thời gian"
+  // + một lượng nhiễu Math.random() để tránh trùng giá trị khi bấm 2 ô rất sát nhau (double-tap)
+  const t = performance.now();
+  const noise = Math.random() * 1000;
+  const v = Math.abs((Date.now() % 100000) + t*1.31 + extraSeed*97.7 + noise);
+  return Math.floor(hash01(v*0.0137) * range);
+}
+
+function onCellClick(i){
+  if(!session) newSession();
+  if(session.done) return;
+  const cell = cells[i];
+  cell.classList.add('picked');
+  playPickTone(i*13.371 + performance.now()*0.017);
+
+  if(session.stage === 0){
+    // Bước 1: xác lập phương pháp
+    const idx = decide(6, i+1);
+    session.method = METHODS[idx];
+    session.stage = 1;
+    handleStage1Feedback();
+  } else if(session.stage === 1){
+    handleStage2(i);
+  } else {
+    handleReveal(i);
+  }
+}
+cells.forEach((c,i)=> c.addEventListener('click', ()=>onCellClick(i)));
+
+function handleStage1Feedback(){
+  setStatus('Phương pháp xác lập: <b>'+METHOD_LABEL[session.method]+'</b>',
+    'Bấm tiếp 1 ô bất kỳ để xác lập chi tiết kỹ thuật.');
+}
+
+function handleStage2(i){
+  const m = session.method;
+  if(m==='tarot' || m==='oracle' || m==='lenormand' || m==='combine'){
+    const opts = [3,6,9,12];
+    session.spread = opts[decide(4, i+2)];
+    if(m==='tarot') session.deck = buildTarot();
+    else if(m==='oracle') session.deck = buildOracle();
+    else if(m==='lenormand') session.deck = buildLenormand();
+    else {
+      // combine: trộn xen kẽ 3 bộ bài
+      const t=buildTarot(), o=buildOracle(), l=buildLenormand();
+      const mixed=[];
+      const maxLen = Math.max(t.length,o.length,l.length);
+      for(let k=0;k<maxLen;k++){
+        if(t[k]) mixed.push(t[k]);
+        if(o[k]) mixed.push(o[k]);
+        if(l[k]) mixed.push(l[k]);
+      }
+      session.deck = mixed;
+    }
+    session.stage = 2;
+    setStatus('Trải bài: <b>'+session.spread+' lá</b> ('+METHOD_LABEL[m]+')',
+      'Bấm '+session.spread+' ô (bất kỳ, lần lượt) để rút từng lá. Còn lại: '+session.spread);
+  } else if(m==='lienhoa'){
+    const line = decide(6, i+3) + 1; // 1..6
+    session.movingLine = line;
+    session.stage = 2;
+    setStatus('Hào động (Mai Hoa): <b>Hào '+line+'</b>',
+      'Bấm 6 ô (bất kỳ, lần lượt) để xác lập trạng thái Hào 1 → Hào 6. Còn lại: 6');
+  } else if(m==='lucHao'){
+    const count = decide(5, i+4); // 0..4
+    let positions = [];
+    let seedOff = 5;
+    while(positions.length < count){
+      const p = decide(6, i+seedOff) + 1;
+      seedOff++;
+      if(!positions.includes(p)) positions.push(p);
+    }
+    positions.sort((a,b)=>a-b);
+    session.movingLines = positions;
+    session.stage = 2;
+    const desc = count===0 ? 'Quẻ tĩnh (không hào động)' : 'Hào động: '+positions.join(', ');
+    setStatus('Lục Hào — <b>'+desc+'</b>',
+      'Bấm 6 ô (bất kỳ, lần lượt) để xác lập trạng thái Hào 1 → Hào 6. Còn lại: 6');
+  }
+}
+
+function handleReveal(i){
+  const m = session.method;
+  if(m==='tarot'||m==='oracle'||m==='lenormand'||m==='combine'){
+    const idx = decide(session.deck.length, i+10+session.drawn.length);
+    const card = session.deck.splice(idx,1)[0];
+    session.drawn.push(card);
+    const left = session.spread - session.drawn.length;
+    if(left<=0){ finishSession(); }
+    else{
+      setStatus('Đã rút lá <b>'+session.drawn.length+'/'+session.spread+'</b>',
+        'Bấm tiếp 1 ô bất kỳ để rút lá kế tiếp. Còn lại: '+left);
+    }
+  } else if(m==='lienhoa' || m==='lucHao'){
+    const idx = session.lines.length; // 0..5 => hào (idx+1)
+    const isYang = (decide(2, i+20+idx) === 0);
+    session.lines.push(isYang);
+    const left = 6 - session.lines.length;
+    if(left<=0){ finishSession(); }
+    else{
+      setStatus('Đã xác lập Hào <b>'+(idx+1)+'</b>: '+(isYang?'Dương (liền)':'Âm (đứt)'),
+        'Bấm tiếp 1 ô bất kỳ cho Hào '+(idx+2)+'. Còn lại: '+left);
+    }
+  }
+}
+
+/* ============ Finish + render result ============ */
+function finishSession(){
+  session.done = true;
+  cells.forEach(c=>c.classList.add('frozen'));
+  setStatus('<b>Hoàn tất.</b>', 'Xem kết quả bên dưới. Bấm "Bắt đầu lại" để làm phiên mới.');
+  playFinishChime();
+  renderResult();
+}
+
+function renderResult(){
+  const el = document.getElementById('result');
+  const now = new Date();
+  const timeStr = now.toLocaleString('vi-VN');
+  let html = '<h2>Kết Quả Chiêm Đoán</h2>';
+  html += '<div class="row"><span class="k">Phương pháp</span><span class="v">'+METHOD_LABEL[session.method]+'</span></div>';
+  html += '<div class="row"><span class="k">Thời điểm</span><span class="v">'+timeStr+'</span></div>';
+
+  const m = session.method;
+  if(m==='tarot'||m==='oracle'||m==='lenormand'||m==='combine'){
+    html += '<div class="row"><span class="k">Số lá</span><span class="v">'+session.spread+'</span></div>';
+    html += '<div class="cards-list">';
+    session.drawn.forEach((c,idx)=>{
+      html += '<div class="card-item"><span class="idx">'+(idx+1)+'.</span><span class="nm">'+c.name+'</span><span class="src">'+c.src+'</span></div>';
+    });
+    html += '</div>';
+  } else {
+    // Yi Jing display: hào 6 (top) xuống hào 1 (bottom)
+    const isMoving = (pos)=> m==='lienhoa' ? (pos===session.movingLine) : session.movingLines.includes(pos);
+    html += '<div class="hexagram">';
+    for(let pos=1; pos<=6; pos++){
+      const yang = session.lines[pos-1];
+      const moving = isMoving(pos);
+      html += '<div class="hexline '+(yang?'yang':'yin')+'">';
+      html += '<span class="label">Hào '+pos+(pos===6?' (trên)':pos===1?' (dưới)':'')+'</span>';
+      if(yang){ html += '<div class="bar"><span></span></div>'; }
+      else { html += '<div class="bar"><span></span><span></span></div>'; }
+      html += '<span class="moving">'+(moving?'● động':'')+'</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+    if(m==='lienhoa'){
+      html += '<div class="row"><span class="k">Hào động (Liên Hoa)</span><span class="v">Hào '+session.movingLine+'</span></div>';
+    } else {
+      const desc = session.movingLines.length===0 ? 'Quẻ tĩnh (không hào động)' : 'Hào '+session.movingLines.join(', ')+' động';
+      html += '<div class="row"><span class="k">Trạng thái quẻ</span><span class="v">'+desc+'</span></div>';
+    }
+  }
+
+  html += '<button class="save-btn" id="saveBtn">⭳ Lưu kết quả thành ảnh</button>';
+  el.innerHTML = html;
+  el.classList.add('show');
+  document.getElementById('saveBtn').addEventListener('click', saveAsImage);
+}
+
+/* ============ Save result as PNG via canvas ============ */
+function saveAsImage(){
+  const now = new Date();
+  const pad=(n,l=2)=>String(n).padStart(l,'0');
+  const stamp = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+
+    pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+'.'+pad(now.getMilliseconds(),3);
+
+  const lines = [];
+  lines.push('KẾT QUẢ CHIÊM ĐOÁN');
+  lines.push('Phương pháp: '+METHOD_LABEL[session.method]);
+  const m = session.method;
+  if(m==='tarot'||m==='oracle'||m==='lenormand'||m==='combine'){
+    lines.push('Số lá: '+session.spread);
+    lines.push('');
+    session.drawn.forEach((c,idx)=> lines.push((idx+1)+'. '+c.name+'  ['+c.src+']'));
+  } else {
+    lines.push('');
+    for(let pos=6; pos>=1; pos--){
+      const yang = session.lines[pos-1];
+      const moving = m==='lienhoa' ? (pos===session.movingLine) : session.movingLines.includes(pos);
+      lines.push('Hào '+pos+(pos===6?' (trên)':pos===1?' (dưới)':'')+': '+(yang?'Dương ▬▬▬':'Âm  ▬▬ ▬▬')+(moving?'   ● động':''));
+    }
+    lines.push('');
+    if(m==='lienhoa') lines.push('Hào động (Liên Hoa): Hào '+session.movingLine);
+    else lines.push(session.movingLines.length===0 ? 'Quẻ tĩnh (không hào động)' : 'Hào động: '+session.movingLines.join(', '));
+  }
+  lines.push('');
+  lines.push('Lưu lúc: '+stamp);
+
+  const W = 640;
+  const lineH = 26;
+  const H = 90 + lines.length*lineH + 30;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0b0c10';
+  ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = '#2a2e38';
+  ctx.strokeRect(8,8,W-16,H-16);
+
+  ctx.fillStyle = '#d4a537';
+  ctx.font = 'bold 20px Georgia, serif';
+  ctx.fillText(lines[0], 24, 44);
+
+  ctx.font = '15px "Courier New", monospace';
+  let y = 80;
+  for(let k=1;k<lines.length;k++){
+    ctx.fillStyle = lines[k].startsWith('Lưu lúc') ? '#3fd9c7' : '#e9e6da';
+    ctx.fillText(lines[k], 24, y);
+    y += lineH;
+  }
+
+  const link = document.createElement('a');
+  link.download = 'chiem-doan-'+now.getTime()+'.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+document.getElementById('resetBtn').addEventListener('click', newSession);
+newSession();
+</script>
+</body>
+</html>
