@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lập Quẻ Ngũ Linh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=Noto+Serif+TC:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f1ead9;
+    --paper-deep:#e7dcc3;
+    --ink:#241f18;
+    --ink-soft:#5a5140;
+    --seal:#a4362b;
+    --seal-deep:#7d271e;
+    --gold:#9c7a3c;
+    --line:#c9bb9a;
+    --card:#f8f3e6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(ellipse at top left, rgba(164,54,43,0.05), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(156,122,60,0.08), transparent 55%);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  header.top{margin-bottom:28px;text-align:left;border-bottom:1px solid var(--line);padding-bottom:18px;}
+  .kicker{font-size:13px;letter-spacing:.02em;color:var(--seal);font-weight:600;margin:0 0 6px;}
+  h1{
+    font-family:'Noto Serif',serif;
+    font-weight:700;
+    font-size:32px;
+    margin:0 0 8px;
+    color:var(--ink);
+    line-height:1.15;
+  }
+  .sub{color:var(--ink-soft);font-size:14.5px;line-height:1.55;max-width:52ch;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:22px 22px 24px;
+    margin-bottom:22px;
+    position:relative;
+  }
+  .card::before{
+    content:"";
+    position:absolute; left:0; top:14px; bottom:14px; width:3px;
+    background:var(--seal);
+    opacity:.75;
+  }
+  .card-inner{padding-left:14px;}
+
+  h2{
+    font-family:'Noto Serif',serif;
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.span2{grid-column:1/-1;}
+  label{font-size:12.5px;color:var(--ink-soft);font-weight:500;}
+  select{
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:9px 30px 9px 10px;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0 L5 6 L10 0' fill='none' stroke='%235a5140' stroke-width='1.4'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+  }
+  select:focus{outline:2px solid var(--gold); outline-offset:1px;}
+
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:10px;line-height:1.5;}
+
+  button.go{
+    width:100%;
+    margin-top:18px;
+    background:var(--seal);
+    color:#fbf3e4;
+    border:none;
+    border-radius:2px;
+    padding:13px 16px;
+    font-family:'Noto Serif',serif;
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:.02em;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  button.go:hover{background:var(--seal-deep);}
+  button.go:active{transform:translateY(1px);}
+
+  #result{display:none;}
+
+  .result-hero{
+    text-align:center;
+    padding:26px 16px 22px;
+    border:1px solid var(--line);
+    background:var(--card);
+    margin-bottom:16px;
+    position:relative;
+  }
+  .result-hero .tag{font-size:12px;color:var(--seal);font-weight:600;letter-spacing:.03em;margin-bottom:6px;}
+  .result-hero .name{
+    font-family:'Noto Serif',serif;
+    font-size:26px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0 0 14px;
+  }
+
+  .hexrow{display:flex;justify-content:center;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:6px;}
+  .hexblock{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .hexblock .htitle{font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .hexblock .hname{font-family:'Noto Serif',serif;font-size:14.5px;color:var(--ink);text-align:center;max-width:120px;}
+  .lines{display:flex;flex-direction:column-reverse;gap:6px;}
+  .lrow{display:flex;align-items:center;gap:6px;height:9px;}
+  .bar{height:9px;background:var(--ink);border-radius:1px;}
+  .bar.full{width:64px;}
+  .bar.half{width:29px;}
+  .lrow.moving .bar{background:var(--seal);}
+  .haomark{font-size:9.5px;color:var(--seal);width:14px;text-align:right;font-weight:700;}
+
+  details{
+    border:1px solid var(--line);
+    background:var(--card);
+    margin-bottom:10px;
+  }
+  details summary{
+    cursor:pointer;
+    padding:12px 16px;
+    font-family:'Noto Serif',serif;
+    font-weight:600;
+    font-size:14.5px;
+    list-style:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  details summary::-webkit-details-marker{display:none;}
+  details summary::after{content:"+"; color:var(--seal); font-size:17px; font-weight:700;}
+  details[open] summary::after{content:"–";}
+  .steps{padding:0 16px 16px;font-size:13.5px;line-height:1.75;color:var(--ink);}
+  .steps p{margin:0 0 8px;}
+  .steps .lbl{color:var(--seal);font-weight:600;}
+  .steps .res{font-weight:600;}
+
+  .ho-dd-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:4px;}
+  .ho-dd-item{border:1px solid var(--line);padding:10px 12px;background:var(--paper);font-size:13px;}
+  .ho-dd-item b{color:var(--seal);}
+
+  footer{margin-top:26px;text-align:center;color:var(--ink-soft);font-size:12px;}
+
+  @media (max-width:420px){
+    .grid{grid-template-columns:1fr;}
+    h1{font-size:26px;}
+    .hexrow{gap:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="kicker">五靈卦 · Ngũ Linh Độn Toán</p>
+    <h1>Lập Quẻ Ngũ Linh</h1>
+    <p class="sub">Nhập thời điểm lấy quẻ theo âm lịch. Ứng dụng tính quẻ đơn Hậu thiên, quẻ đơn Tiên thiên, chồng thành quẻ Ngũ linh gốc, rồi suy ra hào Động, quẻ Biến và quẻ Hỗ — đúng theo trình tự trong tài liệu gốc.</p>
+  </header>
+
+  <div class="card">
+    <div class="card-inner">
+      <h2>Thời điểm lấy quẻ</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="yearChi">Chi năm</label>
+          <select id="yearChi"></select>
+        </div>
+        <div class="field">
+          <label for="yearCan">Can năm <span style="font-weight:400">(chỉ để hiển thị)</span></label>
+          <select id="yearCan"></select>
+        </div>
+        <div class="field">
+          <label for="month">Tháng âm lịch</label>
+          <select id="month"></select>
+        </div>
+        <div class="field">
+          <label for="day">Ngày âm lịch (mùng)</label>
+          <select id="day"></select>
+        </div>
+        <div class="field">
+          <label for="dayCan">Can ngày</label>
+          <select id="dayCan"></select>
+        </div>
+        <div class="field">
+          <label for="dayChi">Chi ngày <span style="font-weight:400">(chỉ để hiển thị)</span></label>
+          <select id="dayChi"></select>
+        </div>
+        <div class="field span2">
+          <label for="hourChi">Giờ lấy quẻ (Chi giờ)</label>
+          <select id="hourChi"></select>
+        </div>
+      </div>
+      <p class="hint">Lưu ý: ngày, tháng ở đây là ngày tháng <b>âm lịch</b>. Can ngày cần lấy đúng theo lịch vạn niên (vd. ngày 21 tháng 10 năm Mậu Dần là ngày Canh Dần → chọn Can ngày = Canh).</p>
+      <button class="go" id="btnCalc">Lập quẻ</button>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="result-hero">
+      <div class="tag">Quẻ Ngũ Linh (Quẻ Gốc)</div>
+      <div class="name" id="gocName">—</div>
+      <div class="hexrow">
+        <div class="hexblock">
+          <div class="htitle">Gốc</div>
+          <div class="lines" id="linesGoc"></div>
+          <div class="hname" id="labelGoc"></div>
+        </div>
+        <div class="hexblock">
+          <div class="htitle">Hỗ (quy nạp)</div>
+          <div class="lines" id="linesHo"></div>
+          <div class="hname" id="labelHo"></div>
+        </div>
+        <div class="hexblock">
+          <div class="htitle">Biến</div>
+          <div class="lines" id="linesBien"></div>
+          <div class="hname" id="labelBien"></div>
+        </div>
+      </div>
+    </div>
+
+    <details open>
+      <summary>I. Xác lập quẻ đơn Hậu thiên</summary>
+      <div class="steps" id="stepsHT"></div>
+    </details>
+
+    <details>
+      <summary>II. Xác lập quẻ đơn Tiên thiên</summary>
+      <div class="steps" id="stepsTT"></div>
+    </details>
+
+    <details>
+      <summary>III. Thành lập quẻ Ngũ linh (chồng quẻ)</summary>
+      <div class="steps" id="stepsGoc"></div>
+    </details>
+
+    <details>
+      <summary>IV. Hào Nguyên đường · hào Động · quẻ Biến · quẻ Hỗ</summary>
+      <div class="steps" id="stepsHaoBien"></div>
+    </details>
+
+    <details>
+      <summary>Quẻ Hỗ Diễn dịch (Nhất Hỗ / Nhị Hỗ / Tam Hỗ)</summary>
+      <div class="steps" id="stepsHoDD"></div>
+    </details>
+  </div>
+
+  <footer>Phần V. Hoán thời pháp chưa được cài đặt (theo yêu cầu — tài liệu gốc còn dang dở ở phần này).</footer>
+</div>
+
+<script>
+// =====================================================================
+// LÕI TÍNH TOÁN — chuyển thể từ core.js, đã kiểm chứng khớp 4 ví dụ mẫu
+// trong tài liệu "Phương Pháp Lập Quẻ Ngũ Linh".
+// =====================================================================
+const CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+const CAN = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+const chiIdx = c => CHI.indexOf(c);
+const canIdx = c => CAN.indexOf(c);
+const isDuongChi = c => chiIdx(c)%2===0;
+const isDuongCan = c => canIdx(c)%2===0;
+
+const NAYIN_HANH = ["Kim","Hỏa","Mộc","Thổ","Kim","Hỏa","Thủy","Thổ","Kim","Mộc",
+                     "Thủy","Thổ","Hỏa","Mộc","Thủy","Kim","Hỏa","Mộc","Thổ","Kim",
+                     "Hỏa","Thủy","Thổ","Kim","Mộc","Thủy","Thổ","Hỏa","Mộc","Thủy"];
+function jiaziIndex(cIdx,chIdx){
+  for(let x=0;x<60;x++){ if(x%10===cIdx && x%12===chIdx) return x; }
+}
+function nayinHanh(can,chi){
+  const x = jiaziIndex(canIdx(can), chiIdx(chi));
+  return NAYIN_HANH[Math.floor(x/2)];
+}
+
+function ziCanFromDayCan(dayCan){
+  const map = {"Giáp":"Giáp","Kỷ":"Giáp","Ất":"Bính","Canh":"Bính","Bính":"Mậu","Tân":"Mậu",
+               "Đinh":"Canh","Nhâm":"Canh","Mậu":"Nhâm","Quý":"Nhâm"};
+  return map[dayCan];
+}
+function hourCan(dayCan, hourChi){
+  const ziCan = ziCanFromDayCan(dayCan);
+  const idx = (canIdx(ziCan) + chiIdx(hourChi)) % 10;
+  return CAN[idx];
+}
+
+const STARS = [
+  {num:1,name:"Thiên Bồng",hanh:"Thủy",parity:"D"},
+  {num:2,name:"Thiên Nhuế",hanh:"Thổ",parity:"A"},
+  {num:3,name:"Thiên Xung",hanh:"Mộc",parity:"D"},
+  {num:4,name:"Thiên Phụ",hanh:"Mộc",parity:"A"},
+  {num:5,name:"Thiên Cầm",hanh:"Hỏa",parity:"D"},
+  {num:6,name:"Thiên Tâm",hanh:"Kim",parity:"D"},
+  {num:7,name:"Thiên Trụ",hanh:"Kim",parity:"A"},
+  {num:8,name:"Thiên Nhậm",hanh:"Thổ",parity:"D"},
+  {num:9,name:"Thiên Anh",hanh:"Hỏa",parity:"A"},
+  {num:10,name:"Thiên Không",hanh:"Thủy",parity:"A"},
+];
+const findStarByHanhParity = (hanh,parity) => STARS.find(s=>s.hanh===hanh && s.parity===parity);
+
+const ACTIVE_BRANCHES = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Thân","Dậu","Hợi"];
+function placeStars(startStarNum){
+  const map = {};
+  ACTIVE_BRANCHES.forEach((b,p)=>{
+    const n = ((startStarNum-1+p)%10)+1;
+    map[b] = STARS[n-1];
+  });
+  map["Mùi"] = map["Sửu"];
+  map["Tuất"] = map["Thìn"];
+  return map;
+}
+
+const BATQUAI = ["","Càn","Đoài","Ly","Chấn","Tốn","Khảm","Cấn","Khôn"];
+const queFromStarNum = n => BATQUAI[n<=8?n:n-8];
+const hauThienSoHieu = que => BATQUAI.indexOf(que);
+
+const HAUTHIEN_GROUPS = {
+  "DanNgoTuat": {"Tý":"Khôn","Sửu":"Chấn","Dần":"Chấn","Mão":"Ly","Thìn":"Đoài","Tỵ":"Đoài",
+                 "Ngọ":"Càn","Mùi":"Tốn","Thân":"Tốn","Dậu":"Khảm","Tuất":"Cấn","Hợi":"Cấn"},
+  "ThanTyThin": {"Tý":"Càn","Sửu":"Tốn","Dần":"Tốn","Mão":"Khảm","Thìn":"Cấn","Tỵ":"Cấn",
+                 "Ngọ":"Khôn","Mùi":"Chấn","Thân":"Chấn","Dậu":"Ly","Tuất":"Đoài","Hợi":"Đoài"},
+  "HoiMaoMui": {"Tý":"Ly","Sửu":"Đoài","Dần":"Đoài","Mão":"Càn","Thìn":"Tốn","Tỵ":"Tốn",
+                "Ngọ":"Khảm","Mùi":"Cấn","Thân":"Cấn","Dậu":"Khôn","Tuất":"Chấn","Hợi":"Chấn"},
+  "TyDauSuu": {"Tý":"Khảm","Sửu":"Cấn","Dần":"Cấn","Mão":"Khôn","Thìn":"Chấn","Tỵ":"Chấn",
+               "Ngọ":"Ly","Mùi":"Đoài","Thân":"Đoài","Dậu":"Càn","Tuất":"Tốn","Hợi":"Tốn"},
+};
+function yearGroup(yearChi){
+  if(["Dần","Ngọ","Tuất"].includes(yearChi)) return "DanNgoTuat";
+  if(["Thân","Tý","Thìn"].includes(yearChi)) return "ThanTyThin";
+  if(["Hợi","Mão","Mùi"].includes(yearChi)) return "HoiMaoMui";
+  if(["Tỵ","Dậu","Sửu"].includes(yearChi)) return "TyDauSuu";
+}
+const GROUP_LABEL = {"DanNgoTuat":"Dần, Ngọ, Tuất","ThanTyThin":"Thân, Tý, Thìn","HoiMaoMui":"Hợi, Mão, Mùi","TyDauSuu":"Tỵ, Dậu, Sửu"};
+
+function hauThien(yearChi, month, day, hourChi){
+  const kienIdx = (month+1)%12;
+  const dayCungIdx = (kienIdx + (day-1))%12;
+  const hourCungIdx = (dayCungIdx + chiIdx(hourChi))%12;
+  const chuThoiLenh = CHI[hourCungIdx];
+  const group = yearGroup(yearChi);
+  const que = HAUTHIEN_GROUPS[group][chuThoiLenh];
+  return {kienChi:CHI[kienIdx], dayCung:CHI[dayCungIdx], chuThoiLenh, group, que};
+}
+
+function tienThien(dayCan, hourChi, chuThoiLenh){
+  const hCan = hourCan(dayCan, hourChi);
+  const hanh = nayinHanh(hCan, hourChi);
+  const parity = isDuongChi(hourChi)?"D":"A";
+  const startStar = findStarByHanhParity(hanh,parity);
+  const starMap = placeStars(startStar.num);
+  const chuThienTinh = starMap[chuThoiLenh];
+  const que = queFromStarNum(chuThienTinh.num);
+  return {hCan, hanh, parity, startStar, starMap, chuThienTinh, que};
+}
+
+const TRIGRAM_LINES = {
+  "Càn":["D","D","D"], "Đoài":["D","D","A"], "Ly":["D","A","D"], "Chấn":["D","A","A"],
+  "Tốn":["A","D","D"], "Khảm":["A","D","A"], "Cấn":["A","A","D"], "Khôn":["A","A","A"],
+};
+function trigramFromLines(l3){
+  const key = l3.join("");
+  for(const [name,l] of Object.entries(TRIGRAM_LINES)){ if(l.join("")===key) return name; }
+}
+const hexLines = (thuong,ha) => TRIGRAM_LINES[ha].concat(TRIGRAM_LINES[thuong]);
+
+const HEXNAMES = {
+"Càn_Càn":"Bát Thuần Càn","Càn_Khảm":"Thiên Thủy Tụng","Càn_Cấn":"Thiên Sơn Độn","Càn_Chấn":"Thiên Lôi Vô Vọng",
+"Càn_Tốn":"Thiên Phong Cấu","Càn_Ly":"Thiên Hỏa Đồng Nhân","Càn_Khôn":"Thiên Địa Bĩ","Càn_Đoài":"Thiên Trạch Lý",
+"Khảm_Càn":"Thủy Thiên Nhu","Khảm_Khảm":"Bát Thuần Khảm","Khảm_Cấn":"Thủy Sơn Kiển","Khảm_Chấn":"Thủy Lôi Truân",
+"Khảm_Tốn":"Thủy Phong Tỉnh","Khảm_Ly":"Thủy Hỏa Ký Tế","Khảm_Khôn":"Thủy Địa Tỷ","Khảm_Đoài":"Thủy Trạch Tiết",
+"Cấn_Càn":"Sơn Thiên Đại Súc","Cấn_Khảm":"Sơn Thủy Mông","Cấn_Cấn":"Bát Thuần Cấn","Cấn_Chấn":"Sơn Lôi Di",
+"Cấn_Tốn":"Sơn Phong Cổ","Cấn_Ly":"Sơn Hỏa Bí","Cấn_Khôn":"Sơn Địa Bác","Cấn_Đoài":"Sơn Trạch Tổn",
+"Chấn_Càn":"Lôi Thiên Đại Tráng","Chấn_Khảm":"Lôi Thủy Giải","Chấn_Cấn":"Lôi Sơn Tiểu Quá","Chấn_Chấn":"Bát Thuần Chấn",
+"Chấn_Tốn":"Lôi Phong Hằng","Chấn_Ly":"Lôi Hỏa Phong","Chấn_Khôn":"Lôi Địa Dự","Chấn_Đoài":"Lôi Trạch Quy Muội",
+"Tốn_Càn":"Phong Thiên Tiểu Súc","Tốn_Khảm":"Phong Thủy Hoán","Tốn_Cấn":"Phong Sơn Tiệm","Tốn_Chấn":"Phong Lôi Ích",
+"Tốn_Tốn":"Bát Thuần Tốn","Tốn_Ly":"Phong Hỏa Gia Nhân","Tốn_Khôn":"Phong Địa Quan","Tốn_Đoài":"Phong Trạch Trung Phu",
+"Ly_Càn":"Hỏa Thiên Đại Hữu","Ly_Khảm":"Hỏa Thủy Vị Tế","Ly_Cấn":"Hỏa Sơn Lữ","Ly_Chấn":"Hỏa Lôi Phệ Hạp",
+"Ly_Tốn":"Hỏa Phong Đỉnh","Ly_Ly":"Bát Thuần Ly","Ly_Khôn":"Hỏa Địa Tấn","Ly_Đoài":"Hỏa Trạch Khuê",
+"Khôn_Càn":"Địa Thiên Thái","Khôn_Khảm":"Địa Thủy Sư","Khôn_Cấn":"Địa Sơn Khiêm","Khôn_Chấn":"Địa Lôi Phục",
+"Khôn_Tốn":"Địa Phong Thăng","Khôn_Ly":"Địa Hỏa Minh Di","Khôn_Khôn":"Bát Thuần Khôn","Khôn_Đoài":"Địa Trạch Lâm",
+"Đoài_Càn":"Trạch Thiên Quải","Đoài_Khảm":"Trạch Thủy Khốn","Đoài_Cấn":"Trạch Sơn Hàm","Đoài_Chấn":"Trạch Lôi Tùy",
+"Đoài_Tốn":"Trạch Phong Đại Quá","Đoài_Ly":"Trạch Hỏa Cách","Đoài_Khôn":"Trạch Địa Tụy","Đoài_Đoài":"Bát Thuần Đoài",
+};
+const hexName = (thuong,ha) => HEXNAMES[thuong+"_"+ha];
+const ngayAmDuong = dayCan => isDuongCan(dayCan) ? "dương" : "âm";
+
+function lapQueGoc(ht, tt, dayCan){
+  const amDuongNgay = ngayAmDuong(dayCan);
+  let thuong, ha;
+  if(amDuongNgay === "dương"){ thuong = tt.que; ha = ht.que; }
+  else { thuong = ht.que; ha = tt.que; }
+  return {amDuongNgay, thuong, ha, lines: hexLines(thuong, ha), name: hexName(thuong, ha)};
+}
+
+function nguyenDuong(hauThienQue, starNum){
+  const sum = hauThienSoHieu(hauThienQue) + starNum;
+  if(sum<=6) return sum;
+  const r = sum%6;
+  return r===0?6:r;
+}
+function haoDong(nd, hourChi){ return ((nd-1+chiIdx(hourChi))%6)+1; }
+const flip = l => l==="D"?"A":"D";
+function queBien(lines, hd){ const n = lines.slice(); n[hd-1] = flip(n[hd-1]); return n; }
+function queHoQuyNap(lines){
+  const ha = [lines[1],lines[2],lines[3]];
+  const thuong = [lines[2],lines[3],lines[4]];
+  return ha.concat(thuong);
+}
+function nameFromLines(lines){
+  const ha = trigramFromLines(lines.slice(0,3));
+  const thuong = trigramFromLines(lines.slice(3,6));
+  return {ha, thuong, name: hexName(thuong,ha)};
+}
+// Hỗ Diễn dịch: dựa vào vị trí hào Động (Nội quái hào<=3, Ngoại quái hào>=4)
+function hoDienDich(lines, hd){
+  let defs;
+  if(hd<=3){
+    defs = [
+      {label:"Nhất Hỗ", ha:[0,1,2], thuong:[1,2,3]},
+      {label:"Nhị Hỗ", ha:[0,1,2], thuong:[2,3,4]},
+      {label:"Tam Hỗ (= Hỗ quy nạp)", ha:[1,2,3], thuong:[2,3,4]},
+    ];
+  } else {
+    defs = [
+      {label:"Nhất Hỗ", ha:[2,3,4], thuong:[3,4,5]},
+      {label:"Nhị Hỗ", ha:[1,2,3], thuong:[3,4,5]},
+      {label:"Tam Hỗ (= Hỗ quy nạp)", ha:[1,2,3], thuong:[2,3,4]},
+    ];
+  }
+  return defs.map(d=>{
+    const haLines = d.ha.map(i=>lines[i]);
+    const thuongLines = d.thuong.map(i=>lines[i]);
+    const full = haLines.concat(thuongLines);
+    const info = nameFromLines(full);
+    return {label:d.label, lines:full, name:info.name};
+  });
+}
+
+// =====================================================================
+// GIAO DIỆN
+// =====================================================================
+function fillSelect(el, arr, defaultIdx){
+  el.innerHTML = arr.map((v,i)=>`<option value="${v}" ${i===defaultIdx?'selected':''}>${v}</option>`).join('');
+}
+fillSelect(document.getElementById('yearChi'), CHI, 2);
+fillSelect(document.getElementById('yearCan'), CAN, 4);
+fillSelect(document.getElementById('month'), Array.from({length:12},(_,i)=>String(i+1)), 9);
+fillSelect(document.getElementById('day'), Array.from({length:30},(_,i)=>String(i+1)), 20);
+fillSelect(document.getElementById('dayCan'), CAN, 6);
+fillSelect(document.getElementById('dayChi'), CHI, 2);
+fillSelect(document.getElementById('hourChi'), CHI, 7);
+
+function lineRowHTML(val, isMoving, haoNo){
+  const bar = val==='D'
+    ? `<div class="bar full"></div>`
+    : `<div class="bar half"></div><div style="width:6px"></div><div class="bar half"></div>`;
+  return `<div class="lrow ${isMoving?'moving':''}"><span class="haomark">${haoNo?('h.'+haoNo):''}</span>${bar}</div>`;
+}
+function renderLines(containerId, lines, movingHao){
+  const el = document.getElementById(containerId);
+  el.innerHTML = lines.map((v,i)=> lineRowHTML(v, movingHao===(i+1), i+1)).join('');
+}
+
+document.getElementById('btnCalc').addEventListener('click', () => {
+  const yearChi = document.getElementById('yearChi').value;
+  const yearCan = document.getElementById('yearCan').value;
+  const month = parseInt(document.getElementById('month').value,10);
+  const day = parseInt(document.getElementById('day').value,10);
+  const dayCan = document.getElementById('dayCan').value;
+  const dayChi = document.getElementById('dayChi').value;
+  const hourChi = document.getElementById('hourChi').value;
+
+  const ht = hauThien(yearChi, month, day, hourChi);
+  const tt = tienThien(dayCan, hourChi, ht.chuThoiLenh);
+  const goc = lapQueGoc(ht, tt, dayCan);
+  const nd = nguyenDuong(ht.que, tt.chuThienTinh.num);
+  const hd = haoDong(nd, hourChi);
+  const bienLines = queBien(goc.lines, hd);
+  const bien = nameFromLines(bienLines);
+  const hoLines = queHoQuyNap(goc.lines);
+  const ho = nameFromLines(hoLines);
+  const hoDD = hoDienDich(goc.lines, hd);
+  const hoDDBien = hoDienDich(bienLines, hd);
+
+  document.getElementById('gocName').textContent = goc.name;
+  renderLines('linesGoc', goc.lines, hd);
+  document.getElementById('labelGoc').textContent = `${goc.thuong} trên / ${goc.ha} dưới`;
+  renderLines('linesHo', hoLines, null);
+  document.getElementById('labelHo').textContent = ho.name;
+  renderLines('linesBien', bienLines, hd);
+  document.getElementById('labelBien').textContent = bien.name;
+
+  document.getElementById('stepsHT').innerHTML = `
+    <p><span class="lbl">Nguyệt kiến:</span> tháng ${month} kiến <b>${ht.kienChi}</b>.</p>
+    <p>Coi ${ht.kienChi} là ngày mùng 1, đếm thuận tới ngày ${day} → dừng tại cung <b>${ht.dayCung}</b>.</p>
+    <p>Coi cung ${ht.dayCung} là giờ Tý, đếm thuận tới giờ ${hourChi} → dừng tại cung <b>${ht.chuThoiLenh}</b> — đây là <span class="lbl">cung Chủ thời lệnh</span>.</p>
+    <p>Năm ${yearChi} thuộc tam hợp <b>${GROUP_LABEL[ht.group]}</b>. Tra Hình 15: cung ${ht.chuThoiLenh} ra quẻ <span class="res">${ht.que}</span>.</p>
+    <p>→ Quẻ đơn <b>Hậu thiên</b> = <span class="res">${ht.que}</span>.</p>
+  `;
+
+  document.getElementById('stepsTT').innerHTML = `
+    <p><span class="lbl">Can giờ:</span> ngày Can ${dayCan} → giờ Tý khởi Can <b>${ziCanFromDayCan(dayCan)}</b>; đếm tới giờ ${hourChi} → Can giờ là <b>${tt.hCan}</b>. Vậy giờ lấy quẻ là giờ <b>${tt.hCan} ${hourChi}</b>.</p>
+    <p><span class="lbl">Nạp âm:</span> giờ ${tt.hCan} ${hourChi} nạp âm Hành <b>${tt.hanh} ${tt.parity==='D'?'dương':'âm'}</b>.</p>
+    <p>Hành ${tt.hanh} ${tt.parity==='D'?'dương':'âm'} ứng sao <b>${tt.startStar.name}</b> (số ${tt.startStar.num}) — đây là <span class="lbl">Chủ tinh sa địa bàn</span>, an tại cung Tý.</p>
+    <p>An thuận các sao còn lại quanh 12 cung (bỏ qua Mùi, Tuất) → tới cung Chủ thời lệnh (<b>${ht.chuThoiLenh}</b>) gặp sao <b>${tt.chuThienTinh.name}</b> (số ${tt.chuThienTinh.num}) — đây là <span class="lbl">Chủ thiên tinh</span>.</p>
+    <p>Sao số ${tt.chuThienTinh.num} ứng quẻ <span class="res">${tt.que}</span>.</p>
+    <p>→ Quẻ đơn <b>Tiên thiên</b> = <span class="res">${tt.que}</span>.</p>
+  `;
+
+  document.getElementById('stepsGoc').innerHTML = `
+    <p><span class="lbl">Ngày ${dayCan}</span> là ngày <b>${goc.amDuongNgay}</b>.</p>
+    <p>${goc.amDuongNgay==='dương'
+        ? `Ngày dương → quẻ Tiên thiên (${tt.que}) nằm trên, quẻ Hậu thiên (${ht.que}) nằm dưới.`
+        : `Ngày âm → quẻ Hậu thiên (${ht.que}) nằm trên, quẻ Tiên thiên (${tt.que}) nằm dưới.`}</p>
+    <p>Chồng <b>${goc.thuong}</b> (trên) lên <b>${goc.ha}</b> (dưới) → quẻ Ngũ linh: <span class="res">${goc.name}</span>.</p>
+  `;
+
+  document.getElementById('stepsHaoBien').innerHTML = `
+    <p><span class="lbl">Hào Nguyên đường:</span> số hiệu quẻ Hậu thiên (${ht.que}=${hauThienSoHieu(ht.que)}) + số hiệu Chủ thiên tinh (${tt.chuThienTinh.name}=${tt.chuThienTinh.num}) = ${hauThienSoHieu(ht.que)+tt.chuThienTinh.num}. → Nguyên đường = hào <span class="res">${nd}</span>.</p>
+    <p><span class="lbl">Hào Động:</span> từ hào ${nd} coi là giờ Tý, đếm thuận tới giờ ${hourChi} → hào Động = hào <span class="res">${hd}</span>.</p>
+    <p>Hào ${hd} động, biến ${goc.lines[hd-1]==='D'?'dương → âm':'âm → dương'} → quẻ Biến: <span class="res">${bien.name}</span>.</p>
+    <p><span class="lbl">Quẻ Hỗ (quy nạp):</span> lấy hào 2,3,4 làm quẻ Hạ; hào 3,4,5 làm quẻ Thượng → quẻ Hỗ: <span class="res">${ho.name}</span>.</p>
+  `;
+
+  document.getElementById('stepsHoDD').innerHTML = `
+    <p>Hào Động (hào ${hd}) thuộc quẻ ${hd<=3?'Nội (Hạ)':'Ngoại (Thượng)'} → lấy 3 quẻ Hỗ Diễn dịch như sau:</p>
+    <div class="ho-dd-grid">
+      ${hoDD.map(h=>`<div class="ho-dd-item"><b>${h.label}</b> của quẻ Gốc → ${h.name}</div>`).join('')}
+      ${hoDDBien.map(h=>`<div class="ho-dd-item"><b>${h.label}</b> của quẻ Biến → ${h.name}</div>`).join('')}
+    </div>
+  `;
+
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+});
+</script>
+</body>
+</html>
