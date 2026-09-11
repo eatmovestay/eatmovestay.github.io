@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phi Cung Lạc Thư</title>
+<style>
+  :root{
+    --ink:#161320;
+    --ink-2:#1f1b2e;
+    --paper:#eee5cf;
+    --paper-dim:#d9cdae;
+    --gold:#c69a3e;
+    --gold-soft:#8f7532;
+    --cinnabar:#a2402f;
+    --jade:#4f7a5c;
+    --line: rgba(198,154,62,0.35);
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top, #211c33 0%, var(--ink) 55%);
+    color:var(--paper);
+    font-family: "Noto Serif", "Times New Roman", serif;
+    min-height:100vh;
+    padding: 28px 16px 60px;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+
+  header{ text-align:center; margin-bottom: 26px; }
+  header .mark{
+    width:54px;height:54px;margin:0 auto 10px;
+    border:1px solid var(--gold);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family: "Georgia", serif;
+    font-size:22px; color:var(--gold);
+    position:relative;
+  }
+  header .mark::before{
+    content:"";
+    position:absolute; inset:6px;
+    border:1px solid var(--gold-soft);
+    border-radius:50%;
+  }
+  header h1{
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin: 0 0 4px;
+    color: var(--paper);
+  }
+  header p{
+    margin:0; color: var(--paper-dim); font-size:0.85rem; font-style: italic;
+  }
+
+  nav.tabs{
+    display:flex; gap:2px; margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  nav.tabs button{
+    flex:1; background:none; border:none; color:var(--paper-dim);
+    font-family:inherit; font-size:0.82rem; padding: 10px 6px;
+    cursor:pointer; border-bottom:2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  nav.tabs button.active{
+    color: var(--gold); border-bottom-color: var(--gold);
+  }
+  nav.tabs button:hover{ color: var(--paper); }
+
+  section.panel{ display:none; }
+  section.panel.active{ display:block; animation: rise .35s ease; }
+  @keyframes rise{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .card{
+    background: linear-gradient(180deg, var(--ink-2), var(--ink));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2{
+    font-size: 0.95rem; margin: 0 0 14px; color: var(--gold);
+    font-weight:600; letter-spacing:0.02em;
+  }
+
+  .field{ margin-bottom: 14px; }
+  .field label{
+    display:block; font-size:0.78rem; color:var(--paper-dim); margin-bottom:5px;
+  }
+  select, button.action{
+    width:100%; padding:10px 12px; font-family:inherit; font-size:0.9rem;
+    background: var(--ink); color: var(--paper);
+    border:1px solid var(--line); border-radius: var(--radius);
+  }
+  select:focus, button.action:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  button.action{
+    background: var(--gold-soft); color: var(--ink); border:none;
+    font-weight:600; cursor:pointer; margin-top:4px; letter-spacing:0.02em;
+    transition: background .2s;
+  }
+  button.action:hover{ background: var(--gold); }
+
+  .result{
+    margin-top:16px; padding:16px; border-radius:var(--radius);
+    border:1px solid var(--line); background: rgba(198,154,62,0.06);
+    display:none;
+  }
+  .result.show{ display:block; }
+  .result .big{
+    font-size:1.6rem; color:var(--gold); font-weight:700; margin-bottom:2px;
+  }
+  .result .sub{ font-size:0.8rem; color: var(--paper-dim); }
+  .result .steps{
+    margin-top:10px; font-size:0.76rem; color: var(--paper-dim);
+    border-top:1px dashed var(--line); padding-top:10px; line-height:1.6;
+  }
+  .tag{
+    display:inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size:0.7rem; font-weight:600; letter-spacing:0.03em;
+  }
+  .tag.cat{ background: rgba(79,122,92,0.2); color:#8fd3a4; border:1px solid var(--jade); }
+  .tag.hung{ background: rgba(162,64,47,0.2); color:#e29488; border:1px solid var(--cinnabar); }
+  .tag.hoa{ background: rgba(198,154,62,0.2); color: var(--gold); border:1px solid var(--gold-soft); }
+
+  table.hoagiap{ width:100%; border-collapse: collapse; font-size:0.78rem; }
+  table.hoagiap th{
+    color:var(--gold); font-weight:600; text-align:left; padding:6px 4px;
+    border-bottom:1px solid var(--line); font-size:0.72rem;
+  }
+  table.hoagiap td{ padding:5px 4px; border-bottom:1px solid rgba(198,154,62,0.12); }
+  table.hoagiap td.num{ color:var(--gold-soft); width:32px; }
+  .hoagiap-scroll{ max-height: 320px; overflow-y:auto; border:1px solid var(--line); border-radius:var(--radius); padding: 4px 10px; }
+  .hoagiap-scroll::-webkit-scrollbar{ width:6px; }
+  .hoagiap-scroll::-webkit-scrollbar-thumb{ background: var(--gold-soft); border-radius:4px; }
+
+  .note{ font-size:0.76rem; color: var(--paper-dim); line-height:1.6; margin-top:10px; }
+  .grid9{
+    display:grid; grid-template-columns: repeat(3,1fr); gap:4px; max-width:220px; margin: 14px auto 4px;
+  }
+  .grid9 div{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); font-size:0.85rem; color:var(--paper-dim); border-radius:2px;
+  }
+  .grid9 div.center{ color:var(--gold); border-color:var(--gold-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="mark">卦</div>
+    <h1>Phi Cung Lạc Thư</h1>
+    <p>Lệ Cung Liên Vận Đồ · Đại Du Niên · Lục Thập Hoa Giáp</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" data-tab="trucnhat">Cung Trực Nhật</button>
+    <button data-tab="dunien">Đại Du Niên</button>
+    <button data-tab="hoagiap">60 Hoa Giáp</button>
+  </nav>
+
+  <!-- TAB 1: Lệ Cung Liên Vận Đồ -->
+  <section class="panel active" id="panel-trucnhat">
+    <div class="card">
+      <h2>Tìm cung trực nhật</h2>
+      <div class="field">
+        <label for="selYearCan">Thiên Can của Năm</label>
+        <select id="selYearCan"></select>
+      </div>
+      <div class="field">
+        <label for="selThang">Can Chi của Tháng cần xét</label>
+        <select id="selThang"></select>
+      </div>
+      <div class="field">
+        <label for="selNgay">Can Chi của Ngày cần xét</label>
+        <select id="selNgay"></select>
+      </div>
+      <button class="action" id="btnTrucNhat">Tính cung</button>
+
+      <div class="result" id="resTrucNhat">
+        <div class="big" id="rtnPalace">—</div>
+        <div class="sub" id="rtnName">—</div>
+        <div class="steps" id="rtnSteps"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Lệ Cung Liên Vận Đồ (cố định)</h2>
+      <div class="grid9">
+        <div>4 · Tốn<br>Giáp / Kỷ</div>
+        <div>9 · Ly<br>Bính / Tân</div>
+        <div>2 · Khôn<br>Mậu / Quý</div>
+        <div>3 · Chấn</div>
+        <div class="center">5<br>Trung Cung</div>
+        <div>7 · Đoài</div>
+        <div>8 · Cấn</div>
+        <div>1 · Khảm<br>Đinh / Nhâm</div>
+        <div>6 · Càn<br>Ất / Canh</div>
+      </div>
+      <p class="note">Thiên Can của năm cần xét được đặt cố định vào 1 trong 5 cung trên. Tháng cần xét khởi tại cung đó, bay thuận theo thứ tự Lạc Thư (1→2→…→9→1) qua từng bước của Hoa Giáp cho đến khi gặp Can Chi của Ngày cần xét.</p>
+    </div>
+  </section>
+
+  <!-- TAB 2: Đại Du Niên -->
+  <section class="panel" id="panel-dunien">
+    <div class="card">
+      <h2>Tra sao Đại Du Niên</h2>
+      <div class="field">
+        <label for="selChu">Cung Phi Chủ (quẻ gốc)</label>
+        <select id="selChu"></select>
+      </div>
+      <div class="field">
+        <label for="selKhach">Cung Phi Khách (quẻ đến)</label>
+        <select id="selKhach"></select>
+      </div>
+      <button class="action" id="btnDuNien">Tra sao</button>
+
+      <div class="result" id="resDuNien">
+        <div class="big" id="rdnSao">—</div>
+        <div class="sub" id="rdnTag"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bảng biến đầy đủ</h2>
+      <div class="field">
+        <label for="selBangChu">Xem trọn bảng biến của quẻ</label>
+        <select id="selBangChu"></select>
+      </div>
+      <div id="bangBien" class="note"></div>
+    </div>
+  </section>
+
+  <!-- TAB 3: 60 Hoa Giáp -->
+  <section class="panel" id="panel-hoagiap">
+    <div class="card">
+      <h2>Lục Thập Hoa Giáp</h2>
+      <p class="note">Khởi từ Giáp Tý (1), Ất Sửu (2)… Nhâm Tuất (59), Quý Hợi (60), rồi quay lại Giáp Tý và tiếp nối vô tận.</p>
+      <div class="hoagiap-scroll">
+        <table class="hoagiap">
+          <thead><tr><th>#</th><th>Can Chi</th><th>#</th><th>Can Chi</th></tr></thead>
+          <tbody id="hoagiapBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  const CAN = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+  const CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+
+  // ---- 60 Hoa Giáp, numbered 1..60, cycling forever ----
+  const HOAGIAP = [];
+  for (let i = 0; i < 60; i++){
+    HOAGIAP.push({
+      number: i + 1,          // 1-indexed as requested: Giáp Tý = 1 ... Quý Hợi = 60
+      index: i,                // 0-indexed, used internally for modulo math
+      can: CAN[i % 10],
+      chi: CHI[i % 12],
+      name: CAN[i % 10] + " " + CHI[i % 12]
+    });
+  }
+  // Helper: get the Hoa Giap entry N cycles beyond index 59 (i.e. wrap around indefinitely)
+  function hoaGiapAt(n){
+    const idx = ((n % 60) + 60) % 60;
+    return HOAGIAP[idx];
+  }
+
+  // ---- Lệ Cung Liên Vận Đồ: Thiên Can của Năm -> cung cố định ----
+  const LE_CUNG = {
+    "Giáp": 4, "Kỷ": 4,
+    "Bính": 9, "Tân": 9,
+    "Mậu": 2, "Quý": 2,
+    "Ất": 6, "Canh": 6,
+    "Đinh": 1, "Nhâm": 1
+  };
+  const PALACE_NAME = {
+    1: "Khảm — Bắc", 2: "Khôn — Tây Nam", 3: "Chấn — Đông",
+    4: "Tốn — Đông Nam", 5: "Trung Cung", 6: "Càn (Kiền) — Tây Bắc",
+    7: "Đoài — Tây", 8: "Cấn — Đông Bắc", 9: "Ly — Nam"
+  };
+
+  // Phi Thuận: bay tăng dần 1->2->...->9->1 (bao gồm cả Trung Cung số 5)
+  function bayThuan(startPalace, steps){
+    return (((startPalace - 1) + steps) % 9) + 1;
+  }
+
+  function tinhCungTrucNhat(yearCan, monthIdx, dayIdx){
+    const startPalace = LE_CUNG[yearCan];
+    const diff = ((dayIdx - monthIdx) % 60 + 60) % 60; // số bước tiến trong vòng Hoa Giáp
+    const steps = diff % 9;                             // rút gọn theo chu kỳ 9 cung
+    const palace = bayThuan(startPalace, steps);
+    return { startPalace, diff, steps, palace };
+  }
+
+  // ---- Đại Du Niên: quẻ gốc -> [quẻ đến, tên sao] theo đúng thứ tự biến hào ----
+  const DU_NIEN = {
+    "Càn":  [["Càn","Phục Vị"],["Khảm","Lục Sát"],["Cấn","Thiên Y"],["Chấn","Ngũ Quỷ"],["Tốn","Họa Hại"],["Ly","Tuyệt Mệnh"],["Khôn","Diên Niên"],["Đoài","Sinh Khí"]],
+    "Khảm": [["Khảm","Phục Vị"],["Cấn","Ngũ Quỷ"],["Chấn","Thiên Y"],["Tốn","Sinh Khí"],["Ly","Diên Niên"],["Khôn","Tuyệt Mệnh"],["Đoài","Họa Hại"],["Càn","Lục Sát"]],
+    "Cấn":  [["Cấn","Phục Vị"],["Chấn","Lục Sát"],["Tốn","Tuyệt Mệnh"],["Ly","Họa Hại"],["Khôn","Sinh Khí"],["Đoài","Diên Niên"],["Càn","Thiên Y"],["Khảm","Ngũ Quỷ"]],
+    "Chấn": [["Chấn","Phục Vị"],["Tốn","Diên Niên"],["Ly","Sinh Khí"],["Khôn","Họa Hại"],["Đoài","Tuyệt Mệnh"],["Càn","Ngũ Quỷ"],["Khảm","Thiên Y"],["Cấn","Lục Sát"]],
+    "Tốn":  [["Tốn","Phục Vị"],["Ly","Thiên Y"],["Khôn","Ngũ Quỷ"],["Đoài","Lục Sát"],["Càn","Họa Hại"],["Khảm","Sinh Khí"],["Cấn","Tuyệt Mệnh"],["Chấn","Diên Niên"]],
+    "Ly":   [["Ly","Phục Vị"],["Khôn","Lục Sát"],["Đoài","Ngũ Quỷ"],["Càn","Tuyệt Mệnh"],["Khảm","Diên Niên"],["Cấn","Họa Hại"],["Chấn","Sinh Khí"],["Tốn","Thiên Y"]],
+    "Khôn": [["Khôn","Phục Vị"],["Đoài","Thiên Y"],["Càn","Diên Niên"],["Khảm","Tuyệt Mệnh"],["Cấn","Sinh Khí"],["Chấn","Họa Hại"],["Tốn","Ngũ Quỷ"],["Ly","Lục Sát"]],
+    "Đoài": [["Đoài","Phục Vị"],["Càn","Sinh Khí"],["Khảm","Họa Hại"],["Cấn","Diên Niên"],["Chấn","Tuyệt Mệnh"],["Tốn","Lục Sát"],["Ly","Ngũ Quỷ"],["Khôn","Thiên Y"]]
+  };
+  const SAO_INFO = {
+    "Phục Vị": {loai:"cat", nhan:"Cát / Bình"},
+    "Sinh Khí": {loai:"cat", nhan:"Đại Cát"},
+    "Diên Niên": {loai:"cat", nhan:"Đại Cát (Phúc Đức)"},
+    "Thiên Y": {loai:"cat", nhan:"Đại Cát"},
+    "Ngũ Quỷ": {loai:"hung", nhan:"Đại Hung"},
+    "Tuyệt Mệnh": {loai:"hung", nhan:"Đại Hung"},
+    "Lục Sát": {loai:"hung", nhan:"Thứ Hung"},
+    "Họa Hại": {loai:"hung", nhan:"Thứ Hung"}
+  };
+  function tinhDuNien(chu, khach){
+    const row = DU_NIEN[chu].find(r => r[0] === khach);
+    return row ? row[1] : null;
+  }
+
+  // ================= UI wiring =================
+
+  // Tabs
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Populate Year Can select
+  const selYearCan = document.getElementById('selYearCan');
+  Object.keys(LE_CUNG).forEach(can=>{
+    const opt = document.createElement('option');
+    opt.value = can;
+    opt.textContent = can + " — cung " + LE_CUNG[can] + " (" + PALACE_NAME[LE_CUNG[can]].split(" — ")[0] + ")";
+    selYearCan.appendChild(opt);
+  });
+
+  // Populate Month / Day selects with the 60 Hoa Giap
+  function fillHoaGiapSelect(sel){
+    HOAGIAP.forEach(hg=>{
+      const opt = document.createElement('option');
+      opt.value = hg.index;
+      opt.textContent = hg.number + ". " + hg.name;
+      sel.appendChild(opt);
+    });
+  }
+  const selThang = document.getElementById('selThang');
+  const selNgay = document.getElementById('selNgay');
+  fillHoaGiapSelect(selThang);
+  fillHoaGiapSelect(selNgay);
+
+  document.getElementById('btnTrucNhat').addEventListener('click', ()=>{
+    const yearCan = selYearCan.value;
+    const monthIdx = parseInt(selThang.value, 10);
+    const dayIdx = parseInt(selNgay.value, 10);
+    const r = tinhCungTrucNhat(yearCan, monthIdx, dayIdx);
+
+    document.getElementById('rtnPalace').textContent = "Cung " + r.palace + " — " + PALACE_NAME[r.palace];
+    document.getElementById('rtnName').textContent =
+      "Năm can " + yearCan + " đặt tháng tại cung " + r.startPalace + " (" + PALACE_NAME[r.startPalace] + ")";
+    document.getElementById('rtnSteps').textContent =
+      "Số bước trong vòng Hoa Giáp: " + r.diff + " → rút gọn theo chu kỳ 9 cung: " + r.steps + " bước → bay thuận từ cung " + r.startPalace + " đến cung " + r.palace + ".";
+    document.getElementById('resTrucNhat').classList.add('show');
+  });
+
+  // Đại Du Niên selects
+  const quaiList = Object.keys(DU_NIEN);
+  const selChu = document.getElementById('selChu');
+  const selKhach = document.getElementById('selKhach');
+  const selBangChu = document.getElementById('selBangChu');
+  quaiList.forEach(q=>{
+    [selChu, selKhach, selBangChu].forEach(sel=>{
+      const opt = document.createElement('option');
+      opt.value = q; opt.textContent = q;
+      sel.appendChild(opt);
+    });
+  });
+
+  document.getElementById('btnDuNien').addEventListener('click', ()=>{
+    const chu = selChu.value, khach = selKhach.value;
+    const sao = tinhDuNien(chu, khach);
+    const info = SAO_INFO[sao];
+    document.getElementById('rdnSao').textContent = sao;
+    const tagEl = document.getElementById('rdnTag');
+    tagEl.innerHTML = '<span class="tag ' + (info.loai === 'cat' ? 'cat' : 'hung') + '">' + info.nhan + '</span>' +
+      ' <span class="sub" style="margin-left:8px;">' + chu + ' → ' + khach + '</span>';
+    document.getElementById('resDuNien').classList.add('show');
+  });
+
+  function renderBangBien(){
+    const q = selBangChu.value;
+    const rows = DU_NIEN[q];
+    let html = '<table class="hoagiap"><thead><tr><th>Biến</th><th>Cung đến</th><th>Sao</th><th>Tính chất</th></tr></thead><tbody>';
+    const bienLabel = ["Gốc","Hào trên","Hào giữa","Hào dưới","Hào giữa","Hào trên","Hào giữa","Hào dưới"];
+    rows.forEach((r,i)=>{
+      const info = SAO_INFO[r[1]];
+      html += '<tr><td class="num">' + bienLabel[i] + '</td><td>' + r[0] + '</td><td>' + r[1] + '</td>' +
+        '<td><span class="tag ' + (info.loai==='cat'?'cat':'hung') + '">' + info.nhan + '</span></td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('bangBien').innerHTML = html;
+  }
+  selBangChu.addEventListener('change', renderBangBien);
+  renderBangBien();
+
+  // 60 Hoa Giap table (two columns, 30 rows)
+  const tbody = document.getElementById('hoagiapBody');
+  let rowsHtml = '';
+  for (let i = 0; i < 30; i++){
+    const a = HOAGIAP[i], b = HOAGIAP[i+30];
+    rowsHtml += '<tr><td class="num">' + a.number + '</td><td>' + a.name + '</td>' +
+      '<td class="num">' + b.number + '</td><td>' + b.name + '</td></tr>';
+  }
+  tbody.innerHTML = rowsHtml;
+
+})();
+</script>
+</body>
+</html>
