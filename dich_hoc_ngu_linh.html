@@ -245,6 +245,13 @@
       </div>
     </div>
 
+    <div class="card" id="summaryBox">
+      <div class="card-inner">
+        <h2>Tóm tắt</h2>
+        <div class="steps" id="stepsSummary"></div>
+      </div>
+    </div>
+
     <details open>
       <summary>I. Xác lập quẻ đơn Hậu thiên</summary>
       <div class="steps" id="stepsHT"></div>
@@ -268,6 +275,11 @@
     <details>
       <summary>Quẻ Hỗ Diễn dịch (Nhất Hỗ / Nhị Hỗ / Tam Hỗ)</summary>
       <div class="steps" id="stepsHoDD"></div>
+    </details>
+
+    <details>
+      <summary>V. Chủ Thiên Tinh cư cung · Biến Khí Kép (Đại Du Niên)</summary>
+      <div class="steps" id="stepsKhiKep"></div>
     </details>
   </div>
 
@@ -461,6 +473,65 @@ function hoDienDich(lines, hd){
 }
 
 // =====================================================================
+// BIẾN KHÍ KÉP (ĐẠI DU NIÊN) — kiểm chứng khớp 8/8 ví dụ mẫu
+// =====================================================================
+const DAI_DU_NIEN = {
+  "Càn":  {"Càn":"Phục Vị","Khảm":"Lục Sát","Cấn":"Thiên Y","Chấn":"Ngũ Quỷ","Tốn":"Họa Hại","Ly":"Tuyệt Mệnh","Khôn":"Diên Niên","Đoài":"Sinh Khí"},
+  "Khảm": {"Khảm":"Phục Vị","Cấn":"Ngũ Quỷ","Chấn":"Thiên Y","Tốn":"Sinh Khí","Ly":"Diên Niên","Khôn":"Tuyệt Mệnh","Đoài":"Họa Hại","Càn":"Lục Sát"},
+  "Cấn":  {"Cấn":"Phục Vị","Chấn":"Lục Sát","Tốn":"Tuyệt Mệnh","Ly":"Họa Hại","Khôn":"Sinh Khí","Đoài":"Diên Niên","Càn":"Thiên Y","Khảm":"Ngũ Quỷ"},
+  "Chấn": {"Chấn":"Phục Vị","Tốn":"Diên Niên","Ly":"Sinh Khí","Khôn":"Họa Hại","Đoài":"Tuyệt Mệnh","Càn":"Ngũ Quỷ","Khảm":"Thiên Y","Cấn":"Lục Sát"},
+  "Tốn":  {"Tốn":"Phục Vị","Ly":"Thiên Y","Khôn":"Ngũ Quỷ","Đoài":"Lục Sát","Càn":"Họa Hại","Khảm":"Sinh Khí","Cấn":"Tuyệt Mệnh","Chấn":"Diên Niên"},
+  "Ly":   {"Ly":"Phục Vị","Khôn":"Lục Sát","Đoài":"Ngũ Quỷ","Càn":"Tuyệt Mệnh","Khảm":"Diên Niên","Cấn":"Họa Hại","Chấn":"Sinh Khí","Tốn":"Thiên Y"},
+  "Khôn": {"Khôn":"Phục Vị","Đoài":"Thiên Y","Càn":"Diên Niên","Khảm":"Tuyệt Mệnh","Cấn":"Sinh Khí","Chấn":"Họa Hại","Tốn":"Ngũ Quỷ","Ly":"Lục Sát"},
+  "Đoài": {"Đoài":"Phục Vị","Càn":"Sinh Khí","Khảm":"Họa Hại","Cấn":"Diên Niên","Chấn":"Tuyệt Mệnh","Tốn":"Lục Sát","Ly":"Ngũ Quỷ","Khôn":"Thiên Y"},
+};
+// Thứ tự cố định để "biến tiếp N lần" kể từ Khí gốc
+const KHI_CYCLE = ["Sinh Khí","Ngũ Quỷ","Diên Niên","Lục Sát","Họa Hại","Thiên Y","Tuyệt Mệnh","Phục Vị"];
+
+// Bảng "Họ quẻ / Bản cung" (Kinh Phòng Bát cung) — dựng thẳng từ quy luật
+// biến hào (Nhất thế..Quy hồn) trên chính TRIGRAM_LINES đã có, để khỏi phải
+// gõ tay 64 tên quẻ (tránh sai chính tả / lệch tên so với HEXNAMES).
+function buildPalaceTable(){
+  const table = {};
+  Object.keys(TRIGRAM_LINES).forEach(P=>{
+    const p = TRIGRAM_LINES[P];
+    const f = flip;
+    const members = [
+      {ha:[p[0],p[1],p[2]],             thuong:p},                         // Bản cung (thuần)
+      {ha:[f(p[0]),p[1],p[2]],          thuong:p},                         // Nhất thế
+      {ha:[f(p[0]),f(p[1]),p[2]],       thuong:p},                         // Nhị thế
+      {ha:[f(p[0]),f(p[1]),f(p[2])],    thuong:p},                         // Tam thế
+      {ha:[f(p[0]),f(p[1]),f(p[2])],    thuong:[f(p[0]),p[1],p[2]]},       // Tứ thế
+      {ha:[f(p[0]),f(p[1]),f(p[2])],    thuong:[f(p[0]),f(p[1]),p[2]]},    // Ngũ thế
+      {ha:[f(p[0]),f(p[1]),f(p[2])],    thuong:[p[0],f(p[1]),p[2]]},       // Du hồn
+      {ha:[p[0],p[1],p[2]],             thuong:[p[0],f(p[1]),p[2]]},       // Quy hồn
+    ];
+    members.forEach(m=>{
+      const key = trigramFromLines(m.thuong)+"_"+trigramFromLines(m.ha);
+      table[key] = P;
+    });
+  });
+  return table;
+}
+const PALACE_TABLE = buildPalaceTable();
+const hoQue = (thuong, ha) => PALACE_TABLE[thuong+"_"+ha];
+
+function bienKhiKep(gocThuong, gocHa, bienThuong, bienHa, hd){
+  // Thể = quái không có hào Động (giữ nguyên); Dụng = quái có hào Động (vừa đổi)
+  const theBien  = hd<=3 ? bienThuong : bienHa;
+  const dungBien = hd<=3 ? bienHa     : bienThuong;
+  const khiGoc = DAI_DU_NIEN[theBien][dungBien];
+
+  const hoQueChinh = hoQue(gocThuong, gocHa);
+  const soBuoc = ((hauThienSoHieu(dungBien) - hauThienSoHieu(hoQueChinh)) + 8) % 8;
+
+  const idxKhi = KHI_CYCLE.indexOf(khiGoc);
+  const khiKep = KHI_CYCLE[(idxKhi + soBuoc) % 8];
+
+  return {theBien, dungBien, khiGoc, hoQueChinh, soBuoc, khiKep};
+}
+
+// =====================================================================
 // GIAO DIỆN
 // =====================================================================
 function fillSelect(el, arr, defaultIdx){
@@ -505,6 +576,7 @@ document.getElementById('btnCalc').addEventListener('click', () => {
   const ho = nameFromLines(hoLines);
   const hoDD = hoDienDich(goc.lines, hd);
   const hoDDBien = hoDienDich(bienLines, hd);
+  const kk = bienKhiKep(goc.thuong, goc.ha, bien.thuong, bien.ha, hd);
 
   document.getElementById('gocName').textContent = goc.name;
   renderLines('linesGoc', goc.lines, hd);
@@ -529,6 +601,7 @@ document.getElementById('btnCalc').addEventListener('click', () => {
     <p>An thuận các sao còn lại quanh 12 cung (bỏ qua Mùi, Tuất) → tới cung Chủ thời lệnh (<b>${ht.chuThoiLenh}</b>) gặp sao <b>${tt.chuThienTinh.name}</b> (số ${tt.chuThienTinh.num}) — đây là <span class="lbl">Chủ thiên tinh</span>.</p>
     <p>Sao số ${tt.chuThienTinh.num} ứng quẻ <span class="res">${tt.que}</span>.</p>
     <p>→ Quẻ đơn <b>Tiên thiên</b> = <span class="res">${tt.que}</span>.</p>
+    <p>→ <b>Chủ Thiên Tinh ${tt.chuThienTinh.name} cư tại cung ${ht.chuThoiLenh}</b>.</p>
   `;
 
   document.getElementById('stepsGoc').innerHTML = `
@@ -552,6 +625,24 @@ document.getElementById('btnCalc').addEventListener('click', () => {
       ${hoDD.map(h=>`<div class="ho-dd-item"><b>${h.label}</b> của quẻ Gốc → ${h.name}</div>`).join('')}
       ${hoDDBien.map(h=>`<div class="ho-dd-item"><b>${h.label}</b> của quẻ Biến → ${h.name}</div>`).join('')}
     </div>
+  `;
+
+  document.getElementById('stepsSummary').innerHTML = `
+    <p><span class="lbl">Quẻ Chủ:</span> <span class="res">${goc.name}</span> (động hào ${hd})</p>
+    <p><span class="lbl">Quẻ Biến:</span> <span class="res">${bien.name}</span></p>
+    <p><span class="lbl">Hào Nguyên Đường:</span> hào ${nd}</p>
+    <p><span class="lbl">Hào Động:</span> hào ${hd}</p>
+    <p><span class="lbl">Chủ Thiên Tinh:</span> ${tt.chuThienTinh.name} — cư tại cung <b>${ht.chuThoiLenh}</b></p>
+    <p><span class="lbl">Biến Khí Kép:</span> <span class="res">${kk.khiKep}</span></p>
+  `;
+
+  document.getElementById('stepsKhiKep').innerHTML = `
+    <p><span class="lbl">Chủ Thiên Tinh:</span> ${tt.chuThienTinh.name} (số ${tt.chuThienTinh.num}) — cư tại cung <b>${ht.chuThoiLenh}</b> (cung Chủ thời lệnh).</p>
+    <p><span class="lbl">Thể / Dụng của quẻ Biến:</span> hào Động (hào ${hd}) thuộc quẻ ${hd<=3?'Hạ':'Thượng'} của quẻ Biến → quẻ ${hd<=3?'Hạ':'Thượng'} (<b>${kk.dungBien}</b>) là <b>Dụng</b>; quẻ ${hd<=3?'Thượng':'Hạ'} (<b>${kk.theBien}</b>, không đổi) là <b>Thể</b>.</p>
+    <p>Tra Đại Du Niên: <b>${kk.theBien}</b> (Thể) phối <b>${kk.dungBien}</b> (Dụng) → Khí gốc = <span class="res">${kk.khiGoc}</span>.</p>
+    <p><span class="lbl">Họ quẻ (bản cung) của quẻ Chủ:</span> quẻ ${goc.name} thuộc cung <b>${kk.hoQueChinh}</b>.</p>
+    <p>Đặt Khí gốc (${kk.khiGoc}) vào cung ${kk.hoQueChinh}, thuận theo Hà Đồ phối Tiên thiên bát quái (Càn→Đoài→Ly→Chấn→Tốn→Khảm→Cấn→Khôn) chuyển đến quẻ Dụng của quẻ Biến (${kk.dungBien}) → được <b>${kk.soBuoc}</b> bước.</p>
+    <p>Từ Khí gốc (${kk.khiGoc}) biến tiếp ${kk.soBuoc} lần theo thứ tự Sinh Khí → Ngũ Quỷ → Diên Niên → Lục Sát → Họa Hại → Thiên Y → Tuyệt Mệnh → Phục Vị → ra <span class="lbl">Biến Khí Kép</span> = <span class="res">${kk.khiKep}</span>.</p>
   `;
 
   document.getElementById('result').style.display = 'block';
