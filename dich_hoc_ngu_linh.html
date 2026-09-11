@@ -173,6 +173,35 @@
     h1{font-size:26px;}
     .hexrow{gap:18px;}
   }
+
+  /* ===== Tabs (menu) ===== */
+  .tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--line);}
+  .tab-btn{
+    flex:1;background:none;border:none;padding:12px 6px;
+    font-family:'Noto Serif',serif;font-size:14.5px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;
+    margin-bottom:-2px;transition:color .15s ease;
+  }
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{color:var(--seal);border-bottom-color:var(--seal);}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+  /* ===== Hoán Thời Pháp ===== */
+  .hoan-empty{padding:34px 18px;text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.6;border:1px dashed var(--line);background:var(--card);}
+  .hoan-info{font-size:13px;color:var(--ink-soft);margin-bottom:18px;line-height:1.65;padding:13px 15px;background:var(--card);border:1px solid var(--line);}
+  .hoan-info b{color:var(--ink);}
+  .hoan-info .reset-link{display:inline-block;margin-top:8px;font-size:12px;color:var(--seal);cursor:pointer;text-decoration:underline;}
+  .hoan-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:22px;}
+  @media (max-width:420px){.hoan-grid{grid-template-columns:repeat(6,1fr);}}
+  .hoan-btn{
+    aspect-ratio:1;border:1px solid var(--line);background:var(--paper);
+    color:var(--ink);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+    cursor:pointer;border-radius:2px;transition:background .15s ease,color .15s ease;
+  }
+  .hoan-btn:hover{background:var(--gold);color:#fff;border-color:var(--gold);}
+  .hoan-btn.selected{background:var(--seal);color:#fbf3e4;border-color:var(--seal);}
+  #hoanResult{display:none;}
 </style>
 </head>
 <body>
@@ -183,6 +212,13 @@
     <h1>Lập Quẻ Ngũ Linh</h1>
     <p class="sub">Nhập thời điểm lấy quẻ theo âm lịch. Ứng dụng tính quẻ đơn Hậu thiên, quẻ đơn Tiên thiên, chồng thành quẻ Ngũ linh gốc, rồi suy ra hào Động, quẻ Biến và quẻ Hỗ — đúng theo trình tự trong tài liệu gốc.</p>
   </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnGoc" type="button">I. Lập Quẻ Ngũ Linh</button>
+    <button class="tab-btn" id="tabBtnHoan" type="button">II. Hoán Thời Pháp</button>
+  </div>
+
+  <div id="tabGoc" class="tabpanel active">
 
   <div class="card">
     <div class="card-inner">
@@ -212,12 +248,16 @@
           <label for="dayChi">Chi ngày <span style="font-weight:400">(chỉ để hiển thị)</span></label>
           <select id="dayChi"></select>
         </div>
-        <div class="field span2">
+        <div class="field">
           <label for="hourChi">Giờ lấy quẻ (Chi giờ)</label>
           <select id="hourChi"></select>
         </div>
+        <div class="field">
+          <label for="hourCanSel">Thiên Can giờ</label>
+          <select id="hourCanSel"></select>
+        </div>
       </div>
-      <p class="hint">Lưu ý: ngày, tháng ở đây là ngày tháng <b>âm lịch</b>. Can ngày cần lấy đúng theo lịch vạn niên (vd. ngày 21 tháng 10 năm Mậu Dần là ngày Canh Dần → chọn Can ngày = Canh).</p>
+      <p class="hint">Lưu ý: ngày, tháng ở đây là ngày tháng <b>âm lịch</b>. Can ngày cần lấy đúng theo lịch vạn niên (vd. ngày 21 tháng 10 năm Mậu Dần là ngày Canh Dần → chọn Can ngày = Canh). Can giờ được tự gợi ý theo Can ngày + Chi giờ (phép Ngũ Thử Độn); có thể sửa tay nếu cần. Bắt buộc phải có Can giờ đúng thì Hoán Thời Pháp (mục II) mới tính đúng theo giờ ảo.</p>
       <button class="go" id="btnCalc">Lập quẻ</button>
     </div>
   </div>
@@ -283,7 +323,89 @@
     </details>
   </div>
 
-  <footer>Phần V. Hoán thời pháp chưa được cài đặt (theo yêu cầu — tài liệu gốc còn dang dở ở phần này).</footer>
+  </div><!-- /#tabGoc -->
+
+  <div id="tabHoan" class="tabpanel">
+
+    <div id="hoanEmpty" class="hoan-empty">
+      Cần lập quẻ Gốc trước.<br>
+      Vui lòng sang mục "I. Lập Quẻ Ngũ Linh", nhập thời điểm và bấm "Lập quẻ", rồi quay lại đây.
+    </div>
+
+    <div id="hoanContent" style="display:none;">
+      <div class="hoan-info">
+        Quẻ Chủ gốc: <b id="hoanGocName">—</b> · Giờ Chủ (thực): <b id="hoanGioChu">—</b> · Cung Chủ thời lệnh: <b id="hoanCungChu">—</b><br>
+        Bấm một số bên dưới để xem quẻ Hoán thời pháp lần thứ tương ứng (mỗi lần dựa trên kết quả của lần trước đó).
+        <span class="reset-link" id="hoanReset">Lập lại từ quẻ Gốc mới nhất</span>
+      </div>
+
+      <div class="hoan-grid" id="hoanGrid"></div>
+
+      <div id="hoanResult">
+        <div class="result-hero">
+          <div class="tag" id="hoanTag">Hoán Thời Pháp lần —</div>
+          <div class="name" id="hoanName">—</div>
+          <div class="hexrow">
+            <div class="hexblock">
+              <div class="htitle">Quẻ Khách</div>
+              <div class="lines" id="hoanLinesGoc"></div>
+              <div class="hname" id="hoanLabelGoc"></div>
+            </div>
+            <div class="hexblock">
+              <div class="htitle">Hỗ (quy nạp)</div>
+              <div class="lines" id="hoanLinesHo"></div>
+              <div class="hname" id="hoanLabelHo"></div>
+            </div>
+            <div class="hexblock">
+              <div class="htitle">Biến</div>
+              <div class="lines" id="hoanLinesBien"></div>
+              <div class="hname" id="hoanLabelBien"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <h2>Tóm tắt</h2>
+            <div class="steps" id="hoanStepsSummary"></div>
+          </div>
+        </div>
+
+        <details open>
+          <summary>Bước 1 · Đổi Can Chi giờ Chủ → giờ Khách</summary>
+          <div class="steps" id="hoanStep1"></div>
+        </details>
+
+        <details>
+          <summary>Bước 2 · Cung Khách thời lệnh · quẻ Hậu thiên</summary>
+          <div class="steps" id="hoanStep2"></div>
+        </details>
+
+        <details>
+          <summary>Bước 3 · Chủ tinh trực thời · quẻ Tiên thiên</summary>
+          <div class="steps" id="hoanStep3"></div>
+        </details>
+
+        <details>
+          <summary>Bước 4 · Ghép quẻ kép Ngũ Linh (Khách)</summary>
+          <div class="steps" id="hoanStep4"></div>
+        </details>
+
+        <details>
+          <summary>Hào Nguyên đường · hào Động · quẻ Biến · quẻ Hỗ</summary>
+          <div class="steps" id="hoanStepHaoBien"></div>
+        </details>
+
+        <details>
+          <summary>Chủ Thiên Tinh cư cung · Biến Khí Kép (Đại Du Niên)</summary>
+          <div class="steps" id="hoanStepKhiKep"></div>
+        </details>
+      </div>
+    </div>
+
+  </div><!-- /#tabHoan -->
+
+  <footer>Ngũ Linh Độn Toán — Lập Quẻ Gốc &amp; Hoán Thời Pháp (tối đa 60 quẻ/giờ).</footer>
 </div>
 
 <script>
@@ -378,15 +500,24 @@ function hauThien(yearChi, month, day, hourChi){
   return {kienChi:CHI[kienIdx], dayCung:CHI[dayCungIdx], chuThoiLenh, group, que};
 }
 
-function tienThien(dayCan, hourChi, chuThoiLenh){
-  const hCan = hourCan(dayCan, hourChi);
-  const hanh = nayinHanh(hCan, hourChi);
-  const parity = isDuongChi(hourChi)?"D":"A";
+// Lõi đặt sao Thiên bàn: dùng chung cho quẻ Gốc (tienThien) và cho
+// quẻ Khách của Hoán thời pháp (không cần suy hCan từ dayCan vì Can
+// giờ Khách đã có sẵn từ Bước 1 của Hoán thời pháp).
+function tienThienCore(can, chi, atCung){
+  const hanh = nayinHanh(can, chi);
+  const parity = isDuongChi(chi)?"D":"A";
   const startStar = findStarByHanhParity(hanh,parity);
   const starMap = placeStars(startStar.num);
-  const chuThienTinh = starMap[chuThoiLenh];
+  const chuThienTinh = starMap[atCung];
   const que = queFromStarNum(chuThienTinh.num);
-  return {hCan, hanh, parity, startStar, starMap, chuThienTinh, que};
+  return {hanh, parity, startStar, starMap, chuThienTinh, que};
+}
+// hCan ở đây là Can giờ do người dùng nhập (hoặc theo gợi ý tự suy từ
+// Can ngày qua phép Ngũ Thử Độn) — không tự derive lại nữa, để đảm bảo
+// quẻ Gốc và toàn bộ chuỗi Hoán Thời Pháp dùng đúng Can giờ đã xác nhận.
+function tienThien(hCan, hourChi, chuThoiLenh){
+  const core = tienThienCore(hCan, hourChi, chuThoiLenh);
+  return {hCan, ...core};
 }
 
 const TRIGRAM_LINES = {
@@ -420,12 +551,19 @@ const HEXNAMES = {
 const hexName = (thuong,ha) => HEXNAMES[thuong+"_"+ha];
 const ngayAmDuong = dayCan => isDuongCan(dayCan) ? "dương" : "âm";
 
+// Chồng quẻ đơn Hậu thiên + Tiên thiên thành quẻ kép Ngũ Linh, theo
+// đúng quy tắc "ngày dương: Tiên thiên trên / Hậu thiên dưới; ngày âm:
+// ngược lại" — dùng chung cho quẻ Gốc và quẻ Khách (Hoán thời pháp).
+function ghepQueKep(hauThienQue, tienThienQue, amDuongNgay){
+  let thuong, ha;
+  if(amDuongNgay === "dương"){ thuong = tienThienQue; ha = hauThienQue; }
+  else { thuong = hauThienQue; ha = tienThienQue; }
+  return {thuong, ha, lines: hexLines(thuong, ha), name: hexName(thuong, ha)};
+}
 function lapQueGoc(ht, tt, dayCan){
   const amDuongNgay = ngayAmDuong(dayCan);
-  let thuong, ha;
-  if(amDuongNgay === "dương"){ thuong = tt.que; ha = ht.que; }
-  else { thuong = ht.que; ha = tt.que; }
-  return {amDuongNgay, thuong, ha, lines: hexLines(thuong, ha), name: hexName(thuong, ha)};
+  const q = ghepQueKep(ht.que, tt.que, amDuongNgay);
+  return {amDuongNgay, ...q};
 }
 
 function nguyenDuong(hauThienQue, starNum){
@@ -532,6 +670,82 @@ function bienKhiKep(gocThuong, gocHa, bienThuong, bienHa, hd){
 }
 
 // =====================================================================
+// V. HOÁN THỜI PHÁP — sinh chuỗi quẻ Khách từ quẻ Chủ, tối đa 60 lần/giờ
+// =====================================================================
+
+// Bước 1 (hàng Can): bảng khắc cố định, âm dương hỗ hoán (từ tài liệu).
+const HOAN_CAN_MAP = {
+  "Giáp":"Kỷ","Ất":"Mậu","Bính":"Tân","Đinh":"Canh","Mậu":"Quý",
+  "Kỷ":"Nhâm","Canh":"Ất","Tân":"Giáp","Nhâm":"Đinh","Quý":"Bính",
+};
+
+// Bước 1 (hàng Chi): "Ngày dương giờ dương thoái 4 vị, giờ âm tiến 6 vị;
+// Ngày âm giờ dương tiến 4 vị, giờ âm thoái 6 vị". Đếm "N vị" là đếm
+// gồm cả vị xuất phát (giống lối đếm cung Chủ thời lệnh đã dùng ở trên),
+// nên dịch index đi (N-1) bước.
+function hoanChiKhach(chiChu, amDuongNgay){
+  const idx = chiIdx(chiChu);
+  const chiDuong = isDuongChi(chiChu);
+  let step;
+  // Đã đối chiếu & sửa theo ví dụ chuẩn (Trạch Sơn Hàm biến Trạch Hoả
+  // Cách, 6 vòng Hoán Thời Pháp lập trên Excel, docx "Hoán Thời Pháp"):
+  // 2 nhánh dương/âm ngày của bản gốc bị đảo ngược dấu — đã hoán lại.
+  if(amDuongNgay === "dương"){
+    step = chiDuong ? (4-1) : -(6-1);   // giờ dương: +4 vị | giờ âm: -6 vị
+  } else {
+    step = chiDuong ? -(4-1) : (6-1);   // giờ dương: -4 vị | giờ âm: +6 vị
+  }
+  const newIdx = ((idx + step) % 12 + 12) % 12;
+  return CHI[newIdx];
+}
+
+// Bước 2: từ cung Chủ thời lệnh hiện tại, coi là Tý, đếm thuận tới Chi
+// giờ Khách vừa tìm → ra cung Khách thời lệnh. Sau đó tra Hình 15
+// (HAUTHIEN_GROUPS, đã có sẵn, dùng chung năm sinh/group với quẻ Gốc).
+function cungKhachThoiLenh(cungChuTL, chiKhach){
+  return CHI[(chiIdx(cungChuTL) + chiIdx(chiKhach)) % 12];
+}
+
+// Tính MỘT lần Hoán thời pháp, từ một cặp (Can,Chi,cung) "Chủ" hiện tại.
+function hoanMotLan(canChu, chiChu, cungChuTL, group, amDuongNgay){
+  // Bước 1
+  const canKhach = HOAN_CAN_MAP[canChu];
+  const chiKhach = hoanChiKhach(chiChu, amDuongNgay);
+  // Bước 2
+  const cungKhachTL = cungKhachThoiLenh(cungChuTL, chiKhach);
+  const hauThienQue = HAUTHIEN_GROUPS[group][cungKhachTL];
+  // Bước 3
+  const tt = tienThienCore(canKhach, chiKhach, cungKhachTL);
+  // Bước 4 — ghép quẻ kép (dùng lại đúng âm dương ngày của quẻ Gốc)
+  const que = ghepQueKep(hauThienQue, tt.que, amDuongNgay);
+
+  return {
+    canChu, chiChu, cungChuTL,
+    canKhach, chiKhach, cungKhachTL,
+    hauThienQue, tt, tienThienQue: tt.que,
+    que,
+  };
+}
+
+// Sinh (hoặc lấy từ cache) toàn bộ chuỗi 1..N lần Hoán thời pháp, tính
+// tuần tự vì mỗi lần dựa vào kết quả của lần trước.
+function hoanChain(upTo){
+  const g = window.GOC_STATE;
+  if(!g) return [];
+  if(!window.HOAN_CACHE) window.HOAN_CACHE = [];
+  const cache = window.HOAN_CACHE;
+  let can = cache.length ? cache[cache.length-1].canKhach : g.hCan;
+  let chi = cache.length ? cache[cache.length-1].chiKhach : g.hourChi;
+  let cung = cache.length ? cache[cache.length-1].cungKhachTL : g.chuThoiLenh;
+  while(cache.length < upTo){
+    const r = hoanMotLan(can, chi, cung, g.group, g.amDuongNgay);
+    cache.push(r);
+    can = r.canKhach; chi = r.chiKhach; cung = r.cungKhachTL;
+  }
+  return cache;
+}
+
+// =====================================================================
 // GIAO DIỆN
 // =====================================================================
 function fillSelect(el, arr, defaultIdx){
@@ -544,6 +758,19 @@ fillSelect(document.getElementById('day'), Array.from({length:30},(_,i)=>String(
 fillSelect(document.getElementById('dayCan'), CAN, 6);
 fillSelect(document.getElementById('dayChi'), CHI, 2);
 fillSelect(document.getElementById('hourChi'), CHI, 7);
+fillSelect(document.getElementById('hourCanSel'), CAN, 0);
+
+// Gợi ý Can giờ theo phép Ngũ Thử Độn (Can ngày + Chi giờ) mỗi khi người
+// dùng đổi Can ngày hoặc Chi giờ — người dùng vẫn có thể sửa tay sau đó.
+function goiYCanGio(){
+  const dayCanEl = document.getElementById('dayCan');
+  const hourChiEl = document.getElementById('hourChi');
+  const hourCanEl = document.getElementById('hourCanSel');
+  hourCanEl.value = hourCan(dayCanEl.value, hourChiEl.value);
+}
+goiYCanGio();
+document.getElementById('dayCan').addEventListener('change', goiYCanGio);
+document.getElementById('hourChi').addEventListener('change', goiYCanGio);
 
 function lineRowHTML(val, isMoving, haoNo){
   const bar = val==='D'
@@ -564,9 +791,10 @@ document.getElementById('btnCalc').addEventListener('click', () => {
   const dayCan = document.getElementById('dayCan').value;
   const dayChi = document.getElementById('dayChi').value;
   const hourChi = document.getElementById('hourChi').value;
+  const hCan = document.getElementById('hourCanSel').value;
 
   const ht = hauThien(yearChi, month, day, hourChi);
-  const tt = tienThien(dayCan, hourChi, ht.chuThoiLenh);
+  const tt = tienThien(hCan, hourChi, ht.chuThoiLenh);
   const goc = lapQueGoc(ht, tt, dayCan);
   const nd = nguyenDuong(ht.que, tt.chuThienTinh.num);
   const hd = haoDong(nd, hourChi);
@@ -595,7 +823,7 @@ document.getElementById('btnCalc').addEventListener('click', () => {
   `;
 
   document.getElementById('stepsTT').innerHTML = `
-    <p><span class="lbl">Can giờ:</span> ngày Can ${dayCan} → giờ Tý khởi Can <b>${ziCanFromDayCan(dayCan)}</b>; đếm tới giờ ${hourChi} → Can giờ là <b>${tt.hCan}</b>. Vậy giờ lấy quẻ là giờ <b>${tt.hCan} ${hourChi}</b>.</p>
+    <p><span class="lbl">Can giờ:</span> (gợi ý theo Ngũ Thử Độn: ngày Can ${dayCan} → giờ Tý khởi Can <b>${ziCanFromDayCan(dayCan)}</b>, đếm tới giờ ${hourChi} → gợi ý <b>${hourCan(dayCan,hourChi)}</b>) — Can giờ đã dùng (theo ô nhập): <b>${tt.hCan}</b>. Vậy giờ lấy quẻ là giờ <b>${tt.hCan} ${hourChi}</b>.</p>
     <p><span class="lbl">Nạp âm:</span> giờ ${tt.hCan} ${hourChi} nạp âm Hành <b>${tt.hanh} ${tt.parity==='D'?'dương':'âm'}</b>.</p>
     <p>Hành ${tt.hanh} ${tt.parity==='D'?'dương':'âm'} ứng sao <b>${tt.startStar.name}</b> (số ${tt.startStar.num}) — đây là <span class="lbl">Chủ tinh sa địa bàn</span>, an tại cung Tý.</p>
     <p>An thuận các sao còn lại quanh 12 cung (bỏ qua Mùi, Tuất) → tới cung Chủ thời lệnh (<b>${ht.chuThoiLenh}</b>) gặp sao <b>${tt.chuThienTinh.name}</b> (số ${tt.chuThienTinh.num}) — đây là <span class="lbl">Chủ thiên tinh</span>.</p>
@@ -647,7 +875,154 @@ document.getElementById('btnCalc').addEventListener('click', () => {
 
   document.getElementById('result').style.display = 'block';
   document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+
+  // ---- Lưu trạng thái quẻ Gốc cho Hoán thời pháp (tab II) ----
+  window.GOC_STATE = {
+    amDuongNgay: goc.amDuongNgay,
+    group: ht.group,
+    chuThoiLenh: ht.chuThoiLenh,
+    hCan: tt.hCan,          // Thiên Can của giờ Chủ — theo ô "Thiên Can giờ" người dùng đã nhập/xác nhận
+    hourChi: hourChi,       // Chi của giờ Chủ (giờ thực người dùng chọn)
+    gocName: goc.name,
+  };
+  window.HOAN_CACHE = [];   // quẻ Gốc vừa đổi → xoá cache Hoán thời pháp cũ
+  initHoanTab();
 });
+
+// =====================================================================
+// TAB SWITCHING
+// =====================================================================
+function switchTab(which){
+  document.getElementById('tabGoc').classList.toggle('active', which==='goc');
+  document.getElementById('tabHoan').classList.toggle('active', which==='hoan');
+  document.getElementById('tabBtnGoc').classList.toggle('active', which==='goc');
+  document.getElementById('tabBtnHoan').classList.toggle('active', which==='hoan');
+}
+document.getElementById('tabBtnGoc').addEventListener('click', ()=>switchTab('goc'));
+document.getElementById('tabBtnHoan').addEventListener('click', ()=>switchTab('hoan'));
+
+// =====================================================================
+// TAB II — HOÁN THỜI PHÁP: khởi tạo lưới nút + hiển thị kết quả
+// =====================================================================
+function initHoanTab(){
+  const g = window.GOC_STATE;
+  document.getElementById('hoanEmpty').style.display = g ? 'none' : 'block';
+  document.getElementById('hoanContent').style.display = g ? 'block' : 'none';
+  document.getElementById('hoanResult').style.display = 'none';
+  if(!g) return;
+
+  document.getElementById('hoanGocName').textContent = g.gocName;
+  document.getElementById('hoanGioChu').textContent = `${g.hCan} ${g.hourChi}`;
+  document.getElementById('hoanCungChu').textContent = g.chuThoiLenh;
+
+  const grid = document.getElementById('hoanGrid');
+  grid.innerHTML = '';
+  for(let i=1;i<=60;i++){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'hoan-btn';
+    b.textContent = i;
+    b.addEventListener('click', ()=> selectHoanLan(i));
+    grid.appendChild(b);
+  }
+}
+document.getElementById('hoanReset').addEventListener('click', ()=>{
+  if(!window.GOC_STATE) return;
+  window.HOAN_CACHE = [];
+  document.getElementById('hoanResult').style.display = 'none';
+  document.querySelectorAll('.hoan-btn.selected').forEach(b=>b.classList.remove('selected'));
+});
+
+function selectHoanLan(lan){
+  document.querySelectorAll('#hoanGrid .hoan-btn').forEach((b,i)=>{
+    b.classList.toggle('selected', (i+1)===lan);
+  });
+  const chain = hoanChain(lan);
+  const r = chain[lan-1];
+  renderHoanResult(lan, r);
+  document.getElementById('hoanResult').style.display = 'block';
+  document.getElementById('hoanResult').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderHoanResult(lan, r){
+  const g = window.GOC_STATE;
+  const nd = nguyenDuong(r.hauThienQue, r.tt.chuThienTinh.num);
+  const hd = haoDong(nd, r.chiKhach);
+  const bienLines = queBien(r.que.lines, hd);
+  const bien = nameFromLines(bienLines);
+  const hoLines = queHoQuyNap(r.que.lines);
+  const ho = nameFromLines(hoLines);
+  const kk = bienKhiKep(r.que.thuong, r.que.ha, bien.thuong, bien.ha, hd);
+
+  document.getElementById('hoanTag').textContent = `Hoán Thời Pháp — lần ${lan}`;
+  document.getElementById('hoanName').textContent = r.que.name;
+  renderLines('hoanLinesGoc', r.que.lines, hd);
+  document.getElementById('hoanLabelGoc').textContent = `${r.que.thuong} trên / ${r.que.ha} dưới`;
+  renderLines('hoanLinesHo', hoLines, null);
+  document.getElementById('hoanLabelHo').textContent = ho.name;
+  renderLines('hoanLinesBien', bienLines, hd);
+  document.getElementById('hoanLabelBien').textContent = bien.name;
+
+  document.getElementById('hoanStepsSummary').innerHTML = `
+    <p><span class="lbl">Giờ Chủ (lần này):</span> <b>${r.canChu} ${r.chiChu}</b> — cung Chủ thời lệnh <b>${r.cungChuTL}</b></p>
+    <p><span class="lbl">Giờ Khách tìm được:</span> <b>${r.canKhach} ${r.chiKhach}</b> — cung Khách thời lệnh <b>${r.cungKhachTL}</b></p>
+    <p><span class="lbl">Quẻ Chủ (Hoán thời pháp lần ${lan}):</span> <span class="res">${r.que.name}</span> (động hào ${hd})</p>
+    <p><span class="lbl">Quẻ Biến:</span> <span class="res">${bien.name}</span></p>
+    <p><span class="lbl">Hào Nguyên Đường:</span> hào ${nd}</p>
+    <p><span class="lbl">Hào Động:</span> hào ${hd}</p>
+    <p><span class="lbl">Chủ Thiên Tinh:</span> ${r.tt.chuThienTinh.name} — cư tại cung <b>${r.cungKhachTL}</b></p>
+    <p><span class="lbl">Biến Khí Kép:</span> <span class="res">${kk.khiKep}</span></p>
+  `;
+
+  document.getElementById('hoanStep1').innerHTML = `
+    <p><span class="lbl">Can:</span> Can giờ Chủ <b>${r.canChu}</b> đổi thành (khắc, âm dương hỗ hoán) → Can giờ Khách = <span class="res">${r.canKhach}</span>.</p>
+    <p><span class="lbl">Chi:</span> ngày ${g.amDuongNgay==='dương'?'dương':'âm'}, Chi giờ Chủ <b>${r.chiChu}</b> là Chi ${isDuongChi(r.chiChu)?'dương':'âm'} → ${
+      g.amDuongNgay==='dương'
+        ? (isDuongChi(r.chiChu) ? 'lùi 4 vị' : 'tiến 6 vị')
+        : (isDuongChi(r.chiChu) ? 'tiến 4 vị' : 'lùi 6 vị')
+    } → Chi giờ Khách = <span class="res">${r.chiKhach}</span>.</p>
+    <p>→ Can Chi giờ Khách cần tìm: <span class="res">${r.canKhach} ${r.chiKhach}</span>.</p>
+  `;
+
+  document.getElementById('hoanStep2').innerHTML = `
+    <p>Từ cung Chủ thời lệnh <b>${r.cungChuTL}</b> coi là giờ Tý, đếm thuận tới Chi giờ Khách <b>${r.chiKhach}</b> → dừng tại cung <span class="res">${r.cungKhachTL}</span> — đây là cung Khách thời lệnh.</p>
+    <p>Tra Hình 15 (theo nhóm năm sinh <b>${GROUP_LABEL[g.group]}</b>): cung ${r.cungKhachTL} ra quẻ <span class="res">${r.hauThienQue}</span>.</p>
+    <p>→ Quẻ đơn <b>Hậu thiên</b> (Khách) = <span class="res">${r.hauThienQue}</span>.</p>
+  `;
+
+  document.getElementById('hoanStep3').innerHTML = `
+    <p><span class="lbl">Nạp âm:</span> Can Chi giờ Khách ${r.canKhach} ${r.chiKhach} nạp âm Hành <b>${r.tt.hanh} ${r.tt.parity==='D'?'dương':'âm'}</b>.</p>
+    <p>Hành ${r.tt.hanh} ${r.tt.parity==='D'?'dương':'âm'} ứng sao <b>${r.tt.startStar.name}</b> (số ${r.tt.startStar.num}) — Chủ tinh trực thời, an tại cung Tý.</p>
+    <p>An thuận các sao còn lại quanh 12 cung (bỏ qua Mùi, Tuất) → tới cung Khách thời lệnh (<b>${r.cungKhachTL}</b>) gặp sao <b>${r.tt.chuThienTinh.name}</b> (số ${r.tt.chuThienTinh.num}) — sao Khách thời lệnh.</p>
+    <p>Sao số ${r.tt.chuThienTinh.num} ứng quẻ <span class="res">${r.tienThienQue}</span>.</p>
+    <p>→ Quẻ đơn <b>Tiên thiên</b> (Khách) = <span class="res">${r.tienThienQue}</span>.</p>
+  `;
+
+  document.getElementById('hoanStep4').innerHTML = `
+    <p>Ngày ${g.amDuongNgay==='dương'?'dương':'âm'} → ${
+      g.amDuongNgay==='dương'
+        ? `quẻ Tiên thiên (${r.tienThienQue}) nằm trên, quẻ Hậu thiên (${r.hauThienQue}) nằm dưới.`
+        : `quẻ Hậu thiên (${r.hauThienQue}) nằm trên, quẻ Tiên thiên (${r.tienThienQue}) nằm dưới.`
+    }</p>
+    <p>Chồng <b>${r.que.thuong}</b> (trên) lên <b>${r.que.ha}</b> (dưới) → quẻ Ngũ linh Hoán thời pháp lần ${lan}: <span class="res">${r.que.name}</span>.</p>
+  `;
+
+  document.getElementById('hoanStepHaoBien').innerHTML = `
+    <p><span class="lbl">Hào Nguyên đường:</span> số hiệu quẻ Hậu thiên (${r.hauThienQue}=${hauThienSoHieu(r.hauThienQue)}) + số hiệu Chủ thiên tinh (${r.tt.chuThienTinh.name}=${r.tt.chuThienTinh.num}) = ${hauThienSoHieu(r.hauThienQue)+r.tt.chuThienTinh.num}. → Nguyên đường = hào <span class="res">${nd}</span>.</p>
+    <p><span class="lbl">Hào Động:</span> từ hào ${nd} coi là giờ Tý, đếm thuận tới giờ (Chi giờ Khách) ${r.chiKhach} → hào Động = hào <span class="res">${hd}</span>.</p>
+    <p>Hào ${hd} động, biến ${r.que.lines[hd-1]==='D'?'dương → âm':'âm → dương'} → quẻ Biến: <span class="res">${bien.name}</span>.</p>
+    <p><span class="lbl">Quẻ Hỗ (quy nạp):</span> lấy hào 2,3,4 làm quẻ Hạ; hào 3,4,5 làm quẻ Thượng → quẻ Hỗ: <span class="res">${ho.name}</span>.</p>
+  `;
+
+  document.getElementById('hoanStepKhiKep').innerHTML = `
+    <p><span class="lbl">Chủ Thiên Tinh:</span> ${r.tt.chuThienTinh.name} (số ${r.tt.chuThienTinh.num}) — cư tại cung <b>${r.cungKhachTL}</b> (cung Khách thời lệnh).</p>
+    <p><span class="lbl">Thể / Dụng của quẻ Biến:</span> hào Động (hào ${hd}) thuộc quẻ ${hd<=3?'Hạ':'Thượng'} của quẻ Biến → quẻ ${hd<=3?'Hạ':'Thượng'} (<b>${kk.dungBien}</b>) là <b>Dụng</b>; quẻ ${hd<=3?'Thượng':'Hạ'} (<b>${kk.theBien}</b>, không đổi) là <b>Thể</b>.</p>
+    <p>Tra Đại Du Niên: <b>${kk.theBien}</b> (Thể) phối <b>${kk.dungBien}</b> (Dụng) → Khí gốc = <span class="res">${kk.khiGoc}</span>.</p>
+    <p><span class="lbl">Họ quẻ (bản cung) của quẻ Chủ (Hoán thời pháp lần ${lan}):</span> quẻ ${r.que.name} thuộc cung <b>${kk.hoQueChinh}</b>.</p>
+    <p>Đặt Khí gốc (${kk.khiGoc}) vào cung ${kk.hoQueChinh}, thuận theo Hà Đồ phối Tiên thiên bát quái chuyển đến quẻ Dụng của quẻ Biến (${kk.dungBien}) → được <b>${kk.soBuoc}</b> bước.</p>
+    <p>Từ Khí gốc (${kk.khiGoc}) biến tiếp ${kk.soBuoc} lần → ra <span class="lbl">Biến Khí Kép</span> = <span class="res">${kk.khiKep}</span>.</p>
+  `;
+}
 </script>
 </body>
 </html>
