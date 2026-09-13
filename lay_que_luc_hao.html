@@ -1196,9 +1196,83 @@ function module22_ThienTinh(queChu) {
 
 // -------------------- MODULE 23 --------------------
 // Quẻ Hỗ diễn dịch: nhiều tầng quẻ Hỗ (Nhất Hỗ, Nhị Hỗ, Tam Hỗ, Tứ Hỗ, Ngũ Hỗ, Lục Hỗ...).
-// Form nhập tên các quẻ Hỗ tương ứng và vận động của chúng.
-function module23_QueHoDienDich(queChu, queHoInputArr) {
-    "***Input Here***"
+// Áp dụng chung cho cả Quẻ Chủ và Quẻ Biến (truyền vào object {c, n} tương ứng).
+//
+// Quy ước bit dùng lại đúng layout đã có trong code nền: que.c[0]=hào6 ... que.c[5]=hào1
+// (1 = Dương/hào liền, 0 = Âm/hào đứt).
+//
+// Mỗi "cửa sổ" là 3 hào liên tiếp; đơn quái của cửa sổ đọc THEO CHIỀU TRÊN XUỐNG
+// (hào cao nhất trong cửa sổ = top, hào thấp nhất = bot), tra theo bảng bát quái đơn
+// nhị phân bạn cung cấp (111 Càn, 011 Đoài, 101 Ly, 001 Chấn, 000 Khôn, 100 Cấn, 010 Khảm, 110 Tốn).
+const DON_QUAI_TABLE = {
+    "111": "Càn", "011": "Đoài", "101": "Ly", "001": "Chấn",
+    "000": "Khôn", "100": "Cấn", "010": "Khảm", "110": "Tốn"
+};
+
+// Lấy bit (0/1) của 1 hào cụ thể (1-6) từ chuỗi c của 1 quẻ (Chủ hoặc Biến dùng chung hàm này)
+function moduleHo_getHaoBit(que, haoSo) {
+    return que.c[6 - haoSo];
+}
+
+// Dựng 1 cửa sổ 3 hào liên tiếp bắt đầu từ hào thấp nhất = haoThapNhat (vd 3 => hào 3,4,5)
+function moduleHo_layCuaSo(que, haoThapNhat) {
+    const bot = moduleHo_getHaoBit(que, haoThapNhat);
+    const mid = moduleHo_getHaoBit(que, haoThapNhat + 1);
+    const top = moduleHo_getHaoBit(que, haoThapNhat + 2);
+    const code = top + mid + bot;
+    return { top, mid, bot, code, ten: DON_QUAI_TABLE[code] || "?" };
+}
+
+// Ghép 1 cửa sổ Thượng + 1 cửa sổ Hạ thành mã nhị phân 6 hào đầy đủ (đúng layout dataDich),
+// rồi tra ra quẻ kép tương ứng bằng findQueByCode() đã có sẵn trong code nền.
+function moduleHo_ghepQue(cuaSoThuong, cuaSoHa) {
+    const fullCode = cuaSoThuong.top + cuaSoThuong.mid + cuaSoThuong.bot
+                    + cuaSoHa.top + cuaSoHa.mid + cuaSoHa.bot;
+    const found = findQueByCode(fullCode);
+    return {
+        code: fullCode,
+        tenDonQuaiThuong: cuaSoThuong.ten,
+        tenDonQuaiHa: cuaSoHa.ten,
+        queKep: found ? found.name : "(không tìm thấy trong dữ liệu 64 quẻ)"
+    };
+}
+
+// Ba cặp cửa sổ Thượng/Hạ đã xác nhận đúng (dùng chung cho cả Quẻ Chính lẫn Quẻ Biến):
+// haoThapNhat của mỗi cửa sổ = hào thấp nhất trong cụm 3 hào liên tiếp làm cửa sổ đó.
+const HO_QUAI_WINDOWS = [
+    { thuongHaoThapNhat: 4, haHaoThapNhat: 3 }, // Thượng=hào 4-5-6, Hạ=hào 3-4-5
+    { thuongHaoThapNhat: 4, haHaoThapNhat: 2 }, // Thượng=hào 4-5-6, Hạ=hào 2-3-4
+    { thuongHaoThapNhat: 3, haHaoThapNhat: 2 }  // Thượng=hào 3-4-5, Hạ=hào 2-3-4
+];
+// Nhất/Nhị/Tam Hỗ = 3 cặp trên áp dụng cho Quẻ Chính.
+// Tứ/Ngũ/Lục Hỗ  = ĐÚNG 3 cặp trên áp dụng cho Quẻ Biến (không phải công thức khác).
+const HO_QUAI_TEN = ["Nhất Hỗ", "Nhị Hỗ", "Tam Hỗ", "Tứ Hỗ", "Ngũ Hỗ", "Lục Hỗ"];
+
+// Tính 3 tầng Hỗ (theo 3 cặp cửa sổ chuẩn) cho 1 quẻ bất kỳ (Chính hoặc Biến, object {c, n})
+function moduleHo_tinhBaTangHo(que) {
+    return HO_QUAI_WINDOWS.map(level => {
+        const cuaSoThuong = moduleHo_layCuaSo(que, level.thuongHaoThapNhat);
+        const cuaSoHa = moduleHo_layCuaSo(que, level.haHaoThapNhat);
+        return moduleHo_ghepQue(cuaSoThuong, cuaSoHa);
+    });
+}
+
+// Nhất Hỗ, Nhị Hỗ, Tam Hỗ lấy từ Quẻ Chính; Tứ Hỗ, Ngũ Hỗ, Lục Hỗ lấy từ Quẻ Biến
+// (cùng công thức, chỉ khác quẻ nguồn) — nối tiếp nhau thành 6 kết quả.
+function module23_QueHoDienDich(queChu, queBien) {
+    const ketQua = [];
+
+    moduleHo_tinhBaTangHo(queChu).forEach((kq, idx) => {
+        ketQua.push({ ten: HO_QUAI_TEN[idx], nguon: "Quẻ Chính", ...kq });
+    });
+
+    if (queBien && queBien.c) {
+        moduleHo_tinhBaTangHo(queBien).forEach((kq, idx) => {
+            ketQua.push({ ten: HO_QUAI_TEN[idx + 3], nguon: "Quẻ Biến", ...kq });
+        });
+    }
+
+    return ketQua; // mảng tối đa 6 phần tử: [{ten, nguon, code, tenDonQuaiThuong, tenDonQuaiHa, queKep}, ...]
 }
 
 // -------------------- MODULE 24 --------------------
