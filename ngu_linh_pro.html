@@ -669,22 +669,18 @@ function nameFromLines(lines){
   const thuong = trigramFromLines(lines.slice(3,6));
   return {ha, thuong, name: hexName(thuong,ha)};
 }
-// Hỗ Diễn dịch: dựa vào vị trí hào Động (Nội quái hào<=3, Ngoại quái hào>=4)
+// Hỗ Diễn dịch: đối chiếu docx "Logic nhị phân quẻ đơn & 64 quẻ" (ví dụ
+// Thuần Ly) cho thấy đây là MỘT công thức cố định duy nhất, KHÔNG rẽ
+// nhánh theo vị trí hào Động (bản cũ rẽ nhánh theo hd<=3/hd>3 là sai —
+// khi hd nằm ở nội quái, Nhất Hỗ/Nhị Hỗ ra sai kết quả, vd Thuần Ly ra
+// "Phong Hỏa Gia Nhân"/"Trạch Hỏa Cách" thay vì đúng phải là "Hỏa Trạch
+// Khuê"/"Hỏa Phong Đỉnh"). Tam Hỗ luôn trùng với Hỗ quy nạp (queHoQuyNap).
 function hoDienDich(lines, hd){
-  let defs;
-  if(hd<=3){
-    defs = [
-      {label:"Nhất Hỗ", ha:[0,1,2], thuong:[1,2,3]},
-      {label:"Nhị Hỗ", ha:[0,1,2], thuong:[2,3,4]},
-      {label:"Tam Hỗ (= Hỗ quy nạp)", ha:[1,2,3], thuong:[2,3,4]},
-    ];
-  } else {
-    defs = [
-      {label:"Nhất Hỗ", ha:[2,3,4], thuong:[3,4,5]},
-      {label:"Nhị Hỗ", ha:[1,2,3], thuong:[3,4,5]},
-      {label:"Tam Hỗ (= Hỗ quy nạp)", ha:[1,2,3], thuong:[2,3,4]},
-    ];
-  }
+  const defs = [
+    {label:"Nhất Hỗ", ha:[2,3,4], thuong:[3,4,5]},
+    {label:"Nhị Hỗ", ha:[1,2,3], thuong:[3,4,5]},
+    {label:"Tam Hỗ (= Hỗ quy nạp)", ha:[1,2,3], thuong:[2,3,4]},
+  ];
   return defs.map(d=>{
     const haLines = d.ha.map(i=>lines[i]);
     const thuongLines = d.thuong.map(i=>lines[i]);
@@ -1064,7 +1060,7 @@ document.getElementById('btnCalc').addEventListener('click', () => {
   `;
 
   document.getElementById('stepsHoDD').innerHTML = `
-    <p>Hào Động (hào ${hd}) thuộc quẻ ${hd<=3?'Nội (Hạ)':'Ngoại (Thượng)'} → lấy 3 quẻ Hỗ Diễn dịch như sau:</p>
+    <p>Quẻ Hỗ Diễn dịch (Nhất Hỗ → Nhị Hỗ → Tam Hỗ), công thức cố định không phụ thuộc vị trí hào Động:</p>
     <div class="ho-dd-grid">
       ${hoDD.map(h=>`<div class="ho-dd-item"><b>${h.label}</b> của quẻ Gốc → ${h.name}</div>`).join('')}
       ${hoDDBien.map(h=>`<div class="ho-dd-item"><b>${h.label}</b> của quẻ Biến → ${h.name}</div>`).join('')}
