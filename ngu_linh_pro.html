@@ -87,6 +87,20 @@
   }
   select:focus{outline:2px solid var(--gold); outline-offset:1px;}
 
+  input[type="text"]{
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:9px 10px;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    width:100%;
+  }
+  input[type="text"]:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .quickmsg{font-size:13px;margin-top:8px;line-height:1.5;}
+
   textarea{
     appearance:none;
     background:var(--paper);
@@ -261,6 +275,19 @@
   </div>
 
   <div id="tabGoc" class="tabpanel active">
+
+  <div class="card">
+    <div class="card-inner">
+      <h2>Nhập nhanh <span style="font-weight:400;font-size:13px">(song song với chọn tay bên dưới)</span></h2>
+      <div class="field">
+        <label for="quickInput">Cú pháp: Năm, Tháng Can-Chi + số tháng(1-12), Ngày Can-Chi + số ngày(1-30), Chi giờ</label>
+        <input type="text" id="quickInput" placeholder="Bính Ngọ, Canh Dần 1, Giáp Tý 3, Tý">
+      </div>
+      <button type="button" class="copy" id="btnQuickFill">Điền vào form bên dưới</button>
+      <p class="quickmsg" id="quickFillMsg"></p>
+      <p class="hint">Can giờ sẽ tự tính theo phép Ngũ Thử Độn (Can ngày + Chi giờ) — không cần gõ Can giờ. Điền xong, kiểm tra lại các ô bên dưới rồi bấm "Lập quẻ" như bình thường; vẫn có thể chọn tay từng ô thay vì gõ nhập nhanh.</p>
+    </div>
+  </div>
 
   <div class="card">
     <div class="card-inner">
@@ -883,6 +910,74 @@ function goiYCanGio(){
   populateChiForCan(hourCanEl, hourChiEl);
 }
 goiYCanGio();
+
+// ---- "Nhập nhanh": Năm, Tháng Can-Chi + số, Ngày Can-Chi + số, Chi giờ ----
+// (Can giờ tự tính lại bằng đúng hàm hourCan() sẵn có — không đổi logic gốc)
+function splitTokens(s){ return s.trim().split(/\s+/).filter(Boolean); }
+function validateCanChi(can, chi, label){
+  if(!CAN.includes(can)) throw new Error(`Can "${can}" (phần ${label}) không hợp lệ.`);
+  if(!CHI.includes(chi)) throw new Error(`Chi "${chi}" (phần ${label}) không hợp lệ.`);
+  if(isDuongCan(can) !== isDuongChi(chi))
+    throw new Error(`"${can} ${chi}" (phần ${label}) không hợp lệ — Can và Chi phải cùng âm dương.`);
+}
+function parseQuickInput(str){
+  const parts = str.split(',').map(s=>s.trim()).filter(Boolean);
+  if(parts.length !== 4)
+    throw new Error('Cần đúng 4 phần cách nhau bởi dấu phẩy: Năm, Tháng+số, Ngày+số, Chi giờ.');
+  const [yearPart, monthPart, dayPart, hourPart] = parts;
+
+  const yTok = splitTokens(yearPart);
+  if(yTok.length !== 2) throw new Error(`Phần Năm "${yearPart}" cần đúng Can + Chi (vd: Bính Ngọ).`);
+  const [yearCanV, yearChiV] = yTok;
+  validateCanChi(yearCanV, yearChiV, 'Năm');
+
+  const mTok = splitTokens(monthPart);
+  if(mTok.length !== 3) throw new Error(`Phần Tháng "${monthPart}" cần Can + Chi + số tháng 1-12 (vd: Canh Dần 1).`);
+  const [monthCanV, monthChiV, monthNumStr] = mTok;
+  validateCanChi(monthCanV, monthChiV, 'Tháng');
+  const monthNum = parseInt(monthNumStr, 10);
+  if(!(monthNum>=1 && monthNum<=12)) throw new Error(`Số tháng "${monthNumStr}" phải từ 1 đến 12.`);
+
+  const dTok = splitTokens(dayPart);
+  if(dTok.length !== 3) throw new Error(`Phần Ngày "${dayPart}" cần Can + Chi + số ngày 1-30 (vd: Giáp Tý 3).`);
+  const [dayCanV, dayChiV, dayNumStr] = dTok;
+  validateCanChi(dayCanV, dayChiV, 'Ngày');
+  const dayNum = parseInt(dayNumStr, 10);
+  if(!(dayNum>=1 && dayNum<=30)) throw new Error(`Số ngày "${dayNumStr}" phải từ 1 đến 30.`);
+
+  const hTok = splitTokens(hourPart);
+  if(hTok.length !== 1) throw new Error(`Phần Giờ "${hourPart}" chỉ cần 1 Địa Chi (vd: Tý).`);
+  const hourChiV = hTok[0];
+  if(!CHI.includes(hourChiV)) throw new Error(`Chi giờ "${hourChiV}" không hợp lệ.`);
+
+  return {yearCanV, yearChiV, monthCanV, monthChiV, monthNum, dayCanV, dayChiV, dayNum, hourChiV};
+}
+document.getElementById('btnQuickFill').addEventListener('click', ()=>{
+  const msgEl = document.getElementById('quickFillMsg');
+  try{
+    const p = parseQuickInput(document.getElementById('quickInput').value);
+
+    const yearCanEl = document.getElementById('yearCan'), yearChiEl = document.getElementById('yearChi');
+    const monthCanEl = document.getElementById('monthCan'), monthChiEl = document.getElementById('monthChi');
+    const dayCanEl = document.getElementById('dayCan'), dayChiEl = document.getElementById('dayChi');
+    const hourCanEl = document.getElementById('hourCanSel'), hourChiEl = document.getElementById('hourChi');
+
+    yearCanEl.value = p.yearCanV; populateChiForCan(yearCanEl, yearChiEl); yearChiEl.value = p.yearChiV;
+    monthCanEl.value = p.monthCanV; populateChiForCan(monthCanEl, monthChiEl); monthChiEl.value = p.monthChiV;
+    document.getElementById('month').value = String(p.monthNum);
+    dayCanEl.value = p.dayCanV; populateChiForCan(dayCanEl, dayChiEl); dayChiEl.value = p.dayChiV;
+    document.getElementById('day').value = String(p.dayNum);
+
+    const hCanTinh = hourCan(p.dayCanV, p.hourChiV); // Ngũ Thử Độn — hàm sẵn có, không đổi logic
+    hourCanEl.value = hCanTinh; populateChiForCan(hourCanEl, hourChiEl); hourChiEl.value = p.hourChiV;
+
+    msgEl.style.color = '#3b6b3b';
+    msgEl.textContent = `✓ Đã điền: ${p.yearCanV} ${p.yearChiV} · ${p.monthCanV} ${p.monthChiV} (tháng ${p.monthNum}) · ${p.dayCanV} ${p.dayChiV} (ngày ${p.dayNum}) · giờ ${hCanTinh} ${p.hourChiV}. Kiểm tra lại các ô bên dưới rồi bấm "Lập quẻ".`;
+  }catch(err){
+    msgEl.style.color = '#b23b3b';
+    msgEl.textContent = '⚠ ' + err.message;
+  }
+});
 
 // ---- Ô "Việc cầu sự": giới hạn 120 ký tự & 3 dòng ----
 function limitTextarea(el, counterId, maxChars, maxLines){
