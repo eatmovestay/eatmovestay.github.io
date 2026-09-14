@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Xin / Hứng Neutrino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #05070E;
+    --panel: #0C1120;
+    --panel-line: #1C2540;
+    --text: #EDEFF6;
+    --muted: #7C879E;
+    --upper: #E8A23C;
+    --upper-dim: rgba(232,162,60,0.16);
+    --lower: #FFE29A;
+    --lower-dim: rgba(255,226,154,0.16);
+    --empty: #141B2E;
+    --outline: #2A3350;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{
+    max-width:440px;
+    margin:0 auto;
+    padding:40px 18px 70px;
+  }
+  header{text-align:center; margin-bottom:26px;}
+  h1{font-size:23px; font-weight:700; letter-spacing:-0.01em; margin:0 0 8px;}
+  header p{color:var(--muted); font-size:13.5px; line-height:1.6; margin:0;}
+
+  .gender-toggle{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin:22px 0 22px;
+  }
+  .gender-toggle button{
+    flex:1; max-width:130px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    color:var(--muted);
+    padding:10px 0;
+    border-radius:999px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .gender-toggle button.active{
+    background:var(--text);
+    color:#0A0E1A;
+    border-color:var(--text);
+  }
+
+  .stage{
+    position:relative;
+    background:radial-gradient(circle at 50% 20%, #121A30 0%, #080B15 65%);
+    border:1px solid var(--panel-line);
+    border-radius:20px;
+    padding:20px 16px 26px;
+    overflow:hidden;
+  }
+  canvas#stream{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .source{
+    position:relative;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--muted);
+  }
+  .star{
+    width:14px; height:14px;
+    border-radius:50%;
+    flex:none;
+  }
+  .star.upper{background:var(--upper); box-shadow:0 0 14px 3px var(--upper-dim);}
+  .star.lower{background:var(--lower); box-shadow:0 0 14px 3px var(--lower-dim);}
+  .source .cnt{color:var(--text); font-weight:600;}
+  .source.upper-row .cnt{color:var(--upper);}
+  .source.lower-row .cnt{color:var(--lower);}
+
+  .figure-holder{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:center;
+    margin:14px 0;
+  }
+  .figure-holder svg{width:150px; height:auto;}
+
+  .fill-status{
+    position:relative; z-index:2;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .fill-status b{color:var(--text);}
+
+  .controls{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-top:22px;
+  }
+  button#receive{
+    background:var(--text);
+    color:#0A0E1A;
+    border:none;
+    padding:13px 30px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    border-radius:999px;
+    cursor:pointer;
+    transition:opacity .2s ease, transform .1s ease;
+    user-select:none;
+  }
+  button#receive:active{transform:scale(0.96);}
+  button#receive:disabled{background:#1C2540; color:var(--muted); cursor:default;}
+  button#reset{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--panel-line);
+    padding:13px 20px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:14px;
+    font-weight:500;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  button#reset:hover{color:var(--text); border-color:var(--outline);}
+
+  .result{
+    margin-top:24px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:16px;
+    padding:18px 20px;
+  }
+  .result h2{
+    font-size:12.5px;
+    color:var(--muted);
+    font-weight:500;
+    margin:0 0 14px;
+  }
+  .result-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:'JetBrains Mono', monospace;
+    padding:6px 0;
+  }
+  .result-row + .result-row{border-top:1px solid var(--panel-line);}
+  .result-row .rlabel{font-size:13px; color:var(--muted); display:flex; align-items:center; gap:7px;}
+  .result-row .rvalue{font-size:19px; font-weight:600;}
+  .result-row.up .rvalue{color:var(--upper);}
+  .result-row.low .rvalue{color:var(--lower);}
+
+  button#download{
+    width:100%;
+    margin-top:16px;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--text);
+    padding:12px 0;
+    border-radius:12px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  button#download:hover{border-color:var(--outline); background:#101728;}
+  button#download:disabled{opacity:.4; cursor:default;}
+
+  .footnote{
+    margin-top:26px;
+    padding-top:16px;
+    border-top:1px solid var(--panel-line);
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    line-height:1.65;
+  }
+
+  @keyframes flashPop{
+    0%{transform:scale(1); filter:brightness(1);}
+    30%{transform:scale(1.05); filter:brightness(1.5);}
+    100%{transform:scale(1); filter:brightness(1);}
+  }
+  .figure-holder.pop svg{animation:flashPop .35s ease;}
+
+  @keyframes analyzePulse{
+    0%,100%{opacity:1;}
+    50%{opacity:.45;}
+  }
+  .figure-holder.analyzing svg{animation:analyzePulse .55s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <h1>Xin / Hứng Neutrino</h1>
+    <p>Nhấn <b style="color:var(--text)">Nhận</b> nhiều lần để hình nhân dần được "điền đầy". Khi đầy 100%, quá trình nhận neutrino thật — theo xác suất ngẫu nhiên tuyệt đối, phân chia giữa Alpha Centauri A (Thượng) và Mặt Trời (Hạ) — mới thực sự bắt đầu.</p>
+  </header>
+
+  <div class="gender-toggle">
+    <button id="btnNam" class="active">Nam</button>
+    <button id="btnNu">Nữ</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="stream"></canvas>
+
+    <div class="source upper-row">
+      <span class="star upper"></span>
+      <span>Thượng · Alpha Centauri A</span>
+      <span class="cnt" id="upperLive">—</span>
+    </div>
+
+    <div class="figure-holder" id="figureHolder"></div>
+
+    <div class="source lower-row">
+      <span class="star lower"></span>
+      <span>Hạ · Mặt Trời</span>
+      <span class="cnt" id="lowerLive">—</span>
+    </div>
+
+    <div class="fill-status">Đang tích năng lượng: <b id="fillPct">0%</b></div>
+  </div>
+
+  <div class="controls">
+    <button id="receive">Nhận</button>
+    <button id="reset">Làm mới</button>
+  </div>
+
+  <div class="result" id="resultCard">
+    <h2>Kết quả bắt được</h2>
+    <div class="result-row up">
+      <span class="rlabel"><span class="star upper" style="width:9px;height:9px;"></span>Thượng (Alpha Centauri A)</span>
+      <span class="rvalue" id="resUpper">0</span>
+    </div>
+    <div class="result-row low">
+      <span class="rlabel"><span class="star lower" style="width:9px;height:9px;"></span>Hạ (Mặt Trời)</span>
+      <span class="rvalue" id="resLower">0</span>
+    </div>
+  </div>
+
+  <button id="download">Sao chép kết quả thành ảnh · Tải về</button>
+
+  <div class="footnote">
+    Bấm Nhận nhiều lần chỉ để tích đầy hình nhân — bước này thuần trực quan, chưa quyết định kết quả. Khi đầy 100%, quá trình nhận hạt thật mới bắt đầu: tổng số hạt và tỉ lệ chia cho Thượng (Alpha Centauri A) / Hạ (Mặt Trời) được lấy từ Web Crypto API (<code>crypto.getRandomValues</code>) — nguồn entropy mật mã học của trình duyệt, không lặp chu kỳ như <code>Math.random()</code> và không có tham số nào để chỉnh trước kết quả. Do định luật nghịch đảo bình phương khoảng cách, thông lượng neutrino thật từ Alpha Centauri A tới Trái Đất nhỏ hơn rất nhiều so với Mặt Trời dù cùng là phản ứng tổng hợp hạt nhân — mô phỏng này giữ tinh thần đó nhưng không gán trọng số cố định, kết quả cuối cùng luôn ngẫu nhiên tuyệt đối.
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function(){
+  // ---------- Ngẫu nhiên tuyệt đối (Web Crypto) cho logic bắt hạt ----------
+  function rnd(){
+    if(window.crypto && window.crypto.getRandomValues){
+      const buf = new Uint32Array(1);
+      window.crypto.getRandomValues(buf);
+      return buf[0] / 4294967296;
+    }
+    return Math.random();
+  }
+
+  // ---------- Hình nhân SVG (Nam / Nữ) ----------
+  const FIGURES = {
+    nam: {
+      head: '<circle cx="100" cy="50" r="32"/>',
+      body: '<path d="M70,90 C55,95 48,112 48,132 L43,232 L76,232 L82,420 L96,420 L100,262 L104,420 L118,420 L124,232 L157,232 L152,132 C152,112 145,95 130,90 Z"/>'
+    },
+    nu: {
+      head: '<circle cx="100" cy="50" r="32"/>',
+      body: '<path d="M76,90 C64,96 60,108 63,128 L58,192 C52,224 46,262 41,420 L159,420 C154,262 148,224 142,192 L137,128 C140,108 136,96 124,90 Z"/>'
+    }
+  };
+  const VIEW_H = 420, VIEW_W = 200;
+  let gender = 'nam';
+
+  const figureHolder = document.getElementById('figureHolder');
+  function buildFigureSVG(){
+    const f = FIGURES[gender];
+    figureHolder.innerHTML = `
+      <svg viewBox="0 0 ${VIEW_W} ${VIEW_H}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="fillGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop id="gradStop1" offset="0%" stop-color="#FFE29A"/>
+            <stop id="gradStop2" offset="100%" stop-color="#E8A23C"/>
+          </linearGradient>
+          <clipPath id="fillClip">
+            <rect id="fillRect" x="0" y="${VIEW_H}" width="${VIEW_W}" height="0"/>
+          </clipPath>
+        </defs>
+        <g fill="${getComputedStyle(document.body).getPropertyValue('--empty') || '#141B2E'}" stroke="#2A3350" stroke-width="3">
+          ${f.head}${f.body}
+        </g>
+        <g fill="url(#fillGrad)" clip-path="url(#fillClip)">
+          ${f.head}${f.body}
+        </g>
+      </svg>`;
+  }
+  buildFigureSVG();
+
+  document.getElementById('btnNam').addEventListener('click', ()=>{ setGender('nam'); });
+  document.getElementById('btnNu').addEventListener('click', ()=>{ setGender('nu'); });
+  function setGender(g){
+    if(g === gender) return;
+    gender = g;
+    document.getElementById('btnNam').classList.toggle('active', g==='nam');
+    document.getElementById('btnNu').classList.toggle('active', g==='nu');
+    buildFigureSVG();
+    resetCounts();
+  }
+
+  // ---------- Trạng thái ----------
+  // phase: 'filling'   -> đang bấm Nhận để tích đầy hình nhân (chưa có kết quả thật)
+  //        'revealing' -> đã đầy 100%, đang chạy quá trình random tuyệt đối
+  //        'revealed'  -> đã có kết quả Thượng/Hạ cuối cùng
+  let phase = 'filling';
+  let fillProgress = 0;        // 0-100, chỉ là tiến trình "tích năng lượng"
+  let totalUpper = 0, totalLower = 0; // chỉ có giá trị thật sau khi 'revealed'
+
+  const upperLiveEl = document.getElementById('upperLive');
+  const lowerLiveEl = document.getElementById('lowerLive');
+  const resUpperEl = document.getElementById('resUpper');
+  const resLowerEl = document.getElementById('resLower');
+  const fillStatusLabel = document.querySelector('.fill-status');
+  const btnReceive = document.getElementById('receive');
+  const rect = () => document.getElementById('fillRect');
+  const gradStop1 = () => document.getElementById('gradStop1');
+  const gradStop2 = () => document.getElementById('gradStop2');
+
+  function mixColor(hexA, hexB, t){
+    const a = hexToRgb(hexA), b = hexToRgb(hexB);
+    const r = Math.round(a.r + (b.r-a.r)*t);
+    const g = Math.round(a.g + (b.g-a.g)*t);
+    const bl = Math.round(a.b + (b.b-a.b)*t);
+    return `rgb(${r},${g},${bl})`;
+  }
+  function hexToRgb(hex){
+    const n = parseInt(hex.replace('#',''),16);
+    return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+  }
+
+  // Trong lúc tích đầy, hình nhân dùng màu trung tính (chưa gán nguồn nào cả)
+  function paintNeutral(){
+    const s1 = gradStop1(), s2 = gradStop2();
+    if(s1 && s2){ s1.setAttribute('stop-color', '#8FA3C9'); s2.setAttribute('stop-color', '#3D4A6B'); }
+  }
+  // Sau khi có kết quả, tô theo tỉ lệ Thượng/Hạ thật
+  function paintFinal(){
+    const total = totalUpper + totalLower;
+    const ratio = total > 0 ? totalUpper / total : 0.5;
+    const s1 = gradStop1(), s2 = gradStop2();
+    if(s1 && s2){
+      s1.setAttribute('stop-color', mixColor('#FFE29A', '#E8A23C', ratio));
+      s2.setAttribute('stop-color', mixColor('#E8A23C', '#FFE29A', 1-ratio));
+    }
+  }
+
+  function renderFillHeight(pct){
+    const h = (VIEW_H * pct) / 100;
+    const r = rect();
+    if(r){ r.setAttribute('y', VIEW_H - h); r.setAttribute('height', h); }
+  }
+
+  function popFigure(){
+    figureHolder.classList.remove('pop');
+    void figureHolder.offsetWidth;
+    figureHolder.classList.add('pop');
+  }
+
+  function resetAll(){
+    phase = 'filling';
+    fillProgress = 0;
+    totalUpper = 0; totalLower = 0;
+    renderFillHeight(0);
+    paintNeutral();
+    upperLiveEl.textContent = '—';
+    lowerLiveEl.textContent = '—';
+    resUpperEl.textContent = '0';
+    resLowerEl.textContent = '0';
+    fillStatusLabel.innerHTML = 'Đang tích năng lượng: <b id="fillPct">0%</b>';
+    figureHolder.classList.remove('analyzing');
+    btnReceive.disabled = false;
+    btnReceive.textContent = 'Nhận';
+  }
+  resetAll();
+
+  document.getElementById('reset').addEventListener('click', resetAll);
+
+  btnReceive.addEventListener('click', () => {
+    if(phase !== 'filling') return; // trong lúc revealing/revealed, nút không phản hồi
+
+    // Giai đoạn tích đầy: chỉ là tiến trình trực quan, chưa phải kết quả thật
+    // nên dùng Math.random — random "tuyệt đối" (crypto) được dành riêng cho
+    // bước random thật diễn ra sau khi hình nhân đầy 100%.
+    const inc = 5 + Math.random() * 9; // mỗi lần bấm tích thêm ~5-14%
+    fillProgress = Math.min(100, fillProgress + inc);
+    renderFillHeight(fillProgress);
+    document.getElementById('fillPct').textContent = Math.round(fillProgress) + '%';
+    popFigure();
+
+    if(fillProgress >= 100){
+      startAbsoluteCapture();
+    }
+  });
+
+  // ---------- Quá trình nhận neutrino thật: chỉ bắt đầu khi hình nhân đã đầy ----------
+  function startAbsoluteCapture(){
+    phase = 'revealing';
+    btnReceive.disabled = true;
+    btnReceive.textContent = 'Đang xác định nguồn...';
+    fillStatusLabel.textContent = 'Đang chạy xác suất ngẫu nhiên tuyệt đối...';
+    figureHolder.classList.add('analyzing');
+
+    // Khoảng chờ ngắn để cảm giác đây là một quá trình thật đang diễn ra,
+    // bản thân kết quả bên dưới mới là phần được quyết định bởi crypto rnd().
+    setTimeout(() => {
+      const total = Math.floor(rnd() * 61) + 20;   // 20–80 hạt, ngẫu nhiên tuyệt đối
+      const splitRatio = rnd();                     // tỉ lệ chia Thượng/Hạ, độc lập, ngẫu nhiên tuyệt đối
+      totalUpper = Math.round(total * splitRatio);
+      totalLower = total - totalUpper;
+
+      figureHolder.classList.remove('analyzing');
+      paintFinal();
+      animateCountUp(totalUpper, totalLower);
+
+      phase = 'revealed';
+      btnReceive.textContent = 'Đã hoàn tất';
+      fillStatusLabel.textContent = 'Đã hoàn tất — bấm Làm mới để nhận lượt mới';
+    }, 1100);
+  }
+
+  function animateCountUp(u, l){
+    const dur = 700;
+    const start = performance.now();
+    function step(now){
+      const t = Math.min(1, (now - start) / dur);
+      const eu = Math.round(u * t);
+      const el_ = Math.round(l * t);
+      upperLiveEl.textContent = eu;
+      lowerLiveEl.textContent = el_;
+      resUpperEl.textContent = eu;
+      resLowerEl.textContent = el_;
+      if(t < 1) requestAnimationFrame(step);
+      else {
+        upperLiveEl.textContent = u;
+        lowerLiveEl.textContent = l;
+        resUpperEl.textContent = u;
+        resLowerEl.textContent = l;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---------- Mô phỏng phát neutrino thời gian thực (nền) ----------
+  const canvas = document.getElementById('stream');
+  const ctx = canvas.getContext('2d');
+  const stage = document.getElementById('stage');
+  let cw, ch;
+  function resizeCanvas(){
+    const rect = stage.getBoundingClientRect();
+    cw = canvas.width = rect.width;
+    ch = canvas.height = rect.height;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const particles = [];
+  const MAX_PARTICLES = 46;
+  function spawnParticle(){
+    const fromTop = Math.random() < 0.5;
+    return {
+      x: 20 + Math.random() * (cw - 40),
+      y: fromTop ? -6 : ch + 6,
+      len: 16 + Math.random() * 26,
+      speed: 0.9 + Math.random() * 1.8,
+      dir: fromTop ? 1 : -1,
+      color: fromTop ? '232,162,60' : '255,226,154',
+      alpha: 0.12 + Math.random() * 0.22
+    };
+  }
+  for(let i=0;i<MAX_PARTICLES;i++) particles.push(spawnParticle());
+
+  function drawStream(){
+    if(cw !== stage.clientWidth || ch !== stage.clientHeight) resizeCanvas();
+    ctx.clearRect(0,0,cw,ch);
+    for(const p of particles){
+      const grad = ctx.createLinearGradient(p.x, p.y - p.len*p.dir, p.x, p.y);
+      grad.addColorStop(0, `rgba(${p.color},0)`);
+      grad.addColorStop(1, `rgba(${p.color},${p.alpha})`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y - p.len*p.dir);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      p.y += p.speed * p.dir;
+      if(p.dir === 1 && p.y - p.len > ch + 20){ Object.assign(p, spawnParticle(), {y:-6}); }
+      if(p.dir === -1 && p.y + p.len < -20){ Object.assign(p, spawnParticle(), {y:ch+6}); }
+    }
+    requestAnimationFrame(drawStream);
+  }
+  drawStream();
+
+  // ---------- Tải ảnh kết quả ----------
+  document.getElementById('download').addEventListener('click', () => {
+    const card = document.getElementById('resultCard');
+    if(typeof html2canvas === 'undefined'){
+      alert('Không thể tải thư viện chụp ảnh. Vui lòng kiểm tra kết nối mạng.');
+      return;
+    }
+    html2canvas(card, { backgroundColor: '#0C1120', scale: 2 }).then(canvasImg => {
+      const link = document.createElement('a');
+      link.download = `neutrino-ket-qua-${gender}.png`;
+      link.href = canvasImg.toDataURL('image/png');
+      link.click();
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
