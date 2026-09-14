@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sóng Não Thư Giãn — 4 Chế Độ</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #0f172a;
+    color: #f8fafc;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+  }
+  .card {
+    background-color: #1e293b; padding: 24px; border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 420px; width: 100%;
+  }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; color: #38bdf8; text-align:center; }
+  .sub { font-size: 0.8rem; color: #94a3b8; text-align:center; margin-bottom:16px; }
+
+  .mode-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .mode-btn {
+    padding: 10px 4px; border-radius: 10px; border: 2px solid #334155;
+    background: #0f172a; color: #cbd5e1; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; text-align: center; line-height:1.2;
+  }
+  .mode-btn.active { border-color: #38bdf8; background: #0c4a6e; color: #fff; }
+
+  .info-box {
+    background: #0f172a; border-radius: 10px; padding: 12px 14px;
+    font-size: 0.8rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 14px;
+  }
+  .info-box b { color: #7dd3fc; }
+  .info-box .tag { color: #4ade80; font-weight:600; }
+
+  .slider-row { margin-top: 10px; text-align: left; }
+  .slider-row label { font-size: 0.82rem; color: #cbd5e1; display: block; margin-bottom: 4px; }
+  input[type="range"] { width: 100%; }
+  select {
+    width: 100%; padding: 9px; border-radius: 8px; background: #0f172a;
+    color: #f8fafc; border: 1px solid #334155; margin-top: 6px; font-size: 0.85rem;
+  }
+  .checkbox-row { display:flex; align-items:center; gap:8px; margin-top:12px; font-size:0.82rem; color:#cbd5e1; }
+
+  .btn {
+    background-color: #0284c7; color: white; border: none; padding: 15px 32px;
+    font-size: 1.05rem; font-weight: bold; border-radius: 50px; margin-top: 18px;
+    cursor: pointer; width: 100%;
+  }
+  .btn.btn-stop { background-color: #ef4444; }
+  .status { margin-top: 12px; font-weight: bold; color: #4ade80; min-height: 20px; text-align:center; font-size:0.85rem; }
+
+  .warning { font-size: 0.78rem; color: #fbbf24; margin-top: 14px; border-top: 1px solid #334155; padding-top: 10px; }
+  .disclaimer { font-size: 0.7rem; color: #64748b; margin-top: 8px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Sóng Não Thư Giãn</h1>
+  <div class="sub">Chọn chế độ theo mục đích sử dụng</div>
+
+  <div class="mode-row">
+    <div class="mode-btn active" id="btn-relax" onclick="selectMode('relax')">😌<br>Thư giãn<br>(khi tỉnh)</div>
+    <div class="mode-btn" id="btn-sleep" onclick="selectMode('sleep')">😴<br>Vào giấc &<br>duy trì ngủ</div>
+    <div class="mode-btn" id="btn-wake" onclick="selectMode('wake')">☀️<br>Sau khi<br>thức dậy</div>
+    <div class="mode-btn" id="btn-arc" onclick="selectMode('arc')">⚡<br>Hồ quang<br>phóng điện</div>
+  </div>
+
+  <div class="info-box" id="infoBox"></div>
+
+  <!-- Sleep-only controls -->
+  <div id="sleepControls" style="display:none;">
+    <div class="slider-row">
+      <label>Hẹn giờ tự tắt</label>
+      <select id="sleepTimerSelect">
+        <option value="30">30 phút</option>
+        <option value="60" selected>60 phút</option>
+        <option value="90">90 phút</option>
+        <option value="0">Không hẹn giờ (tự tắt thủ công)</option>
+      </select>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="rampCheckbox" checked>
+      <label for="rampCheckbox">Tự chuyển pha: Theta (dễ vào giấc) → Delta (ngủ sâu) trong 15 phút đầu</label>
+    </div>
+  </div>
+
+  <!-- Wake-only controls -->
+  <div id="wakeControls" style="display:none;">
+    <div class="slider-row">
+      <label>Thời lượng phiên</label>
+      <select id="wakeTimerSelect">
+        <option value="5">5 phút</option>
+        <option value="10" selected>10 phút</option>
+        <option value="15">15 phút</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Arc-only controls -->
+  <div id="arcControls" style="display:none;">
+    <div class="slider-row">
+      <label>Mật độ tiếng phóng điện</label>
+      <select id="arcDensitySelect">
+        <option value="sparse">Thưa — cách quãng dài giữa các tiếng</option>
+        <option value="medium" selected>Vừa — nhịp phóng cách đều</option>
+        <option value="dense">Dày — tiếng nọ nối tiếng kia gần nhau</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="slider-row">
+    <label>Âm lượng: <span id="volLabel">30%</span></label>
+    <input type="range" id="volSlider" min="0" max="50" value="30" oninput="setVolume(this.value)">
+  </div>
+
+  <div class="slider-row" id="noiseSection" style="border-top:1px solid #334155; padding-top:12px; margin-top:16px;">
+    <div class="checkbox-row" style="margin-top:0;">
+      <input type="checkbox" id="noiseToggle" onchange="toggleNoiseUI()">
+      <label for="noiseToggle"><b>Bật lớp âm nền chống ồn</b> (dùng riêng hoặc trộn cùng binaural)</label>
+    </div>
+    <div id="noiseUI" style="display:none; margin-top:10px;">
+      <select id="noiseTypeSelect" onchange="updateNoiseInfo()">
+        <option value="brown">Ồn Nâu — che tiếng rung/bass thấp (karaoke, cửa rung)</option>
+        <option value="pink">Ồn Hồng — che tiếng động cơ/máy nổ đều (cắt cỏ, cưa)</option>
+        <option value="crackle" selected>Tia Lửa Điện Lách Tách — dải rộng + xung ngẫu nhiên, giảm căng thẳng</option>
+      </select>
+      <div class="info-box" id="noiseInfo" style="margin-top:8px; margin-bottom:0;"></div>
+      <div class="slider-row">
+        <label>Âm lượng lớp nền: <span id="noiseVolLabel">35%</span></label>
+        <input type="range" id="noiseVolSlider" min="0" max="70" value="35" oninput="setNoiseVolume(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <button id="playBtn" class="btn" onclick="toggleAudio()">BẮT ĐẦU PHÁT</button>
+  <div id="statusText" class="status"></div>
+
+  <button id="killBtn" class="btn" style="background:#7c2d12; margin-top:10px;" onclick="killOldSessions()">
+    🛑 TẮT ÂM CỦA PHIÊN CŨ (nếu vẫn còn phát ngầm)
+  </button>
+  <div id="killStatus" class="status" style="color:#fca5a5;"></div>
+
+  <div class="warning">
+    🎧 Bắt buộc đeo tai nghe stereo (2 bên riêng biệt) — loa ngoài không tạo được hiệu ứng nhịp ảo.
+    Nếu dùng khi ngủ, ưu tiên tai nghe mềm/ôm tai thay vì nhét tai cứng để tránh khó chịu và áp lực lên tai khi nằm nghiêng nhiều giờ.
+  </div>
+  <div class="disclaimer">
+    Phân loại sóng não (Delta/Theta/Alpha/Beta) và cách dùng dưới đây dựa trên các mốc phổ biến trong ứng dụng thư giãn/thiền,
+    <b>không phải</b> phác đồ y khoa đã được kiểm chứng lâm sàng cho điều trị mất ngủ hay rối loạn thần kinh. Không dùng thay thế tư vấn bác sĩ.
+    Nếu có tiền sử động kinh, rối loạn co giật, hoặc đang dùng thiết bị hỗ trợ thính giác, nên hỏi ý kiến bác sĩ trước khi dùng.
+  </div>
+</div>
+
+<script>
+let audioCtx = null, leftOsc = null, rightOsc = null, gainNode = null;
+let isPlaying = false, currentMode = 'relax', autoStopTimer = null;
+let noiseSource = null, noiseFilter = null, noiseGain = null, crackleInterval = null;
+
+// --- Biến riêng cho engine "Hồ Quang Điện" — hoàn toàn tách biệt khỏi binaural + lớp ồn ---
+let arcMasterGain = null, arcRumbleSource = null, arcRumbleFilter = null, arcRumbleGain = null;
+let arcLFO = null, arcLFOGain = null, arcBurstTimeout = null;
+
+const NOISE_INFO = {
+  brown: `<b>Ồn Nâu (Brown noise)</b> — năng lượng tập trung ở tần số thấp, giống tiếng "ù ù" trầm.
+          Hiệu quả nhất để che <span class="tag">bass karaoke làm rung cửa sắt</span> vì cùng dải tần thấp.`,
+  pink: `<b>Ồn Hồng (Pink noise)</b> — năng lượng trải đều hơn, giống tiếng mưa/quạt.
+         Phù hợp che <span class="tag">tiếng động cơ 2 thì đều đều</span> (máy cắt cỏ, máy cưa) vì phổ tần rộng gần giống tiếng máy nổ.`,
+  crackle: `<b>Tia Lửa Điện Lách Tách</b> — nhiễu dải rộng (hiss) cộng xung ngẫu nhiên mô phỏng tiếng "rẹt xè xè" phóng điện.
+            Vì có thành phần ngẫu nhiên giống tiếng ồn thật (thay vì tông đều đều), tai ít bị "chú ý" hơn khi có tiếng dằn xóc/bất chợt từ xe kéo, hàng rong.`
+};
+
+const MODES = {
+  relax: {
+    label: '😌 Thư giãn (khi tỉnh)',
+    base: 200, beat: 10, // Alpha 8-12Hz: tỉnh táo nhưng thư thái, giảm căng thẳng
+    volDefault: 30, volMax: 50,
+    info: `<b>Sóng Alpha (~10 Hz)</b> — trạng thái tỉnh táo thư giãn, giống lúc thiền hoặc nghỉ ngơi nhẹ mà vẫn tỉnh.<br>
+           Tần số nền 200Hz / tai phải 210Hz.<br>
+           Âm lượng khuyến nghị: <span class="tag">25–35%</span> — đủ nghe rõ nhịp, không cần lớn.<br>
+           Dùng: giữa buổi làm việc, sau stress, trước khi thiền/nghỉ trưa.`
+  },
+  sleep: {
+    label: '😴 Vào giấc & duy trì ngủ',
+    base: 150, beatStart: 6, beatEnd: 2.5, // Theta 6Hz -> Delta 2.5Hz
+    volDefault: 15, volMax: 25,
+    info: `<b>Theta (6 Hz) → Delta (2.5 Hz)</b> — 15 phút đầu ở Theta giúp não "hạ dốc" từ tỉnh sang buồn ngủ,
+           sau đó chuyển dần xuống Delta để duy trì giấc ngủ sâu nếu bạn vẫn đeo tai nghe khi ngủ.<br>
+           Tần số nền thấp hơn (150Hz) để âm thanh dịu, ít "chói" hơn khi nằm nhắm mắt lâu.<br>
+           Âm lượng khuyến nghị: <span class="tag">10–20%</span> — <u>rất nhỏ</u>, chỉ vừa đủ nghe, vì tai nghe áp sát tai suốt nhiều giờ.<br>
+           Nên hẹn giờ tự tắt thay vì để cả đêm liên tục, để tai được nghỉ.`
+  },
+  wake: {
+    label: '☀️ Sau khi thức dậy',
+    base: 250, beat: 14, // low Beta/Alpha-Beta border: hỗ trợ tỉnh táo, định thần
+    volDefault: 25, volMax: 45,
+    info: `<b>Sóng Beta thấp (~14 Hz)</b> — vùng ranh giới Alpha/Beta, thiên hướng hỗ trợ tỉnh táo và "định thần" lại sau khi ngủ dậy
+           (khác hẳn mục tiêu gây ngủ của 2 chế độ trên).<br>
+           Tần số nền cao hơn (250Hz), nhịp nhanh hơn — tạo cảm giác âm thanh "sáng" hơn.<br>
+           Âm lượng khuyến nghị: <span class="tag">20–35%</span>, nghe trong phiên ngắn 5–15 phút, không cần kéo dài.`
+  },
+  arc: {
+    label: '⚡ Hồ Quang Điện (phóng điện cao áp)',
+    volDefault: 35, volMax: 60,
+    info: `<b>Tiếng phóng điện hồ quang cao áp</b> — mô phỏng từng tiếng "tẹẹẹẹẹẹẹt..." kéo dài (không phải tiếng "tẹt" gọn/ngắn),
+           xen kẽ các quãng nghỉ ngẫu nhiên giữa các lần phóng.<br>
+           Bên dưới là nền <span class="tag">"grù grù"</span> trầm, rung liên tục nhưng <b>nhỏ hơn</b> cường độ của tiếng phóng chính.<br>
+           Đây là <b>âm thanh độc lập</b>, không phải sóng não binaural — hoạt động tách biệt hoàn toàn với 3 chế độ trên và không dùng chung engine âm thanh.<br>
+           Điều chỉnh mật độ phóng điện bên dưới để tiếng nổ dày hay thưa.`
+  }
+};
+
+function toggleNoiseUI() {
+  const on = document.getElementById('noiseToggle').checked;
+  document.getElementById('noiseUI').style.display = on ? 'block' : 'none';
+  if (on) updateNoiseInfo();
+  if (isPlaying) {
+    // Cho phép bật/tắt lớp nền ngay cả khi đang phát binaural
+    if (on) startNoiseLayer(); else stopNoiseLayer();
+  }
+}
+function updateNoiseInfo() {
+  document.getElementById('noiseInfo').innerHTML = NOISE_INFO[document.getElementById('noiseTypeSelect').value];
+  if (isPlaying && noiseSource) { stopNoiseLayer(); startNoiseLayer(); } // đổi loại noise ngay khi đang phát
+}
+function setNoiseVolume(val) {
+  document.getElementById('noiseVolLabel').innerText = val + '%';
+  if (isPlaying && noiseGain) {
+    const now = audioCtx.currentTime;
+    noiseGain.gain.cancelScheduledValues(now);
+    const target = Math.max(val / 100, 0.0001);
+    if (document.getElementById('noiseTypeSelect').value !== 'crackle') {
+      noiseGain.gain.setValueAtTime(noiseGain.gain.value, now);
+      noiseGain.gain.linearRampToValueAtTime(target, now + 0.15);
+    }
+    // với crackle, tick tiếp theo của setInterval sẽ tự áp dụng volume mới
+  }
+}
+
+function createNoiseBuffer(ctx, type) {
+  const bufferSize = ctx.sampleRate * 2;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  if (type === 'brown') {
+    let lastOut = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      lastOut = (lastOut + 0.02 * white) / 1.02;
+      data[i] = lastOut * 3.5;
+    }
+  } else if (type === 'pink') {
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886*b0 + white*0.0555179;
+      b1 = 0.99332*b1 + white*0.0750759;
+      b2 = 0.96900*b2 + white*0.1538520;
+      b3 = 0.86650*b3 + white*0.3104856;
+      b4 = 0.55000*b4 + white*0.5329522;
+      b5 = -0.7616*b5 - white*0.0168980;
+      data[i] = (b0+b1+b2+b3+b4+b5+b6+white*0.5362) * 0.11;
+      b6 = white*0.115926;
+    }
+  } else { // white base (dùng cho crackle sau khi lọc)
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  }
+  return buffer;
+}
+
+function startNoiseLayer() {
+  const type = document.getElementById('noiseTypeSelect').value;
+  const vol = document.getElementById('noiseVolSlider').value / 100;
+
+  noiseSource = audioCtx.createBufferSource();
+  noiseSource.buffer = createNoiseBuffer(audioCtx, type === 'crackle' ? 'white' : type);
+  noiseSource.loop = true;
+
+  noiseFilter = audioCtx.createBiquadFilter();
+  if (type === 'crackle') {
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 3200;
+    noiseFilter.Q.value = 0.9;
+  } else {
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.value = (type === 'brown') ? 500 : 4000;
+  }
+
+  noiseGain = audioCtx.createGain();
+  noiseGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+
+  noiseSource.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);
+  noiseSource.start();
+
+  if (type === 'crackle') {
+    // Nền hiss liên tục nhỏ + xung "rẹt" ngẫu nhiên chồng lên, mô phỏng phóng điện
+    noiseGain.gain.linearRampToValueAtTime(vol * 0.12, audioCtx.currentTime + 0.5);
+    const scheduleCrackle = () => {
+      if (!noiseGain) return;
+      const now = audioCtx.currentTime;
+      const currentVol = document.getElementById('noiseVolSlider').value / 100;
+      const burstPeak = currentVol * (0.5 + Math.random() * 0.5);
+      noiseGain.gain.cancelScheduledValues(now);
+      noiseGain.gain.setValueAtTime(noiseGain.gain.value, now);
+      noiseGain.gain.linearRampToValueAtTime(burstPeak, now + 0.008 + Math.random()*0.02);
+      noiseGain.gain.linearRampToValueAtTime(currentVol * 0.12, now + 0.05 + Math.random()*0.12);
+      crackleInterval = setTimeout(scheduleCrackle, 70 + Math.random() * 220);
+    };
+    scheduleCrackle();
+  } else {
+    noiseGain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 1.0);
+  }
+}
+
+function stopNoiseLayer() {
+  if (crackleInterval) { clearTimeout(crackleInterval); crackleInterval = null; }
+  if (noiseGain && audioCtx) {
+    const now = audioCtx.currentTime;
+    noiseGain.gain.cancelScheduledValues(now);
+    noiseGain.gain.setValueAtTime(noiseGain.gain.value, now);
+    noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.4);
+  }
+  const ns = noiseSource;
+  setTimeout(() => { if (ns) { try { ns.stop(); } catch(e){} } }, 450);
+  noiseSource = null; noiseFilter = null; noiseGain = null;
+}
+
+function selectMode(mode) {
+  if (isPlaying) { stopAudio(); }
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + mode).classList.add('active');
+  document.getElementById('infoBox').innerHTML = MODES[mode].info;
+
+  document.getElementById('sleepControls').style.display = (mode === 'sleep') ? 'block' : 'none';
+  document.getElementById('wakeControls').style.display = (mode === 'wake') ? 'block' : 'none';
+  document.getElementById('arcControls').style.display = (mode === 'arc') ? 'block' : 'none';
+
+  // Chế độ hồ quang là âm thanh độc lập — ẩn lớp âm nền chống ồn (chỉ dùng cho binaural) để tránh trộn lẫn
+  document.getElementById('noiseSection').style.display = (mode === 'arc') ? 'none' : 'block';
+
+  const vs = document.getElementById('volSlider');
+  vs.max = MODES[mode].volMax;
+  vs.value = MODES[mode].volDefault;
+  document.getElementById('volLabel').innerText = MODES[mode].volDefault + '%';
+}
+
+function setVolume(val) {
+  document.getElementById('volLabel').innerText = val + '%';
+  if (!isPlaying || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  if (currentMode === 'arc' && arcMasterGain) {
+    arcMasterGain.gain.cancelScheduledValues(now);
+    arcMasterGain.gain.setValueAtTime(arcMasterGain.gain.value, now);
+    arcMasterGain.gain.linearRampToValueAtTime(Math.max(val / 100, 0.0001), now + 0.15);
+  } else if (gainNode) {
+    gainNode.gain.cancelScheduledValues(now);
+    gainNode.gain.setValueAtTime(gainNode.gain.value, now); // giữ giá trị hiện tại làm điểm bắt đầu, tránh nhảy giá trị đột ngột
+    gainNode.gain.linearRampToValueAtTime(Math.max(val / 100, 0.0001), now + 0.15);
+  }
+}
+
+function toggleAudio() {
+  if (!isPlaying) { startAudio(); } else { stopAudio(); }
+}
+
+function startAudio() {
+  const status = document.getElementById('statusText');
+  const btn = document.getElementById('playBtn');
+  const m = MODES[currentMode];
+  const vol = document.getElementById('volSlider').value / 100;
+
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+
+    if (currentMode === 'arc') {
+      // ---- Engine độc lập: Hồ Quang Điện (không đụng tới oscillator/gain của binaural) ----
+      startArcAudio(vol);
+      isPlaying = true;
+      btn.innerText = "DỪNG PHÁT";
+      btn.classList.add('btn-stop');
+      setupMediaSession();
+      status.innerText = "🔊 Đang phát...";
+      return;
+    }
+
+    leftOsc = audioCtx.createOscillator();
+    rightOsc = audioCtx.createOscillator();
+    leftOsc.type = 'sine';
+    rightOsc.type = 'sine';
+    leftOsc.frequency.value = m.base;
+
+    if (currentMode === 'sleep') {
+      const ramp = document.getElementById('rampCheckbox').checked;
+      rightOsc.frequency.setValueAtTime(m.base + m.beatStart, audioCtx.currentTime);
+      if (ramp) {
+        rightOsc.frequency.linearRampToValueAtTime(m.base + m.beatEnd, audioCtx.currentTime + 15 * 60);
+      }
+    } else {
+      rightOsc.frequency.value = m.base + m.beat;
+    }
+
+    const merger = audioCtx.createChannelMerger(2);
+    leftOsc.connect(merger, 0, 0);
+    rightOsc.connect(merger, 0, 1);
+
+    gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(Math.max(vol, 0.0001), audioCtx.currentTime + 1.5);
+
+    merger.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    leftOsc.start();
+    rightOsc.start();
+
+    if (document.getElementById('noiseToggle').checked) {
+      startNoiseLayer();
+    }
+
+    isPlaying = true;
+    btn.innerText = "DỪNG PHÁT";
+    btn.classList.add('btn-stop');
+    setupMediaSession();
+
+    // Auto-stop timer
+    let autoMinutes = 0;
+    if (currentMode === 'sleep') autoMinutes = parseInt(document.getElementById('sleepTimerSelect').value);
+    if (currentMode === 'wake') autoMinutes = parseInt(document.getElementById('wakeTimerSelect').value);
+
+    if (autoMinutes > 0) {
+      status.innerText = `🔊 Đang phát... sẽ tự tắt sau ${autoMinutes} phút`;
+      autoStopTimer = setTimeout(() => { stopAudio(); }, autoMinutes * 60 * 1000);
+    } else {
+      status.innerText = "🔊 Đang phát...";
+    }
+  } catch (err) {
+    status.innerText = "⚠️ Không thể khởi động âm thanh: " + err.message;
+  }
+}
+
+// ===================== ENGINE ĐỘC LẬP: HỒ QUANG ĐIỆN =====================
+// Không dùng chung oscillator/gain với 3 chế độ binaural, không dùng chung với lớp ồn nền.
+function startArcAudio(vol) {
+  const density = document.getElementById('arcDensitySelect').value;
+  const gapRanges = {
+    sparse: [1800, 4200],
+    medium: [900, 2400],
+    dense:  [300, 1100]
+  };
+  const [gapMin, gapMax] = gapRanges[density] || gapRanges.medium;
+
+  arcMasterGain = audioCtx.createGain();
+  arcMasterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+  arcMasterGain.gain.linearRampToValueAtTime(Math.max(vol, 0.0001), audioCtx.currentTime + 1.0);
+  arcMasterGain.connect(audioCtx.destination);
+
+  // --- Nền "grù grù" trầm, liên tục, cường độ NHỎ HƠN tiếng phóng chính ---
+  arcRumbleSource = audioCtx.createBufferSource();
+  arcRumbleSource.buffer = createNoiseBuffer(audioCtx, 'brown');
+  arcRumbleSource.loop = true;
+
+  arcRumbleFilter = audioCtx.createBiquadFilter();
+  arcRumbleFilter.type = 'lowpass';
+  arcRumbleFilter.frequency.value = 160;
+
+  arcRumbleGain = audioCtx.createGain();
+  arcRumbleGain.gain.value = 0.3;
+
+  // LFO tạo nhịp rung "grù...grù...grù" cho nền thay vì một tiếng ù đều đều
+  arcLFO = audioCtx.createOscillator();
+  arcLFO.type = 'sine';
+  arcLFO.frequency.value = 3.2;
+  arcLFOGain = audioCtx.createGain();
+  arcLFOGain.gain.value = 0.12;
+  arcLFO.connect(arcLFOGain).connect(arcRumbleGain.gain);
+  arcLFO.start();
+
+  arcRumbleSource.connect(arcRumbleFilter).connect(arcRumbleGain).connect(arcMasterGain);
+  arcRumbleSource.start();
+
+  // --- Lên lịch từng tiếng phóng điện "tẹẹẹẹẹẹẹt" kéo dài, cách quãng ngẫu nhiên ---
+  const scheduleNextBurst = () => {
+    if (!audioCtx || !arcMasterGain) return;
+    playArcBurst();
+    const gap = gapMin + Math.random() * (gapMax - gapMin);
+    arcBurstTimeout = setTimeout(scheduleNextBurst, gap);
+  };
+  arcBurstTimeout = setTimeout(scheduleNextBurst, 300);
+}
+
+// Một tiếng phóng điện đơn: dài, trầm hơn tiếng "tẹt" ngắn, cường độ mạnh hơn nền rumble
+function playArcBurst() {
+  if (!audioCtx || !arcMasterGain) return;
+  const now = audioCtx.currentTime;
+  const dur = 0.5 + Math.random() * 1.3; // kéo dài 0.5–1.8s để ra tiếng "tẹẹẹẹẹẹẹt..."
+  const baseFreq = 85 + Math.random() * 45; // buzz tần số thấp, mô phỏng nhịp tái phóng của hồ quang AC
+
+  // Lớp buzz chính: sawtooth qua waveshaper để tạo tiếng gắt/nhám đặc trưng của hồ quang
+  const buzz = audioCtx.createOscillator();
+  buzz.type = 'sawtooth';
+  buzz.frequency.setValueAtTime(baseFreq, now);
+  buzz.frequency.linearRampToValueAtTime(baseFreq * (0.9 + Math.random() * 0.2), now + dur);
+
+  const shaper = audioCtx.createWaveShaper();
+  const curve = new Float32Array(256);
+  for (let i = 0; i < 256; i++) {
+    const x = (i / 255) * 2 - 1;
+    curve[i] = Math.tanh(x * 4.5);
+  }
+  shaper.curve = curve;
+
+  const buzzGain = audioCtx.createGain();
+  buzzGain.gain.setValueAtTime(0.0001, now);
+  buzzGain.gain.linearRampToValueAtTime(0.9, now + 0.02); // tấn công nhanh, gọn
+  buzzGain.gain.setValueAtTime(0.9, now + Math.max(dur - 0.1, 0.02));
+  buzzGain.gain.linearRampToValueAtTime(0.0001, now + dur + 0.12);
+
+  // Rung/nhấp nháy trong lúc kéo dài để không đều đều — giống hồ quang chớp giật thật
+  const jitter = audioCtx.createOscillator();
+  jitter.type = 'square';
+  jitter.frequency.value = 55 + Math.random() * 40;
+  const jitterGain = audioCtx.createGain();
+  jitterGain.gain.value = 0.18;
+  jitter.connect(jitterGain).connect(buzzGain.gain);
+
+  // Lớp rít/xèo cao tần chồng lên (crackle dải rộng của phóng điện)
+  const hiss = audioCtx.createBufferSource();
+  hiss.buffer = createNoiseBuffer(audioCtx, 'white');
+  hiss.loop = true;
+  const hissFilter = audioCtx.createBiquadFilter();
+  hissFilter.type = 'bandpass';
+  hissFilter.frequency.value = 2500 + Math.random() * 2000;
+  hissFilter.Q.value = 0.7;
+  const hissGain = audioCtx.createGain();
+  hissGain.gain.setValueAtTime(0.0001, now);
+  hissGain.gain.linearRampToValueAtTime(0.35, now + 0.02);
+  hissGain.gain.setValueAtTime(0.35, now + Math.max(dur - 0.1, 0.02));
+  hissGain.gain.linearRampToValueAtTime(0.0001, now + dur + 0.12);
+
+  buzz.connect(shaper).connect(buzzGain).connect(arcMasterGain);
+  hiss.connect(hissFilter).connect(hissGain).connect(arcMasterGain);
+
+  buzz.start(now); buzz.stop(now + dur + 0.15);
+  jitter.start(now); jitter.stop(now + dur + 0.15);
+  hiss.start(now); hiss.stop(now + dur + 0.15);
+}
+
+function stopArcAudio() {
+  if (arcBurstTimeout) { clearTimeout(arcBurstTimeout); arcBurstTimeout = null; }
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  if (arcMasterGain) {
+    arcMasterGain.gain.cancelScheduledValues(now);
+    arcMasterGain.gain.setValueAtTime(arcMasterGain.gain.value, now);
+    arcMasterGain.gain.linearRampToValueAtTime(0.0001, now + 0.4);
+  }
+  if (arcLFO) { try { arcLFO.stop(now + 0.4); } catch (e) {} }
+  const rs = arcRumbleSource, ctx = audioCtx;
+  setTimeout(() => {
+    if (rs) { try { rs.stop(); } catch (e) {} }
+    if (ctx) { try { ctx.close(); } catch (e) {} }
+  }, 500);
+  arcRumbleSource = null; arcRumbleFilter = null; arcRumbleGain = null;
+  arcLFO = null; arcLFOGain = null; arcMasterGain = null;
+}
+
+function stopAudio() {
+  if (!isPlaying) return;
+  if (autoStopTimer) { clearTimeout(autoStopTimer); autoStopTimer = null; }
+
+  if (currentMode === 'arc') {
+    stopArcAudio();
+  } else {
+    stopNoiseLayer();
+    const now = audioCtx.currentTime;
+    if (gainNode) {
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+      gainNode.gain.linearRampToValueAtTime(0.0001, now + 0.5);
+    }
+    const lo = leftOsc, ro = rightOsc, ctx = audioCtx;
+    setTimeout(() => { if (lo) lo.stop(); if (ro) ro.stop(); if (ctx) ctx.close(); }, 550);
+  }
+
+  isPlaying = false;
+  document.getElementById('playBtn').innerText = "BẮT ĐẦU PHÁT";
+  document.getElementById('playBtn').classList.remove('btn-stop');
+  document.getElementById('statusText').innerText = "";
+  clearMediaSession();
+}
+
+// Tự động dừng khi rời tab / thoát app / tắt màn hình — tránh phát nền ngoài ý muốn
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && isPlaying) {
+    stopAudio();
+  }
+});
+window.addEventListener('pagehide', () => {
+  if (isPlaying) stopAudio();
+});
+
+// MediaSession: hiện nút Dừng ngay trên thông báo / màn hình khóa
+function setupMediaSession() {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Sóng Não Thư Giãn',
+      artist: MODES[currentMode].label
+    });
+    navigator.mediaSession.setActionHandler('pause', () => stopAudio());
+    navigator.mediaSession.setActionHandler('stop', () => stopAudio());
+    navigator.mediaSession.playbackState = 'playing';
+  }
+}
+function clearMediaSession() {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.playbackState = 'paused';
+  }
+}
+
+// ----- Kill-switch cho phiên cũ chạy ngầm -----
+// Nguyên lý: trình duyệt vẫn giữ tab cũ "sống" chính vì nó đang phát âm thanh
+// (đây là lý do audio không tắt khi bạn thoát app). Vì tab đó vẫn sống,
+// nó vẫn có thể nhận tín hiệu qua BroadcastChannel/localStorage và tự tắt chính nó.
+const KILL_CHANNEL_NAME = 'binaural_beats_kill_signal';
+let killChannel = null;
+try { killChannel = new BroadcastChannel(KILL_CHANNEL_NAME); } catch (e) { killChannel = null; }
+
+if (killChannel) {
+  killChannel.onmessage = (e) => {
+    if (e.data === 'STOP_ALL' && isPlaying) stopAudio();
+  };
+}
+// Fallback cho trình duyệt không hỗ trợ BroadcastChannel: dùng sự kiện storage
+window.addEventListener('storage', (e) => {
+  if (e.key === 'binaural_beats_kill' && isPlaying) stopAudio();
+});
+
+function killOldSessions() {
+  const ks = document.getElementById('killStatus');
+  // Gửi qua BroadcastChannel (nếu hỗ trợ)
+  if (killChannel) { killChannel.postMessage('STOP_ALL'); }
+  // Gửi qua localStorage làm phương án dự phòng (kích hoạt sự kiện 'storage' ở tab khác)
+  try { localStorage.setItem('binaural_beats_kill', Date.now().toString()); } catch (e) {}
+
+  // Nếu chính phiên hiện tại cũng đang phát, tắt luôn cho chắc
+  if (isPlaying) stopAudio();
+
+  ks.innerText = "Đã gửi tín hiệu tắt. Nếu vẫn còn nghe âm sau ~2 giây, khả năng cao tab cũ đã bị hệ điều hành đóng băng — dùng Force Stop trình duyệt trong Cài đặt để chắc chắn.";
+  setTimeout(() => { ks.innerText = ""; }, 6000);
+}
+
+// Init
+selectMode('relax');
+updateNoiseInfo();
+</script>
+
+</body>
+</html>
