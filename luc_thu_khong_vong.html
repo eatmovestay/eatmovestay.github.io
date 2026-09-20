@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lục Hào — Lục Thú & Không Vong</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ink: #17130f;
+    --paper: #24201a;
+    --paper-2: #2c2620;
+    --paper-line: #3a3226;
+    --gold: #c9a464;
+    --gold-dim: #8a744f;
+    --seal: #a3402c;
+    --seal-bright: #c24f36;
+    --text: #e7ded0;
+    --text-dim: #a89a84;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--ink);
+    background-image:
+      radial-gradient(ellipse at top left, rgba(201,164,100,0.06), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(163,64,44,0.07), transparent 55%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    padding: 32px 16px 80px;
+    min-height: 100vh;
+  }
+
+  .wrap{ max-width: 760px; margin: 0 auto; }
+
+  header{ text-align:center; margin-bottom: 36px; position:relative; }
+  header .eyebrow{
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold-dim); margin-bottom: 10px;
+  }
+  header h1{
+    font-family: 'Noto Serif', serif; font-weight: 700; font-style: italic;
+    font-size: 30px; margin: 0; color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+  header .sub{ font-size: 13px; color: var(--text-dim); margin-top: 8px; }
+  header .divider{
+    width: 64px; height: 2px; margin: 18px auto 0;
+    background: linear-gradient(90deg, transparent, var(--seal), transparent);
+  }
+
+  .panel{
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .panel::before{
+    content:"";
+    position:absolute; inset:6px;
+    border: 1px solid rgba(201,164,100,0.12);
+    border-radius: 3px;
+    pointer-events:none;
+  }
+
+  .section-title{
+    font-family:'Noto Serif', serif; font-style: italic; font-weight:700;
+    font-size: 15px; color: var(--gold);
+    margin: 0 0 16px 0;
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-title .tag{
+    font-family:'Inter'; font-style:normal; font-weight:600; font-size:10px;
+    letter-spacing:2px; text-transform:uppercase; color: var(--seal-bright);
+    border:1px solid var(--seal); padding: 3px 8px; border-radius: 2px;
+  }
+
+  .tru-row{
+    display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .field label{
+    display:block; font-size: 12px; color: var(--text-dim); margin-bottom: 6px;
+    font-weight:500;
+  }
+  select{
+    width: 100%;
+    background: var(--paper-2);
+    color: var(--text);
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 9px 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  select:focus{ outline: none; border-color: var(--gold-dim); }
+
+  .hao-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap: 12px 16px;
+  }
+  .hao-field label{
+    font-size: 12px; color: var(--text-dim); margin-bottom: 6px; display:block;
+    font-weight:500;
+  }
+  .hao-field label .num{
+    display:inline-block; width:18px; height:18px; line-height:18px; text-align:center;
+    background: var(--seal); color:#f3e9d8; border-radius:50%;
+    font-size:11px; font-weight:700; margin-right:6px;
+  }
+
+  button.primary{
+    width:100%;
+    background: var(--seal);
+    color: #f3e9d8;
+    border: none;
+    border-radius: 3px;
+    padding: 13px;
+    font-size: 14px; font-weight:600; letter-spacing:0.5px;
+    cursor:pointer;
+    margin-top: 8px;
+    transition: background 0.15s ease;
+  }
+  button.primary:hover{ background: var(--seal-bright); }
+  button.primary:focus-visible{ outline: 2px solid var(--gold); outline-offset:2px; }
+
+  #result-panel{ display:none; }
+
+  table{ width:100%; border-collapse: collapse; font-size: 14px; }
+  th, td{
+    padding: 10px 8px; text-align:left; border-bottom: 1px solid var(--paper-line);
+  }
+  th{
+    color: var(--gold-dim); font-size: 11px; text-transform:uppercase; letter-spacing:1px;
+    font-weight:600;
+  }
+  tr:last-child td{ border-bottom:none; }
+  td.hao-num{ font-family:'Noto Serif', serif; font-weight:700; color: var(--gold); }
+  .kv-stamp{
+    display:inline-block;
+    color: var(--seal-bright);
+    border: 1.5px solid var(--seal-bright);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 11px; font-weight:700; letter-spacing:1px;
+    transform: rotate(-4deg);
+    font-family:'Noto Serif', serif;
+  }
+  .no-kv{ color: var(--text-dim); font-size: 12px; }
+
+  .meta-line{
+    font-size: 13px; color: var(--text-dim); margin-bottom: 14px;
+    padding-bottom: 14px; border-bottom: 1px dashed var(--paper-line);
+  }
+  .meta-line b{ color: var(--text); font-weight:600; }
+
+  textarea{
+    width:100%; min-height: 220px;
+    background: var(--paper-2); color: var(--text);
+    border: 1px solid var(--paper-line); border-radius: 3px;
+    padding: 12px; font-family: 'Inter', monospace; font-size: 13px;
+    line-height: 1.6; resize: vertical; margin-top: 14px;
+  }
+
+  button.copy{
+    background: transparent; color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    border-radius: 3px; padding: 10px 16px;
+    font-size: 13px; font-weight:600; cursor:pointer;
+    margin-top: 10px;
+  }
+  button.copy:hover{ border-color: var(--gold); background: rgba(201,164,100,0.08); }
+  button.copy.copied{ border-color: var(--seal-bright); color: var(--seal-bright); }
+
+  @media (max-width: 480px){
+    .tru-row{ grid-template-columns: 1fr 1fr; }
+    .hao-grid{ grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Lục Hào</div>
+    <h1>Lục Thú &amp; Không Vong</h1>
+    <div class="sub">An Lục Thần theo Nhật Can · Xác định hào lâm Tuần Không</div>
+    <div class="divider"></div>
+  </header>
+
+  <div class="panel">
+    <div class="section-title">Tam Trụ <span class="tag">Nhật · Nguyệt · Tuế</span></div>
+
+    <div class="tru-row">
+      <div class="field">
+        <label>Nhật — Can</label>
+        <select id="nhat-can"></select>
+      </div>
+      <div class="field">
+        <label>Nhật — Chi</label>
+        <select id="nhat-chi"></select>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="tru-row">
+      <div class="field">
+        <label>Nguyệt — Can</label>
+        <select id="nguyet-can"></select>
+      </div>
+      <div class="field">
+        <label>Nguyệt — Chi</label>
+        <select id="nguyet-chi"></select>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="tru-row">
+      <div class="field">
+        <label>Tuế — Can</label>
+        <select id="tue-can"></select>
+      </div>
+      <div class="field">
+        <label>Tuế — Chi</label>
+        <select id="tue-chi"></select>
+      </div>
+      <div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">Sáu Hào <span class="tag">Địa Chi</span></div>
+    <div class="hao-grid" id="hao-inputs"></div>
+  </div>
+
+  <button class="primary" id="calc-btn">Tính Lục Thú &amp; Không Vong</button>
+
+  <div class="panel" id="result-panel">
+    <div class="section-title">Kết Quả</div>
+    <div class="meta-line" id="meta-line"></div>
+    <table>
+      <thead>
+        <tr><th>Hào</th><th>Địa Chi</th><th>Lục Thú</th><th>Trạng Thái</th></tr>
+      </thead>
+      <tbody id="result-body"></tbody>
+    </table>
+
+    <textarea id="result-text" readonly></textarea>
+    <button class="copy" id="copy-btn">Sao Chép Kết Quả (Text Thuần)</button>
+  </div>
+
+</div>
+
+<script>
+const CAN = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+const CHI = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+const CYCLE = ["Thanh Long","Chu Tước","Câu Trần","Đằng Xà","Bạch Hổ","Huyền Vũ"];
+const KV_PAIRS = [
+  ["Tuất","Hợi"],   // group 0: Tuần Giáp Tý
+  ["Thân","Dậu"],   // group 1: Tuần Giáp Tuất
+  ["Ngọ","Mùi"],    // group 2: Tuần Giáp Thân
+  ["Thìn","Tỵ"],    // group 3: Tuần Giáp Ngọ
+  ["Dần","Mão"],    // group 4: Tuần Giáp Thìn
+  ["Tý","Sửu"]      // group 5: Tuần Giáp Dần
+];
+const TUAN_NAME = ["Giáp Tý","Giáp Tuất","Giáp Thân","Giáp Ngọ","Giáp Thìn","Giáp Dần"];
+
+function fillSelect(sel, options){
+  sel.innerHTML = options.map((o,i)=>`<option value="${i}">${o}</option>`).join("");
+}
+
+function initSelects(){
+  ["nhat-can","nguyet-can","tue-can"].forEach(id => fillSelect(document.getElementById(id), CAN));
+  ["nhat-chi","nguyet-chi","tue-chi"].forEach(id => fillSelect(document.getElementById(id), CHI));
+
+  const haoWrap = document.getElementById("hao-inputs");
+  let html = "";
+  for(let h = 6; h >= 1; h--){
+    html += `<div class="hao-field">
+      <label><span class="num">${h}</span>Hào ${h}</label>
+      <select id="hao-${h}"></select>
+    </div>`;
+  }
+  haoWrap.innerHTML = html;
+  for(let h = 1; h <= 6; h++){
+    fillSelect(document.getElementById(`hao-${h}`), CHI);
+  }
+}
+
+function startDeityIndex(canIdx){
+  // 0 Giáp,1 Ất,2 Bính,3 Đinh,4 Mậu,5 Kỷ,6 Canh,7 Tân,8 Nhâm,9 Quý
+  if(canIdx === 0 || canIdx === 1) return 0; // Thanh Long
+  if(canIdx === 2 || canIdx === 3) return 1; // Chu Tước
+  if(canIdx === 4) return 2; // Câu Trần
+  if(canIdx === 5) return 3; // Đằng Xà
+  if(canIdx === 6 || canIdx === 7) return 4; // Bạch Hổ
+  return 5; // Nhâm/Quý -> Huyền Vũ
+}
+
+function findGanChiIndex(canIdx, chiIdx){
+  for(let n = 0; n < 60; n++){
+    if(n % 10 === canIdx && n % 12 === chiIdx) return n;
+  }
+  return -1;
+}
+
+function calculate(){
+  const nhatCanIdx = parseInt(document.getElementById("nhat-can").value);
+  const nhatChiIdx = parseInt(document.getElementById("nhat-chi").value);
+  const nguyetCanIdx = parseInt(document.getElementById("nguyet-can").value);
+  const nguyetChiIdx = parseInt(document.getElementById("nguyet-chi").value);
+  const tueCanIdx = parseInt(document.getElementById("tue-can").value);
+  const tueChiIdx = parseInt(document.getElementById("tue-chi").value);
+
+  const haoChi = {};
+  for(let h = 1; h <= 6; h++){
+    haoChi[h] = parseInt(document.getElementById(`hao-${h}`).value);
+  }
+
+  // Lục Thú
+  const startIdx = startDeityIndex(nhatCanIdx);
+  const deities = {};
+  for(let h = 1; h <= 6; h++){
+    deities[h] = CYCLE[(startIdx + (h - 1)) % 6];
+  }
+
+  // Không Vong
+  const n = findGanChiIndex(nhatCanIdx, nhatChiIdx);
+  const group = Math.floor(n / 10);
+  const kvChi = KV_PAIRS[group];
+  const tuanName = TUAN_NAME[group];
+
+  const nhatStr = CAN[nhatCanIdx] + " " + CHI[nhatChiIdx];
+  const nguyetStr = CAN[nguyetCanIdx] + " " + CHI[nguyetChiIdx];
+  const tueStr = CAN[tueCanIdx] + " " + CHI[tueChiIdx];
+
+  document.getElementById("meta-line").innerHTML =
+    `Nhật: <b>${nhatStr}</b> &nbsp;·&nbsp; Nguyệt: <b>${nguyetStr}</b> &nbsp;·&nbsp; Tuế: <b>${tueStr}</b><br>` +
+    `Tuần: <b>${tuanName}</b> &nbsp;→&nbsp; Không Vong tại địa chi: <b>${kvChi[0]}, ${kvChi[1]}</b>`;
+
+  let rows = "";
+  let textLines = [];
+  textLines.push("KẾT QUẢ LỤC HÀO — LỤC THÚ & KHÔNG VONG");
+  textLines.push(`Nhật: ${nhatStr}  |  Nguyệt: ${nguyetStr}  |  Tuế: ${tueStr}`);
+  textLines.push(`Tuần: ${tuanName}  →  Không Vong: ${kvChi[0]}, ${kvChi[1]}`);
+  textLines.push("");
+  textLines.push("Hào | Địa Chi | Lục Thú | Trạng Thái");
+
+  for(let h = 6; h >= 1; h--){
+    const chiName = CHI[haoChi[h]];
+    const deity = deities[h];
+    const isKV = kvChi.includes(chiName);
+    rows += `<tr>
+      <td class="hao-num">Hào ${h}</td>
+      <td>${chiName}</td>
+      <td>${deity}</td>
+      <td>${isKV ? `<span class="kv-stamp">KHÔNG VONG</span>` : `<span class="no-kv">—</span>`}</td>
+    </tr>`;
+    textLines.push(`Hào ${h}: ${chiName} | ${deity} | ${isKV ? "KHÔNG VONG" : "—"}`);
+  }
+
+  document.getElementById("result-body").innerHTML = rows;
+  document.getElementById("result-text").value = textLines.join("\n");
+  document.getElementById("result-panel").style.display = "block";
+  document.getElementById("result-panel").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initSelects();
+  document.getElementById("calc-btn").addEventListener("click", calculate);
+  document.getElementById("copy-btn").addEventListener("click", () => {
+    const ta = document.getElementById("result-text");
+    const btn = document.getElementById("copy-btn");
+    const original = btn.textContent;
+
+    function showSuccess(){
+      btn.textContent = "Đã sao chép ✓";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove("copied");
+      }, 1800);
+    }
+
+    function showFailure(){
+      btn.textContent = "Vui lòng tự chọn & Ctrl+C";
+      setTimeout(() => { btn.textContent = original; }, 2200);
+    }
+
+    function fallbackCopy(){
+      try{
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        const ok = document.execCommand("copy");
+        if(ok){ showSuccess(); } else { showFailure(); }
+      }catch(err){
+        showFailure();
+      }
+    }
+
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ta.value).then(showSuccess).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  });
+});
+</script>
+</body>
+</html>
