@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xin / Hứng Neutrino</title>
+
+<style>
+:root {
+    --bg-a: #fbf3e2;
+    --bg-b: #f3e8d2;
+    --bg-c: #eadcc0;
+    --paper: #fcf7ea;
+    --paper2: #f3e9d3;
+    --dual-bg: #f7eedb;
+    --text: #2d2016;
+    --muted: #6e6050;
+    --line: #d5c29e;
+    --dash: #dccaa6;
+    --gold: #9a6a12;
+    --gold2: #8a5a0a;
+    --title: #5a3a0a;
+    --name: #6b430a;
+    --formula: #5a3a0a;
+    --value: #3b2a18;
+    --note: #6e6050;
+    --note-strong: #5a3a0a;
+    --footer: #8a7a66;
+    --bar-bg: #e6d8bb;
+    --bar-line: #cdb88f;
+    --btn-top: #a83a2c;
+    --btn-bot: #7a261d;
+    --btn-border: #8c6221;
+    --btn-text: #fff3d6;
+    --sheen: rgba(255,255,255,.4);
+    --shade: rgba(0,0,0,.02);
+    --shadow: rgba(90,60,20,.18);
+    --sun-color: #b87d10;
+    --alpha-color: #b73b2e;
+    --figure: #d3c2a2;
+    --figure-hair: #b8a37e;
+    --figure-line: #8a6b45;
+    --seg-active: #7a261d;
+    --glow: rgba(184,125,16,.18);
+
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-a: #28160d;
+        --bg-b: #100a07;
+        --bg-c: #070504;
+        --paper: #17100c;
+        --paper2: #211710;
+        --dual-bg: #100b08;
+        --text: #eadfce;
+        --muted: #9e9180;
+        --line: #493126;
+        --dash: #3b2920;
+        --gold: #c9922a;
+        --gold2: #f0c96a;
+        --title: #f3dfb0;
+        --name: #f1d59b;
+        --formula: #f2dca9;
+        --value: #e9d8b4;
+        --note: #807365;
+        --note-strong: #b9a27a;
+        --footer: #62574c;
+        --bar-bg: #0b0806;
+        --bar-line: #38251c;
+        --btn-top: #8e3025;
+        --btn-bot: #5f1e18;
+        --btn-border: #8c6221;
+        --btn-text: #f8e9c5;
+        --sheen: rgba(255,255,255,.025);
+        --shade: rgba(0,0,0,.15);
+        --shadow: rgba(0,0,0,.35);
+        --sun-color: #f0c96a;
+        --alpha-color: #e05a45;
+        --figure: #3a2a20;
+        --figure-hair: #2a1d15;
+        --figure-line: #7a5a3c;
+        --seg-active: #5f1e18;
+        --glow: rgba(240,201,106,.16);
+    }
+}
+
+:root[data-theme="dark"] {
+    --bg-a: #28160d;
+    --bg-b: #100a07;
+    --bg-c: #070504;
+    --paper: #17100c;
+    --paper2: #211710;
+    --dual-bg: #100b08;
+    --text: #eadfce;
+    --muted: #9e9180;
+    --line: #493126;
+    --dash: #3b2920;
+    --gold: #c9922a;
+    --gold2: #f0c96a;
+    --title: #f3dfb0;
+    --name: #f1d59b;
+    --formula: #f2dca9;
+    --value: #e9d8b4;
+    --note: #807365;
+    --note-strong: #b9a27a;
+    --footer: #62574c;
+    --bar-bg: #0b0806;
+    --bar-line: #38251c;
+    --btn-top: #8e3025;
+    --btn-bot: #5f1e18;
+    --btn-border: #8c6221;
+    --btn-text: #f8e9c5;
+    --sheen: rgba(255,255,255,.025);
+    --shade: rgba(0,0,0,.15);
+    --shadow: rgba(0,0,0,.35);
+    --sun-color: #f0c96a;
+    --alpha-color: #e05a45;
+    --figure: #3a2a20;
+    --figure-hair: #2a1d15;
+    --figure-line: #7a5a3c;
+    --seg-active: #5f1e18;
+    --glow: rgba(240,201,106,.16);
+}
+
+html {
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+    -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at 50% 0%,
+            var(--bg-a) 0,
+            var(--bg-b) 45%,
+            var(--bg-c) 100%);
+    background-color: var(--bg-b);
+    color: var(--text);
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.app {
+    width: min(960px, 100%);
+    margin: auto;
+    padding: 22px 14px 40px;
+}
+
+header {
+    text-align: center;
+    padding: 18px 10px 24px;
+}
+
+.small-title {
+    color: var(--gold);
+    letter-spacing: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 8px 0 4px;
+    font-size: clamp(30px, 7vw, 54px);
+    color: var(--title);
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.card {
+    background:
+        linear-gradient(145deg, var(--sheen), var(--shade)),
+        var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 14px 40px var(--shadow);
+}
+
+.card-title {
+    color: var(--gold2);
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+}
+
+.sources {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 650px) {
+    .sources { grid-template-columns: 1fr; }
+}
+
+.source {
+    position: relative;
+    padding: 17px;
+    background: var(--paper2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.source::before {
+    content: "";
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    right: -30px;
+    top: -30px;
+    background: radial-gradient(circle, var(--glow), transparent 70%);
+    pointer-events: none;
+}
+
+.source-name {
+    color: var(--name);
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.source-tag {
+    color: var(--muted);
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.source-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--dash);
+    font-size: 13px;
+}
+
+.label { color: var(--muted); }
+
+.value {
+    color: var(--text);
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.source-prob { margin-top: 14px; }
+
+.prob-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.prob-head strong {
+    color: var(--value);
+    font-size: 15px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.bar {
+    height: 13px;
+    background: var(--bar-bg);
+    border: 1px solid var(--bar-line);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    width: 0%;
+    transition: width .8s ease;
+}
+
+.fill.sun { background: var(--sun-color); }
+.fill.alpha { background: var(--alpha-color); }
+.fill.progress { background: var(--gold); transition: width .35s ease; }
+
+.scale-ctl {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.scale-ctl .scale-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--gold);
+}
+
+.formula {
+    text-align: center;
+    padding: 16px 8px;
+    margin-top: 14px;
+    color: var(--formula);
+    font-size: 17px;
+    line-height: 1.7;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.formula small {
+    display: block;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.receiver {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 18px;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .receiver {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+    .receiver-ctl { width: 100%; }
+}
+
+.figure-wrap {
+    width: 170px;
+    text-align: center;
+}
+
+.figure-wrap svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.fig-body {
+    fill: var(--figure);
+    stroke: var(--figure-line);
+    stroke-width: 1.5;
+}
+
+.fig-hair {
+    fill: var(--figure-hair);
+    stroke: var(--figure-line);
+    stroke-width: 1;
+}
+
+.fill-rect {
+    fill: var(--gold);
+    opacity: .6;
+    transition: transform .35s ease;
+}
+
+.hit {
+    stroke: var(--paper);
+    stroke-width: .6;
+    animation: hitIn .5s ease-out both;
+}
+
+.hit.sun { fill: var(--sun-color); }
+.hit.alpha { fill: var(--alpha-color); }
+
+@keyframes hitIn {
+    from { opacity: 0; }
+    to { opacity: .95; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hit { animation: none; opacity: .95; }
+    .fill, .fill-rect { transition: none; }
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: -1px;
+}
+
+.dot.sun { background: var(--sun-color); }
+.dot.alpha { background: var(--alpha-color); }
+
+.field { margin-bottom: 14px; }
+
+.field-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.seg {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.seg-btn {
+    border: 0;
+    border-radius: 0;
+    padding: 10px 24px;
+    background: var(--dual-bg);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 15px;
+    letter-spacing: 0;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.seg-btn + .seg-btn { border-left: 1px solid var(--line); }
+
+.seg-btn.active {
+    background: var(--seg-active);
+    color: var(--btn-text);
+}
+
+select {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    background: var(--dual-bg);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    max-width: 100%;
+}
+
+.params {
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+
+.primary {
+    border: 1px solid var(--btn-border);
+    border-radius: 10px;
+    padding: 14px 28px;
+    background: linear-gradient(180deg, var(--btn-top), var(--btn-bot));
+    color: var(--btn-text);
+    font-family: inherit;
+    font-size: 17px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 5px 20px var(--shadow);
+    transition: transform .15s, filter .15s;
+}
+
+.primary:hover { filter: brightness(1.12); }
+.primary:active { transform: scale(.97); }
+.primary:disabled { opacity: .55; cursor: wait; }
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.status {
+    color: var(--muted);
+    font-size: 12px;
+    min-height: 18px;
+    margin-top: 10px;
+    line-height: 1.5;
+}
+
+.status.active { color: var(--gold2); }
+
+.result {
+    text-align: center;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-label {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.pair {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 18px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.pair-item { text-align: center; min-width: 110px; }
+
+.pair-num {
+    font-size: clamp(56px, 15vw, 96px);
+    line-height: 1;
+}
+
+.pair-num.sun { color: var(--sun-color); }
+.pair-num.alpha { color: var(--alpha-color); }
+
+.pair-name {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+.pair-sep {
+    color: var(--line);
+    font-size: clamp(30px, 8vw, 50px);
+}
+
+.result-source {
+    color: var(--name);
+    font-size: 15px;
+    overflow-wrap: anywhere;
+}
+
+.result-detail {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.dual-box {
+    text-align: center;
+    padding: 18px 10px;
+    background: var(--dual-bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    min-width: 0;
+}
+
+.dual-title {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.dual-number {
+    font-size: 45px;
+    color: var(--value);
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+}
+
+.dual-sub {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+}
+
+@media (max-width: 600px) {
+    .data-grid { grid-template-columns: 1fr; }
+}
+
+.data-item {
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--dash);
+    min-width: 0;
+}
+
+.data-label {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.data-value {
+    color: var(--value);
+    margin-top: 3px;
+    overflow-wrap: anywhere;
+}
+
+.note {
+    color: var(--note);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.note p { margin: 0 0 10px; }
+.note strong { color: var(--note-strong); }
+
+footer {
+    text-align: center;
+    color: var(--footer);
+    font-size: 11px;
+    padding: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+    <div class="small-title">Neutrino Probability Simulation</div>
+    <h1>Xin / Hứng Neutrino</h1>
+    <div class="subtitle">Hai nguồn độc lập · Cùng một lần lấy · Số nguyên 0 – 100</div>
+</header>
+
+
+<!-- 01 · HAI NGUỒN PHÁT -->
+<section class="card">
+
+    <div class="card-title">01 · Hai nguồn phát độc lập</div>
+
+    <div class="sources">
+
+        <div class="source">
+            <div class="source-name">☉ Mặt Trời</div>
+            <div class="source-tag">Số neutrino tính riêng, không phụ thuộc Alpha Centauri A</div>
+
+            <div class="source-row">
+                <span class="label">Neutrino / giây</span>
+                <span class="value" id="sunRate">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Khoảng cách</span>
+                <span class="value" id="sunDist">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Thông lượng thật (cm⁻²·s⁻¹)</span>
+                <span class="value" id="sunFlux">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Hệ số hiệu chỉnh riêng K</span>
+                <span class="value" id="sunK">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Trung bình λ (số neutrino / lượt)</span>
+                <span class="value" id="sunLambda">—</span>
+            </div>
+
+            <div class="source-prob">
+                <div class="prob-head">
+                    <span>Xác suất nhận ≥ 1 neutrino</span>
+                    <strong id="sunProb">—</strong>
+                </div>
+                <div class="bar"><div class="fill sun" id="sunBar"></div></div>
+            </div>
+
+            <div class="scale-ctl">
+                <div class="scale-head">
+                    <span>Cường độ phát của Mặt Trời</span>
+                    <span id="sunScaleLabel">×1.00</span>
+                </div>
+                <input type="range" id="sunScale" min="-1" max="1" step="0.05" value="0"
+                       aria-label="Cường độ phát của Mặt Trời">
+            </div>
+        </div>
+
+
+        <div class="source">
+            <div class="source-name">★ Alpha Centauri A</div>
+            <div class="source-tag">Số neutrino tính riêng, không phụ thuộc Mặt Trời</div>
+
+            <div class="source-row">
+                <span class="label">Neutrino / giây</span>
+                <span class="value" id="alphaRate">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Khoảng cách</span>
+                <span class="value" id="alphaDist">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Thông lượng thật (cm⁻²·s⁻¹)</span>
+                <span class="value" id="alphaFlux">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Hệ số hiệu chỉnh riêng K</span>
+                <span class="value" id="alphaK">—</span>
+            </div>
+            <div class="source-row">
+                <span class="label">Trung bình λ (số neutrino / lượt)</span>
+                <span class="value" id="alphaLambda">—</span>
+            </div>
+
+            <div class="source-prob">
+                <div class="prob-head">
+                    <span>Xác suất nhận ≥ 1 neutrino</span>
+                    <strong id="alphaProb">—</strong>
+                </div>
+                <div class="bar"><div class="fill alpha" id="alphaBar"></div></div>
+            </div>
+
+            <div class="scale-ctl">
+                <div class="scale-head">
+                    <span>Cường độ phát của Alpha Centauri A</span>
+                    <span id="alphaScaleLabel">×1.00</span>
+                </div>
+                <input type="range" id="alphaScale" min="-1" max="1" step="0.05" value="0"
+                       aria-label="Cường độ phát của Alpha Centauri A">
+            </div>
+        </div>
+
+    </div>
+
+    <div class="formula">
+        F = Γ / 4πd² &nbsp;→&nbsp; λ = F · σ · N · t · K &nbsp;→&nbsp; k ~ Poisson(λ), 0 ≤ k ≤ 100
+        <small>
+            Mỗi nguồn có F, K, λ và k riêng. Không có phép chia cho tổng hai nguồn,
+            nên đổi Mặt Trời không làm đổi Alpha Centauri A và ngược lại.
+            K là hệ số hiệu chỉnh riêng của từng nguồn để số neutrino mỗi lượt
+            nằm trong khoảng 0 – 100.
+        </small>
+    </div>
+
+</section>
+
+
+<!-- 02 · ĐIỂM NHẬN -->
+<section class="card">
+
+    <div class="card-title">02 · Điểm nhận: điền đầy rồi mới hứng</div>
+
+    <div class="receiver">
+
+        <div class="figure-wrap">
+            <svg viewBox="0 0 120 250" role="img" aria-label="Hình nhân điểm nhận neutrino">
+
+                <defs>
+                    <clipPath id="clipMale">
+                        <rect x="54" y="40" width="12" height="14" rx="4"/>
+                        <circle cx="60" cy="28" r="15"/>
+                        <path d="M32 58 Q60 48 88 58 L85 132 L35 132 Z"/>
+                        <rect x="17" y="58" width="15" height="78" rx="7"/>
+                        <rect x="88" y="58" width="15" height="78" rx="7"/>
+                        <rect x="37" y="130" width="21" height="112" rx="9"/>
+                        <rect x="62" y="130" width="21" height="112" rx="9"/>
+                    </clipPath>
+                    <clipPath id="clipFemale">
+                        <rect x="55" y="42" width="10" height="14" rx="4"/>
+                        <circle cx="60" cy="28" r="14"/>
+                        <path d="M40 58 Q60 51 80 58 L76 98 L93 142 L27 142 L44 98 Z"/>
+                        <rect x="23" y="58" width="13" height="72" rx="6"/>
+                        <rect x="84" y="58" width="13" height="72" rx="6"/>
+                        <rect x="40" y="140" width="17" height="102" rx="8"/>
+                        <rect x="63" y="140" width="17" height="102" rx="8"/>
+                    </clipPath>
+                </defs>
+
+                <g id="figMale">
+                    <rect class="fig-body" x="54" y="40" width="12" height="14" rx="4"/>
+                    <circle class="fig-body" cx="60" cy="28" r="15"/>
+                    <path class="fig-body" d="M32 58 Q60 48 88 58 L85 132 L35 132 Z"/>
+                    <rect class="fig-body" x="17" y="58" width="15" height="78" rx="7"/>
+                    <rect class="fig-body" x="88" y="58" width="15" height="78" rx="7"/>
+                    <rect class="fig-body" x="37" y="130" width="21" height="112" rx="9"/>
+                    <rect class="fig-body" x="62" y="130" width="21" height="112" rx="9"/>
+                    <g clip-path="url(#clipMale)">
+                        <rect class="fill-rect" x="0" y="0" width="120" height="250"
+                              style="transform: translateY(250px)"/>
+                    </g>
+                </g>
+
+                <g id="figFemale" style="display:none">
+                    <ellipse class="fig-hair" cx="60" cy="34" rx="20" ry="27"/>
+                    <circle class="fig-hair" cx="60" cy="9" r="7"/>
+                    <rect class="fig-body" x="55" y="42" width="10" height="14" rx="4"/>
+                    <circle class="fig-body" cx="60" cy="28" r="14"/>
+                    <path class="fig-body" d="M40 58 Q60 51 80 58 L76 98 L93 142 L27 142 L44 98 Z"/>
+                    <rect class="fig-body" x="23" y="58" width="13" height="72" rx="6"/>
+                    <rect class="fig-body" x="84" y="58" width="13" height="72" rx="6"/>
+                    <rect class="fig-body" x="40" y="140" width="17" height="102" rx="8"/>
+                    <rect class="fig-body" x="63" y="140" width="17" height="102" rx="8"/>
+                    <g clip-path="url(#clipFemale)">
+                        <rect class="fill-rect" x="0" y="0" width="120" height="250"
+                              style="transform: translateY(250px)"/>
+                    </g>
+                </g>
+
+                <g id="hits"></g>
+            </svg>
+
+            <div class="legend">
+                <span><i class="dot sun"></i>Mặt Trời</span>
+                <span><i class="dot alpha"></i>Alpha Cen A</span>
+            </div>
+        </div>
+
+
+        <div class="receiver-ctl">
+
+            <div class="field">
+                <div class="field-label"><span>Hình nhân</span></div>
+                <div class="seg" role="radiogroup" aria-label="Chọn hình nhân Nam hoặc Nữ">
+                    <button type="button" class="seg-btn active" id="btnMale"
+                            role="radio" aria-checked="true" data-body="male">♂ Nam</button>
+                    <button type="button" class="seg-btn" id="btnFemale"
+                            role="radio" aria-checked="false" data-body="female">♀ Nữ</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-label"><span>Thời gian hứng mỗi lượt</span></div>
+                <select id="windowSelect" aria-label="Thời gian hứng mỗi lượt">
+                    <option value="hour">1 giờ</option>
+                    <option value="six">6 giờ</option>
+                    <option value="day" selected>1 ngày</option>
+                    <option value="three">3 ngày</option>
+                    <option value="week">7 ngày</option>
+                </select>
+            </div>
+
+            <div class="params">
+                <div class="source-row">
+                    <span class="label">Khối lượng cơ thể</span>
+                    <span class="value" id="bodyMass">—</span>
+                </div>
+                <div class="source-row">
+                    <span class="label">Số electron mục tiêu N</span>
+                    <span class="value" id="bodyTargets">—</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">
+                    <span>Mức điền hình nhân</span>
+                    <span id="fillLabel">0 / 10 · 0%</span>
+                </div>
+                <div class="bar"><div class="fill progress" id="fillBar"></div></div>
+            </div>
+
+            <button class="primary" id="fillButton">✦ ĐIỀN ĐẦY</button>
+
+            <div class="status" id="status" role="status" aria-live="polite">
+                Bấm ĐIỀN ĐẦY nhiều lần. Khi hình nhân đầy, phép hứng neutrino sẽ tự chạy.
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- 03 · KẾT QUẢ -->
+<section class="card">
+
+    <div class="card-title">03 · Kết quả sự kiện (một lần lấy, hai số độc lập)</div>
+
+    <div class="result">
+        <div class="result-label">Neutrino event</div>
+
+        <div class="pair">
+            <div class="pair-item">
+                <div class="pair-num sun" id="resultSun">—</div>
+                <div class="pair-name">MẶT TRỜI</div>
+            </div>
+            <div class="pair-sep">·</div>
+            <div class="pair-item">
+                <div class="pair-num alpha" id="resultAlpha">—</div>
+                <div class="pair-name">ALPHA CENTAURI A</div>
+            </div>
+        </div>
+
+        <div class="result-source" id="resultSource">Chưa hứng</div>
+        <div class="result-detail" id="resultDetail">—</div>
+    </div>
+
+    <div class="dual">
+        <div class="dual-box">
+            <div class="dual-title">MẶT TRỜI</div>
+            <div class="dual-number" id="sunResult">—</div>
+            <div class="dual-sub" id="sunResultSub">—</div>
+        </div>
+
+        <div class="dual-box">
+            <div class="dual-title">ALPHA CENTAURI A</div>
+            <div class="dual-number" id="alphaResult">—</div>
+            <div class="dual-sub" id="alphaResultSub">—</div>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- 04 · DỮ LIỆU -->
+<section class="card">
+
+    <div class="card-title">04 · Dữ liệu sự kiện</div>
+
+    <div class="data-grid">
+
+        <div class="data-item">
+            <div class="data-label">RANDOM SOURCE</div>
+            <div class="data-value" id="randomSource">—</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">ĐIỂM NHẬN / CỬA SỔ HỨNG</div>
+            <div class="data-value" id="dataReceiver">—</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">MẶT TRỜI · RANDOM u</div>
+            <div class="data-value" id="sunU">—</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">ALPHA CENTAURI A · RANDOM u</div>
+            <div class="data-value" id="alphaU">—</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">MẶT TRỜI · NGƯỠNG e^−λ (u ≥ ngưỡng thì có event)</div>
+            <div class="data-value" id="sunThreshold">—</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">ALPHA CENTAURI A · NGƯỠNG e^−λ</div>
+            <div class="data-value" id="alphaThreshold">—</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">TỔNG TRONG PHIÊN · MẶT TRỜI</div>
+            <div class="data-value" id="totalSun">0</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">TỔNG TRONG PHIÊN · ALPHA CENTAURI A</div>
+            <div class="data-value" id="totalAlpha">0</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">SỐ LƯỢT HỨNG (mỗi lượt cần điền đầy hình nhân)</div>
+            <div class="data-value" id="totalDraws">0</div>
+        </div>
+
+        <div class="data-item">
+            <div class="data-label">SỐ LƯỢT ALPHA CENTAURI A CÓ EVENT</div>
+            <div class="data-value" id="alphaHitDraws">0</div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- 05 · GHI CHÚ -->
+<section class="card">
+
+    <div class="card-title">05 · Ghi chú mô hình</div>
+
+    <div class="note">
+
+        <p>
+            <strong>Đây là mô phỏng.</strong>
+            Trình duyệt không phát hiện neutrino thật. Việc tung xúc xắc dùng
+            entropy từ Web Crypto API.
+        </p>
+
+        <p>
+            <strong>Cách chơi.</strong>
+            Bấm ĐIỀN ĐẦY nhiều lần (mỗi lần lấp thêm 10%). Chỉ khi hình nhân đầy,
+            thuật toán hứng neutrino mới chạy. Bấm tiếp để bắt đầu lượt mới.
+        </p>
+
+        <p>
+            <strong>Một lần lấy, hai số độc lập.</strong>
+            Trong cùng một lượt, Mặt Trời và Alpha Centauri A cùng được lấy mẫu,
+            mỗi nguồn bằng số ngẫu nhiên riêng, ví dụ Mặt Trời: 6, Alpha Centauri A: 2.
+            Hai số này không ảnh hưởng nhau. Mặt Trời tăng hay giảm giữa các lượt
+            không kéo theo Alpha Centauri A.
+        </p>
+
+        <p>
+            <strong>Công thức mỗi nguồn.</strong>
+            Thông lượng <strong>F = Γ / 4πd²</strong>, số sự kiện kỳ vọng
+            <strong>λ = F · σ · N · t · K</strong>, rồi số neutrino nhận được
+            <strong>k ~ Poisson(λ)</strong>, giới hạn thành số nguyên trong khoảng
+            <strong>0 – 100</strong>. Không nguồn nào được chuẩn hóa theo nguồn kia.
+        </p>
+
+        <p>
+            <strong>Hệ số hiệu chỉnh K (riêng từng nguồn).</strong>
+            Với thông lượng thật, Mặt Trời cho hàng tỉ sự kiện còn Alpha Centauri A
+            gần như bằng 0, nên không thể cùng nằm trong khoảng 0 – 100 nếu dùng chung
+            một hệ số. Vì vậy mỗi nguồn có K riêng, được chọn sao cho ở điều kiện chuẩn
+            (hình nhân Nam 70 kg, cửa sổ 1 ngày, cường độ ×1.00) trung bình λ của
+            Mặt Trời là 10 và của Alpha Centauri A là 3. K chỉ là hệ số tỉ lệ cố định cho
+            từng nguồn, không phụ thuộc vào nguồn còn lại.
+        </p>
+
+        <p>
+            <strong>Điểm nhận</strong> là hình nhân Nam (70 kg) hoặc Nữ (60 kg). Khối lượng
+            quyết định số electron mục tiêu N (khoảng 0,55 electron trên mỗi gam × số Avogadro).
+            Tiết diện σ = 10⁻⁴⁴ cm² là giá trị hiệu dụng giả định. Cửa sổ hứng dài hơn hoặc
+            cường độ cao hơn làm λ tăng; nếu k vượt 100 thì kết quả bị chặn ở 100.
+            Khi λ &gt; 500, phép lấy mẫu Poisson được xấp xỉ bằng phân phối chuẩn.
+        </p>
+
+        <p>
+            Mô hình chưa mô phỏng detector thực, phổ năng lượng, dao động neutrino,
+            nhiễu nền hay hiệu suất đo. Kết quả là <strong>mô phỏng xác suất dựa trên thông lượng
+            nguồn</strong>, không phải số liệu quan sát thiên văn thực.
+        </p>
+
+    </div>
+
+</section>
+
+
+<footer>
+    Neutrino Simulation · Independent Two Source Flux Model
+</footer>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   1. HẰNG SỐ VÀ CẤU HÌNH
+============================================================ */
+
+const AU_CM = 1.495978707e13;        // 1 AU tính bằng cm
+const LY_AU = 63241.077;             // 1 năm ánh sáng tính bằng AU
+const SIGMA_CM2 = 1e-44;             // tiết diện hiệu dụng giả định / electron
+const ELECTRONS_PER_KG = 0.55 * 1000 * 6.02214076e23;
+
+const CLICKS_TO_FILL = 10;           // số lần bấm để điền đầy hình nhân
+const MAX_COUNT = 100;               // số neutrino tối đa mỗi nguồn / lượt
+
+/* Điều kiện chuẩn để hiệu chỉnh K riêng từng nguồn */
+const REF_MASS_KG = 70;
+const REF_SECONDS = 86400;
+
+const SOURCES = {
+    sun: {
+        key: "sun",
+        name: "Mặt Trời",
+        baseRate: 1.819e38,          // neutrino / giây
+        distanceAU: 1,
+        targetMean: 10,              // λ trung bình ở điều kiện chuẩn
+        scale: 1,                    // hệ số cường độ riêng của nguồn này
+        K: 1                         // hệ số hiệu chỉnh riêng (tính bên dưới)
+    },
+    alpha: {
+        key: "alpha",
+        name: "Alpha Centauri A",
+        baseRate: 2.067e38,
+        distanceAU: 4.365 * LY_AU,
+        lightYears: 4.365,
+        targetMean: 3,               // λ trung bình ở điều kiện chuẩn
+        scale: 1,
+        K: 1
+    }
+};
+
+/* Các vùng [x, y, rộng, cao] trên hình nhân để rải điểm hứng */
+const BODIES = {
+    male: {
+        label: "Nam",
+        massKg: 70,
+        regions: [
+            [46, 14, 28, 28], [34, 58, 52, 72],
+            [18, 60, 13, 74], [89, 60, 13, 74],
+            [38, 132, 19, 104], [63, 132, 19, 104]
+        ]
+    },
+    female: {
+        label: "Nữ",
+        massKg: 60,
+        regions: [
+            [47, 16, 26, 26], [42, 60, 36, 38], [32, 100, 56, 38],
+            [24, 60, 11, 68], [85, 60, 11, 68],
+            [41, 142, 15, 96], [64, 142, 15, 96]
+        ]
+    }
+};
+
+const WINDOWS = {
+    hour:  { label: "1 giờ",   seconds: 3600 },
+    six:   { label: "6 giờ",   seconds: 6 * 3600 },
+    day:   { label: "1 ngày",  seconds: 86400 },
+    three: { label: "3 ngày",  seconds: 3 * 86400 },
+    week:  { label: "7 ngày",  seconds: 7 * 86400 }
+};
+
+const state = {
+    body: "male",
+    windowKey: "day",
+    fillClicks: 0,
+    busy: false,
+    captured: false,
+    totals: { sun: 0, alpha: 0, draws: 0, alphaHitDraws: 0 }
+};
+
+const $ = id => document.getElementById(id);
+
+
+/* ============================================================
+   2. RANDOM (Web Crypto, 53 bit)
+============================================================ */
+
+function rnd() {
+    if (window.crypto && window.crypto.getRandomValues) {
+        const b = new Uint32Array(2);
+        window.crypto.getRandomValues(b);
+        return (b[0] * 2097152 + (b[1] >>> 11)) / 9007199254740992;
+    }
+    return Math.random();
+}
+
+
+/* ============================================================
+   3. HIỆU CHỈNH K RIÊNG TỪNG NGUỒN
+   K chỉ phụ thuộc vào chính nguồn đó: chọn K sao cho ở điều kiện
+   chuẩn thì λ = targetMean của nguồn.
+============================================================ */
+
+function fluxOf(rate, distanceAU) {
+    const d = distanceAU * AU_CM;
+    return rate / (4 * Math.PI * d * d);                           // cm^-2 s^-1
+}
+
+function calibrate(src) {
+    const refFlux = fluxOf(src.baseRate, src.distanceAU);
+    const refTargets = REF_MASS_KG * ELECTRONS_PER_KG;
+    const refLambdaPhysical = refFlux * SIGMA_CM2 * refTargets * REF_SECONDS;
+    src.K = src.targetMean / refLambdaPhysical;
+}
+
+calibrate(SOURCES.sun);
+calibrate(SOURCES.alpha);
+
+
+/* ============================================================
+   4. TÍNH RIÊNG TỪNG NGUỒN
+   Chỉ đọc dữ liệu của chính nguồn được truyền vào và các tham số
+   của điểm nhận (khối lượng, thời gian). Không có tổng chung,
+   không có chuẩn hóa giữa hai nguồn.
+============================================================ */
+
+function computeSource(src) {
+
+    const rate = src.baseRate * src.scale;
+
+    const flux = fluxOf(rate, src.distanceAU);
+
+    const targets = BODIES[state.body].massKg * ELECTRONS_PER_KG;
+
+    const seconds = WINDOWS[state.windowKey].seconds;
+
+    const lambda = flux * SIGMA_CM2 * targets * seconds * src.K;
+
+    const probability = -Math.expm1(-lambda);                      // 1 - e^-λ
+
+    return { rate, flux, targets, lambda, probability };
+}
+
+
+/* ============================================================
+   5. LẤY MẪU POISSON CHO MỘT NGUỒN (số nguyên 0 – MAX_COUNT)
+============================================================ */
+
+function samplePoisson(lambda) {
+
+    const u = rnd();
+
+    if (lambda > 500) {
+        const u1 = 1 - u;
+        const u2 = rnd();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        const k = Math.round(lambda + Math.sqrt(lambda) * z);
+        return { k: Math.min(MAX_COUNT, Math.max(0, k)), u };
+    }
+
+    let p = Math.exp(-lambda);
+    let cdf = p;
+    let k = 0;
+
+    while (u >= cdf && k < MAX_COUNT) {
+        k++;
+        p *= lambda / k;
+        cdf += p;
+    }
+
+    return { k, u };
+}
+
+
+/* ============================================================
+   6. ĐỊNH DẠNG SỐ
+============================================================ */
+
+function sci(v, d = 3) {
+    return v.toExponential(d);
+}
+
+function num(v) {
+    if (v >= 1000) return v.toExponential(2);
+    return v.toFixed(3);
+}
+
+function pct(p) {
+    const v = p * 100;
+    if (v === 0) return "0%";
+    if (v >= 0.01) return v.toFixed(4) + "%";
+    return v.toExponential(3) + "%";
+}
+
+function count(n) {
+    return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
+
+function distanceText(src) {
+    if (src.lightYears) {
+        return src.lightYears + " ly ≈ " +
+            src.distanceAU.toLocaleString("en-US", { maximumFractionDigits: 0 }) + " AU";
+    }
+    return src.distanceAU + " AU";
+}
+
+
+/* ============================================================
+   7. HIỂN THỊ (mỗi nguồn cập nhật ô của riêng nó)
+============================================================ */
+
+function renderSource(src) {
+
+    const c = computeSource(src);
+    const k = src.key;
+
+    $(k + "Rate").textContent = sci(c.rate);
+    $(k + "Dist").textContent = distanceText(src);
+    $(k + "Flux").textContent = sci(c.flux);
+    $(k + "K").textContent = sci(src.K, 2);
+    $(k + "Lambda").textContent = num(c.lambda);
+    $(k + "Prob").textContent = pct(c.probability);
+    $(k + "Bar").style.width = (c.probability * 100) + "%";
+    $(k + "ScaleLabel").textContent = "×" + src.scale.toFixed(2);
+}
+
+function updateAll() {
+
+    renderSource(SOURCES.sun);
+    renderSource(SOURCES.alpha);
+
+    const body = BODIES[state.body];
+
+    $("bodyMass").textContent = body.massKg + " kg";
+    $("bodyTargets").textContent = sci(body.massKg * ELECTRONS_PER_KG);
+
+    $("figMale").style.display = state.body === "male" ? "" : "none";
+    $("figFemale").style.display = state.body === "female" ? "" : "none";
+
+    for (const btn of [$("btnMale"), $("btnFemale")]) {
+        const on = btn.dataset.body === state.body;
+        btn.classList.toggle("active", on);
+        btn.setAttribute("aria-checked", on ? "true" : "false");
+    }
+}
+
+
+/* ============================================================
+   8. MỨC ĐIỀN HÌNH NHÂN
+============================================================ */
+
+function renderFill() {
+
+    const frac = state.fillClicks / CLICKS_TO_FILL;
+
+    const offset = (1 - frac) * 250;
+
+    document.querySelectorAll(".fill-rect").forEach(el => {
+        el.style.transform = "translateY(" + offset + "px)";
+    });
+
+    $("fillBar").style.width = (frac * 100) + "%";
+
+    $("fillLabel").textContent =
+        state.fillClicks + " / " + CLICKS_TO_FILL + " · " + Math.round(frac * 100) + "%";
+
+    $("fillButton").textContent =
+        state.captured ? "✦ ĐIỀN ĐẦY (LƯỢT MỚI)" : "✦ ĐIỀN ĐẦY";
+}
+
+
+/* ============================================================
+   9. ĐIỀU KHIỂN
+============================================================ */
+
+function setBody(key) {
+    state.body = key;
+    $("hits").innerHTML = "";
+    updateAll();
+}
+
+$("btnMale").addEventListener("click", () => setBody("male"));
+$("btnFemale").addEventListener("click", () => setBody("female"));
+
+$("windowSelect").addEventListener("change", e => {
+    state.windowKey = e.target.value;
+    updateAll();
+});
+
+/* Mỗi slider chỉ đổi scale của đúng nguồn của nó */
+$("sunScale").addEventListener("input", e => {
+    SOURCES.sun.scale = Math.pow(10, parseFloat(e.target.value));
+    renderSource(SOURCES.sun);
+});
+
+$("alphaScale").addEventListener("input", e => {
+    SOURCES.alpha.scale = Math.pow(10, parseFloat(e.target.value));
+    renderSource(SOURCES.alpha);
+});
+
+$("fillButton").addEventListener("click", fillFigure);
+
+
+/* ============================================================
+   10. CHẤM SỰ KIỆN TRÊN HÌNH NHÂN
+============================================================ */
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function spawnHits(n, cls) {
+
+    const regions = BODIES[state.body].regions;
+
+    const areas = regions.map(r => r[2] * r[3]);
+    const totalArea = areas.reduce((a, b) => a + b, 0);
+
+    for (let i = 0; i < n; i++) {
+
+        let pick = rnd() * totalArea;
+        let idx = 0;
+
+        while (idx < regions.length - 1 && pick >= areas[idx]) {
+            pick -= areas[idx];
+            idx++;
+        }
+
+        const r = regions[idx];
+
+        const dot = document.createElementNS(SVG_NS, "circle");
+        dot.setAttribute("class", "hit " + cls);
+        dot.setAttribute("cx", (r[0] + rnd() * r[2]).toFixed(1));
+        dot.setAttribute("cy", (r[1] + rnd() * r[3]).toFixed(1));
+        dot.setAttribute("r", cls === "alpha" ? "3.6" : "2.6");
+        dot.style.animationDelay = (i * 12) + "ms";
+
+        $("hits").appendChild(dot);
+    }
+}
+
+
+/* ============================================================
+   11. ANIMATION
+============================================================ */
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function simulateCapture() {
+
+    const status = $("status");
+    status.classList.add("active");
+
+    for (let i = 0; i <= 100; i += 5) {
+        status.textContent = "Hình nhân đã đầy. Đang hứng neutrino... " + i + "%";
+        await sleep(25);
+    }
+}
+
+
+/* ============================================================
+   12. BẤM ĐIỀN ĐẦY
+   Chỉ khi đủ CLICKS_TO_FILL lần bấm thì thuật toán hứng mới chạy.
+============================================================ */
+
+async function fillFigure() {
+
+    if (state.busy) return;
+
+    /* Lượt mới: làm rỗng hình nhân và xóa các chấm cũ */
+
+    if (state.captured) {
+        state.captured = false;
+        state.fillClicks = 0;
+        $("hits").innerHTML = "";
+    }
+
+    state.fillClicks++;
+    renderFill();
+
+    const status = $("status");
+
+    if (state.fillClicks < CLICKS_TO_FILL) {
+
+        status.classList.remove("active");
+
+        status.textContent =
+            "Đã điền " + (state.fillClicks * 100 / CLICKS_TO_FILL) +
+            "%. Còn " + (CLICKS_TO_FILL - state.fillClicks) +
+            " lần bấm nữa thì hình nhân đầy và bắt đầu hứng.";
+
+        return;
+    }
+
+    /* Hình nhân đã đầy: chạy thuật toán hứng */
+
+    state.busy = true;
+    $("fillButton").disabled = true;
+
+    await sleep(450);
+
+    await runCapture();
+
+    state.captured = true;
+    state.busy = false;
+
+    $("fillButton").disabled = false;
+    renderFill();
+}
+
+
+/* ============================================================
+   13. THUẬT TOÁN HỨNG NEUTRINO
+   Trong cùng một lượt, hai nguồn được lấy mẫu song song nhưng
+   độc lập: mỗi nguồn có λ riêng và một số ngẫu nhiên u riêng.
+============================================================ */
+
+async function runCapture() {
+
+    $("resultSun").textContent = "…";
+    $("resultAlpha").textContent = "…";
+    $("resultSource").textContent = "Đang xác định sự kiện…";
+
+    await simulateCapture();
+
+    const cSun = computeSource(SOURCES.sun);
+    const cAlpha = computeSource(SOURCES.alpha);
+
+    const rSun = samplePoisson(cSun.lambda);
+    const rAlpha = samplePoisson(cAlpha.lambda);
+
+    const sunCount = rSun.k;
+    const alphaCount = rAlpha.k;
+
+    /* Kết quả chính: hai số nguyên độc lập 0 – 100 */
+
+    $("resultSun").textContent = sunCount;
+    $("resultAlpha").textContent = alphaCount;
+
+    if (sunCount + alphaCount === 0) {
+        $("resultSource").textContent = "Không hứng được neutrino nào trong lượt này";
+    } else {
+        $("resultSource").textContent =
+            "Mặt Trời: " + sunCount + " · Alpha Centauri A: " + alphaCount;
+    }
+
+    $("resultDetail").textContent =
+        "Điểm nhận: " + BODIES[state.body].label +
+        " · cửa sổ " + WINDOWS[state.windowKey].label +
+        " · hai nguồn lấy mẫu độc lập trong cùng một lượt";
+
+    $("sunResult").textContent = sunCount;
+    $("alphaResult").textContent = alphaCount;
+
+    $("sunResultSub").textContent =
+        "λ = " + num(cSun.lambda) + " · P(≥1) = " + pct(cSun.probability);
+    $("alphaResultSub").textContent =
+        "λ = " + num(cAlpha.lambda) + " · P(≥1) = " + pct(cAlpha.probability);
+
+    /* Chấm trên hình nhân (mỗi chấm = 1 neutrino) */
+
+    $("hits").innerHTML = "";
+    spawnHits(sunCount, "sun");
+    spawnHits(alphaCount, "alpha");
+
+    /* Dữ liệu kỹ thuật */
+
+    $("randomSource").textContent = "Web Crypto API";
+
+    $("dataReceiver").textContent =
+        BODIES[state.body].label + " · " + WINDOWS[state.windowKey].label;
+
+    $("sunU").textContent = rSun.u.toFixed(15);
+    $("alphaU").textContent = rAlpha.u.toFixed(15);
+
+    $("sunThreshold").textContent = Math.exp(-cSun.lambda).toFixed(15);
+    $("alphaThreshold").textContent = Math.exp(-cAlpha.lambda).toFixed(15);
+
+    state.totals.sun += sunCount;
+    state.totals.alpha += alphaCount;
+    state.totals.draws += 1;
+    if (alphaCount > 0) state.totals.alphaHitDraws += 1;
+
+    $("totalSun").textContent = count(state.totals.sun);
+    $("totalAlpha").textContent = count(state.totals.alpha);
+    $("totalDraws").textContent = state.totals.draws;
+    $("alphaHitDraws").textContent = state.totals.alphaHitDraws;
+
+    $("status").textContent =
+        "Đã hứng xong một lượt. Bấm ĐIỀN ĐẦY để bắt đầu lượt mới.";
+}
+
+
+/* ============================================================
+   14. KHỞI ĐỘNG
+============================================================ */
+
+updateAll();
+renderFill();
+
+</script>
+
+</body>
+</html>
