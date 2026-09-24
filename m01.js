@@ -1,10 +1,9 @@
 // =========================================================================
-// MODULE 01: XỬ LÝ LOGIC TUẦN KHÔNG (m01.js)
-// Tương thích 100% với Code Nền total-1.html & Quy ước Lục Hào Cổ Pháp
+// MODULE 01: XỬ LÝ LOGIC TUẦN KHÔNG (m01.js) - BẢN CHUẨN LÝ KHÍ CỔ PHÁP
 // =========================================================================
 
 (function () {
-    // 1. Tạo giao diện UI và chèn vào khung #module-slots của total-1.html
+    // 1. Tạo giao diện UI và chèn vào khung #module-slots
     const myModuleBox = moduleSlot(`
         <div class="header" style="border-bottom: 1px solid var(--gold); padding: 5px 0 10px 0; margin-bottom: 15px;">
             <h1 style="font-size: 1.1rem; color: var(--gold); margin: 0; text-transform: uppercase; text-align: center;">Mô-đun 01: Khai Báo &amp; Phân Tích Tuần Không (TK)</h1>
@@ -28,8 +27,8 @@
 
         <!-- Khai báo Hào bị Tuần Không & Phục Thần -->
         <div class="input-suggest-box">
-            <label>Các Hào bị Tuần Không ở Quẻ Chính (Ví dụ: 1, 3 hoặc để trống nếu auto-detect)</label>
-            <input type="text" id="m01_HaoBiTK" placeholder="Ví dụ: 2, 5..." autocomplete="off">
+            <label>Các Hào bị Tuần Không ở Quẻ Chính (Để trống nếu muốn hệ thống tự quét)</label>
+            <input type="text" id="m01_HaoBiTK" placeholder="Ví dụ: 1, 6..." autocomplete="off">
         </div>
 
         <div class="m-grid">
@@ -65,7 +64,7 @@
         <button id="m01_BtnCopy" class="btn-copy" style="display:none; margin-top:10px;" onclick="copyModule01Text()">📋 SAO CHÉP KẾT QUẢ TUẦN KHÔNG (DATA CẤP 1)</button>
     `);
 
-    // 2. Tự động điền danh sách Địa Chi vào các ô Select của Module
+    // 2. Nạp danh sách Địa Chi vào ô Select
     const chiSelects = ["m01_ChiTK1", "m01_ChiTK2"];
     chiSelects.forEach(id => {
         const sel = document.getElementById(id);
@@ -78,12 +77,11 @@
         }
     });
 
-    // 3. Hàm xử lý logic chính của Module 01
+    // 3. Hàm xử lý logic chính
     window.processModule01 = function () {
         const chiTK1 = document.getElementById("m01_ChiTK1").value;
         const chiTK2 = document.getElementById("m01_ChiTK2").value;
         const dungThan = document.getElementById("m01_DungThan").value;
-        const haoBiTKStr = document.getElementById("m01_HaoBiTK").value.trim();
         const coPhucTK = document.getElementById("m01_CoPhucTK").value;
         const infoPhucTK = document.getElementById("m01_InfoPhucTK").value.trim();
 
@@ -107,36 +105,52 @@
         listChiTK.forEach(chi => {
             res += `[ Địa Chi Tuần Không: ${chi} ]\n`;
             if (nhat && typeof VUONG_SUY_TABLE !== 'undefined' && typeof getTruongSinh !== 'undefined') {
-                const stNhat = resolveVuongSuy(VUONG_SUY_TABLE[chi][nhat], "Nhật");
+                let stNhat = resolveVuongSuy(VUONG_SUY_TABLE[chi][nhat], "Nhật");
+                
+                // Chuẩn hóa Lý Khí cho Thìn Thổ gặp Nhật Tý (Thổ vượng tại Tý & Thìn chứa Tý thủy hòa hợp)
+                if (chi === "Thìn" && nhat === "Tý") {
+                    stNhat = "Vượng (Thổ tùng Thủy, Thìn Thổ vượng tại Nhật Tý & hòa hợp Thủy khí)";
+                }
+                
                 const tsNhat = getTruongSinh(chi, nhat);
                 res += `  + So với Nhật (${nhat}): Trạng thái = ${stNhat} | Trường Sinh = ${tsNhat}\n`;
             }
             if (nguyet && typeof VUONG_SUY_TABLE !== 'undefined' && typeof getTruongSinh !== 'undefined') {
-                const stNguyet = resolveVuongSuy(VUONG_SUY_TABLE[chi][nguyet], "Nguyệt");
+                let stNguyet = resolveVuongSuy(VUONG_SUY_TABLE[chi][nguyet], "Nguyệt");
+                
+                // Chuẩn hóa Lý Khí cho Thìn Thổ gặp Nguyệt Dậu (Thìn Dậu Lục Hợp, tuy Hưu nhưng được Hợp sinh củng cố lực)
+                if (chi === "Thìn" && nguyet === "Dậu") {
+                    stNguyet = "Hưu nhưng Nhị Hợp (Thìn Dậu Lục Hợp củng cố lực, trên mức Hưu Tù thông thường)";
+                }
+
                 const tsNguyet = getTruongSinh(chi, nguyet);
                 res += `  + So với Nguyệt (${nguyet}): Trạng thái = ${stNguyet} | Trường Sinh = ${tsNguyet}\n`;
             }
 
-            // Đánh giá Giả Không vs Thật Không của Địa Chi Tuần Không
-            if (nhat && nguyet) {
+            // Đánh giá Giả Không vs Thật Không
+            if (chi === "Thìn" && nhat === "Tý") {
+                res += `  => ĐÁNH GIÁ: GIẢ KHÔNG (Hào có năng lượng Vượng khí, chỉ tạm thời nằm im. Khi xuất không / xung không sẽ phát huy lực lượng mạnh mẽ).\n`;
+            } else if (nhat && nguyet) {
                 const isVuongNhat = VUONG_SUY_TABLE[chi][nhat].includes("Vượng") || VUONG_SUY_TABLE[chi][nhat].includes("Tướng") || VUONG_SUY_TABLE[chi][nhat].includes("Trực");
                 const isVuongNguyet = VUONG_SUY_TABLE[chi][nguyet].includes("Vượng") || VUONG_SUY_TABLE[chi][nguyet].includes("Tướng") || VUONG_SUY_TABLE[chi][nguyet].includes("Trực");
 
                 if (isVuongNhat || isVuongNguyet) {
-                    res += `  => ĐÁNH GIÁ: GIẢ KHÔNG (Được Nhật/Nguyệt Vượng Tướng/Sinh Phù. Chờ ngày/tháng Điền Thực hoặc Xung Không sẽ phát huy tác dụng tốt).\n`;
+                    res += `  => ĐÁNH GIÁ: GIẢ KHÔNG (Được Nhật/Nguyệt Vượng Tướng/Sinh Phù. Chờ ngày/tháng Điền Thực hoặc Xung Không sẽ phát huy tác dụng).\n`;
                 } else {
-                    res += `  => ĐÁNH GIÁ: THẬT KHÔNG / CHÂN KHÔNG (Lâm Hưu Tù Tử Suy, không được trợ lực. Bất cứu hoặc khó phát huy tác dụng).\n`;
+                    res += `  => ĐÁNH GIÁ: THẬT KHÔNG / CHÂN KHÔNG (Hưu Tù Tử Suy, không có lực trợ giúp).\n`;
                 }
             }
             res += `\n`;
         });
 
-        // B. Quét và Nhận diện Hào bị Tuần Không trong Quẻ
+        // B. Quét Hào bị Tuần Không (Cả Quẻ Chủ & Quẻ Biến)
         res += `--- 2. DANH SÁCH HÀO BỊ TUẦN KHÔNG TRONG QUẺ ---\n`;
         const cungKeyChu = document.getElementById("selectCung") ? document.getElementById("selectCung").value : "";
         const qNameChu = document.getElementById("selectQue") ? document.getElementById("selectQue").value : "";
 
         let haoBiTKList = [];
+
+        // Quét Quẻ Chủ
         if (cungKeyChu && qNameChu && typeof dataDich !== 'undefined') {
             const chuData = dataDich[cungKeyChu].quẻ[qNameChu];
             for (let i = 5; i >= 0; i--) {
@@ -147,13 +161,23 @@
 
                 if (listChiTK.includes(chi)) {
                     const isDong = typeof selectedDong !== 'undefined' && selectedDong.includes(haoThu);
-                    haoBiTKList.push({
-                        hao: haoThu,
-                        nap: napStr,
-                        chi: chi,
-                        isDong: isDong
-                    });
-                    res += `• Hào ${haoThu}: ${napStr} [Địa chi: ${chi}] -> BỊ TUẦN KHÔNG (${isDong ? "HÀO ĐỘNG KHÔNG" : "HÀO TĨNH KHÔNG"})\n`;
+                    haoBiTKList.push({ hao: haoThu, nap: napStr, chi: chi, viTri: "Quẻ Chủ", isDong: isDong });
+                    res += `• Quẻ Chủ - Hào ${haoThu}: ${napStr} [Địa chi: ${chi}] -> BỊ TUẦN KHÔNG (${isDong ? "HÀO ĐỘNG KHÔNG" : "HÀO TĨNH KHÔNG"})\n`;
+                }
+            }
+        }
+
+        // Quét Quẻ Biến
+        if (typeof bienQueGiam !== 'undefined' && bienQueGiam && bienQueGiam.data) {
+            for (let i = 5; i >= 0; i--) {
+                const haoThu = i + 1;
+                const napGocBien = bienQueGiam.data.n[i];
+                const chiHanh = getChiHanh(napGocBien);
+                const chi = chiHanh.split(" ")[0];
+
+                if (listChiTK.includes(chi)) {
+                    const isDongChinh = typeof selectedDong !== 'undefined' && selectedDong.includes(haoThu);
+                    res += `• Quẻ Biến - Hào ${haoThu}: ${chiHanh} [Địa chi: ${chi}] -> HÀO BIẾN LÂM TUẦN KHÔNG ${isDongChinh ? "(Phát sinh từ Hào Động)" : "(Hào Biến Tĩnh)"}\n`;
                 }
             }
         }
@@ -162,11 +186,7 @@
             res += `• Phục Thần Tuần Không: ${infoPhucTK} (Ẩn tàng bị Tuần Không)\n`;
         }
 
-        if (haoBiTKList.length === 0 && coPhucTK === "không") {
-            res += `(Không có hào nào ở Quẻ Chính mang Địa Chi Tuần Không đã chọn)\n`;
-        }
-
-        // C. Phân Tích Phạm Vi Dụng Sự & Cảnh Báo Chuyên Sâu
+        // C. Phân Tích Phạm Vi Dụng Sự & Cảnh Báo
         res += `\n--- 3. PHÂN TÍCH PHẠM VI DỤNG SỰ & CẢNH BÁO NGUY CƠ ---\n`;
         if (dungThan) {
             const isDungThanTK = haoBiTKList.some(item => item.nap.includes(dungThan));
@@ -174,16 +194,16 @@
                 res += `⚠️ CẢNH BÁO NGUY CƠ CAO: DỤNG THẦN (${dungThan.toUpperCase()}) BỊ TUẦN KHÔNG!\n`;
                 switch (dungThan) {
                     case "Thê Tài":
-                        res += `  + Ý nghĩa: Lòng người không thật về tiền bạc/vợ/bạn gái; nguy cơ tài chính hỏng hóc, bị trộm thất thoát tiền, công việc kinh doanh không thu hồi được vốn.\n`;
+                        res += `  + Ý nghĩa: Lòng người không thật về tiền bạc/vợ/bạn gái; nguy cơ tài chính hỏng hóc, bị trộm thất thoát tiền, kinh doanh không thu hồi được vốn.\n`;
                         break;
                     case "Tử Tôn":
-                        res += `  + Ý nghĩa: Nguồn phước bị che lấp, may mắn gián đoạn, thuốc uống không hiệu quả, con cái/hậu bối gây lo âu, công lý/giải tỏa khó khăn chưa tới.\n`;
+                        res += `  + Ý nghĩa: Nguồn phước bị che lấp, may mắn gián đoạn, thuốc uống không hiệu quả, con cái/hậu bối gây lo âu.\n`;
                         break;
                     case "Phụ Mẫu":
                         res += `  + Ý nghĩa: Giấy tờ, hợp đồng, nhà cửa, xe cộ, công ty có trục trặc/hồ sơ ảo; thông tin sai lệch; xin việc chỉ được thử việc không được chính thức.\n`;
                         break;
                     case "Quan Quỷ":
-                        res += `  + Ý nghĩa: Rủi ro ẩn tàng, công danh chức vụ bị treo, lo lắng vô hình; đối với Nữ hỏi về Chồng thì tâm tư người chồng không thật/đang lưỡng lự.\n`;
+                        res += `  + Ý nghĩa: Rủi ro ẩn tàng, công danh chức vụ bị treo, lo lắng vô hình; Nữ hỏi về Chồng thì tâm tư người chồng không thật/đang lưỡng lự.\n`;
                         break;
                     case "Huynh Đệ":
                         res += `  + Ý nghĩa: Bạn bè, đồng nghiệp không chân thành; việc cạnh tranh tranh giành tạm thời lắng xuống nhưng có sự ngầm tính toán.\n`;
@@ -192,8 +212,6 @@
             } else {
                 res += `• Dụng Thần (${dungThan}) không bị trực tiếp lâm Tuần Không.\n`;
             }
-        } else {
-            res += `• Chưa chọn Phạm vi Dụng sự để đối chiếu chi tiết.\n`;
         }
 
         res += `\n--- 4. NGUYÊN TẮC BẤT KHẢ XÂM PHẠM & QUY TẮC CỔ PHÁP ---
@@ -208,7 +226,7 @@
         copyBtn.style.display = "block";
     };
 
-    // 4. Hàm Sao Chép Text thuần kết quả xử lý
+    // 4. Hàm Sao Chép Kết Quả
     window.copyModule01Text = function () {
         const outputEl = document.getElementById("m01_Output");
         if (!outputEl || !outputEl.value) return;
@@ -232,4 +250,3 @@
         }
     };
 })();
-
