@@ -295,32 +295,12 @@
     <!-- ================= END MODULE FORM (HTML) — script hợp nhất ở cuối <script> chính, phía trên vùng 25 module ================= -->
 
     <!-- ==========================================================================
-         VÙNG FORM NHẬP LIỆU CHO CÁC MODULE MỞ RỘNG (xem chi tiết 25 module trong <script>)
-         Các module cần user nhập tay thủ công: 1, 9, 10, 11, 12, 23, 25.
-         Mỗi khối bên dưới là placeholder HTML — thay bằng form thật khi chèn code.
+         KHUNG CHỨA UI CHO CÁC MODULE NẠP TỪ FILE RỜI (m01.js ... m60.js).
+         Mỗi module tự tạo box UI của nó bằng JS và tự chèn vào đây qua hàm
+         moduleSlot(html) (đã định nghĩa sẵn trong khối <script> chính bên dưới).
+         KHÔNG cần sửa gì ở đây khi thêm module mới — chỉ cần up file mXX.js.
          ========================================================================== -->
-    <div class="box" id="moduleFormsBox">
-        <!-- MODULE 1: form nhập Phục Thần (Tuần Không đã được xử lý ở box "Lập Quẻ & Xử Lý Dữ Liệu Lập Thời" phía trên, ô #mTuanKhong) -->
-        "***Input Here***"
-
-        <!-- MODULE 9: form nhập Hào Dụng Thần -->
-        "***Input Here***"
-
-        <!-- MODULE 10: form nhập Hào Nguyên Thần -->
-        "***Input Here***"
-
-        <!-- MODULE 11: form nhập Hào Kị Thần -->
-        "***Input Here***"
-
-        <!-- MODULE 12: form nhập Hào Cừu Thần -->
-        "***Input Here***"
-
-        <!-- MODULE 23: form nhập tên các Quẻ Hỗ (Nhất Hỗ, Nhị Hỗ, Tam Hỗ, Tứ Hỗ, Ngũ Hỗ, Lục Hỗ...) -->
-        "***Input Here***"
-
-        <!-- MODULE 25: form nhập dữ liệu phục vụ logic Ứng Kỳ -->
-        "***Input Here***"
-    </div>
+    <div id="module-slots"></div>
 </div>
 <script>
 // Data chuẩn 64 quẻ
@@ -831,9 +811,60 @@ function tinhTruongSinhVuongSuy() {
         text += `Hào ${h} : ${chi} ${status} ở Nguyệt ${nguyet}.\n`;
     }
 
+    // ---- MỞ RỘNG: Trường Sinh & Vượng Suy cho HÀO BIẾN — CHỈ các vị trí đang có
+    // Hào Động ở Quẻ Chính (selectedDong). Hào Biến lấy tự động từ bienQueGiam,
+    // không cần nhập tay; các hào không Động thì không có Hào Biến nên bỏ qua. ----
+    const chiHaoBien = layDiaChiHaoBienTheoDong();
+    const cacHaoDong = Object.keys(chiHaoBien).map(Number).sort((a, b) => b - a);
+
+    if (cacHaoDong.length > 0) {
+        text += "\n*** Thông tin Trường Sinh (HÀO BIẾN, chỉ các hào Động) :\n";
+        text += `Nhật : ${nhat}\n`;
+        cacHaoDong.forEach(h => {
+            const chi = chiHaoBien[h];
+            text += `Hào ${h} (Biến) : ${chi} ${getTruongSinh(chi, nhat)} ở Nhật ${nhat}.\n`;
+        });
+        text += `\nNguyệt : ${nguyet}\n`;
+        cacHaoDong.forEach(h => {
+            const chi = chiHaoBien[h];
+            text += `Hào ${h} (Biến) : ${chi} ${getTruongSinh(chi, nguyet)} ở Nguyệt ${nguyet}.\n`;
+        });
+
+        text += "\n*** Thông tin Vượng Suy (HÀO BIẾN, chỉ các hào Động) theo bảng Vượng Suy :\n\n";
+        text += `Nhật : ${nhat}\n`;
+        cacHaoDong.forEach(h => {
+            const chi = chiHaoBien[h];
+            const status = resolveVuongSuy(VUONG_SUY_TABLE[chi][nhat], "Nhật");
+            text += `Hào ${h} (Biến) : ${chi} ${status} ở Nhật ${nhat}.\n`;
+        });
+        text += `\nNguyệt : ${nguyet}\n`;
+        cacHaoDong.forEach(h => {
+            const chi = chiHaoBien[h];
+            const status = resolveVuongSuy(VUONG_SUY_TABLE[chi][nguyet], "Nguyệt");
+            text += `Hào ${h} (Biến) : ${chi} ${status} ở Nguyệt ${nguyet}.\n`;
+        });
+    } else {
+        text += "\n*** Quẻ tĩnh (không có Hào Động) -> không có Hào Biến cần tính Trường Sinh/Vượng Suy.\n";
+    }
+
     outputEl.value = text;
     outputEl.style.display = "block";
     copyBtn.style.display = "block";
+}
+
+// Lấy Địa Chi của các Hào Biến — CHỈ tại đúng những vị trí đang có Hào Động ở Quẻ
+// Chính (selectedDong). Đây là data nền cơ bản (basic) để mọi module sau này tham
+// chiếu trạng thái Vượng/Suy/Trường Sinh của Hào Biến so với Tứ Trị, không cần
+// module nào tự tính lại. Hào không Động thì không sinh ra Hào Biến nên bỏ qua.
+function layDiaChiHaoBienTheoDong() {
+    const ketQua = {};
+    if (!bienQueGiam || !bienQueGiam.data) return ketQua;
+    selectedDong.forEach(haoSo => {
+        const chiHanh = getChiHanh(bienQueGiam.data.n[haoSo - 1]);
+        const chi = chiHanh.split(" ")[0];
+        if (chi) ketQua[haoSo] = chi;
+    });
+    return ketQua;
 }
 
 function copyTS() {
@@ -1045,253 +1076,96 @@ function processModuleLogic() {
 }
 // ================= HẾT PHẦN TỨ TRỊ =================
 
-/* ==========================================================================
-   ============  VÙNG MỞ RỘNG: 25 MODULE TÍNH TOÁN NÂNG CAO  ===============
-   Cấu trúc code nền phía trên là TUYỆT ĐỐI, không sửa đổi.
-   Mỗi module dưới đây là một khung placeholder (hàm rỗng + object cấu hình).
-   Khi chèn code thật, chỉ thay đúng khối "***Input Here***" tương ứng,
-   không chèn chồng lấn sang module khác.
-   ========================================================================== */
 
-// -------------------- MODULE 1 --------------------
-// Tương tác mọi hào trong quẻ (kể cả hào Phục Thần) đối với Thái Tuế.
-// Cần form nhập tay: hào Phục Thần là hào nào, Tuần Không là hào nào.
-function module01_TuongTacThaiTue(queChu, queBien, phucThanInput, tuanKhongInput) {
-    "***Input Here***"
+/* =========================================================================
+ * KHUNG NẠP MODULE RỜI (m01.js ... m60.js)
+ * - moduleSlot(html): mỗi file module gọi hàm này 1 lần để tự chèn UI (nếu có)
+ *   của nó vào khung #module-slots, không cần sửa total.html.
+ * - Toàn bộ 60 thẻ <script src="mXX.js"> được khai báo sẵn ở cuối file
+ *   (ngay trước </body>). File nào CHƯA tồn tại trên server/thư mục sẽ chỉ
+ *   báo lỗi 404 êm trong Console (F12) — KHÔNG làm hỏng hay dừng trang.
+ *   File nào ĐÃ có sẽ tự chạy, dùng lại toàn bộ hàm/biến nền phía trên
+ *   (dataDich, getChiHanh, getHanh, tinhLucThan, findQueByCode, selectedDong,
+ *   bienQueGiam, VUONG_SUY_TABLE, resolveVuongSuy, getTruongSinh...).
+ * ========================================================================= */
+function moduleSlot(html) {
+    const div = document.createElement("div");
+    div.className = "box module-container";
+    div.innerHTML = html;
+    document.getElementById("module-slots").appendChild(div);
+    return div;
 }
-
-// -------------------- MODULE 2 --------------------
-// Ảnh hưởng của mọi hào bởi yếu tố Tuần Không.
-function module02_AnhHuongTuanKhong(queChu, queBien, tuanKhongInput) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 3 --------------------
-// Ảnh hưởng của quan hệ Xung - Phá lên mọi hào.
-function module03_XungPha(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 4 --------------------
-// Ảnh hưởng của mọi hào bởi Hình - Hại (Nhị Hình: 2 chi hình nhau; Tam Hình: 3 chi hình nhau).
-function module04_HinhHai(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 5 --------------------
-// Quan hệ Hợp giữa các hào (Lục Hợp & Tam Hợp):
-// hào tĩnh-hào động, hào động-hào tĩnh, hào động-hào động khác,
-// hào động-hào biến, hào biến-hào động, hào biến-hào biến khác,
-// hào động + hào biến + Tứ Trị (Thời, Nhật, Nguyệt); hào biến + hào động + Tứ Trị.
-function module05_QuanHeHop(queChu, queBien, tuTri) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 6 --------------------
-// Ảnh hưởng của Mộ/Khố lên các hào: hào tĩnh bị Mộ, hào động bị Mộ, hào biến bị Mộ.
-// Nguồn gây Mộ: hào động khác, hào biến, hoặc Nhật/Nguyệt (hào Biến chỉ bị Mộ bởi Nhật/Nguyệt).
-function module06_MoKho(queChu, queBien, nhat, nguyet) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 7 --------------------
-// Lục Thân hỗ hoá: hào động trong quẻ biến sang hào khác — tác động của hào biến
-// ngược lại lên chính hào đã sinh ra nó.
-function module07_LucThanHoHoa(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 8 --------------------
-// Tương tác giữa các hào động với nhau, tương tác giữa hào biến lên các hào động,
-// tương tác giữa hào biến lên các hào biến khác.
-function module08_TuongTacDongBien(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 9 --------------------
-// Hào Dụng Thần (user nhập vào form, ví dụ hào 4): tính chất, hàm nghĩa, vận động Dụng Thần.
-function module09_DungThan(queChu, queBien, dungThanInput) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 10 --------------------
-// Hào Nguyên Thần (user nhập vào form): tính chất, hàm nghĩa, vận động — tương tự Module 9.
-function module10_NguyenThan(queChu, queBien, nguyenThanInput) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 11 --------------------
-// Hào Kị Thần (user nhập vào form): tính chất, hàm nghĩa, vận động — tương tự Module 9.
-function module11_KiThan(queChu, queBien, kiThanInput) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 12 --------------------
-// Hào Cừu Thần (user nhập vào form): tính chất, hàm nghĩa, vận động — tương tự Module 9,10,11.
-function module12_CuuThan(queChu, queBien, cuuThanInput) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 13 --------------------
-// Quẻ Lục Hợp: hàm nghĩa, ý nghĩa.
-function module13_QueLucHop(queChu) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 14 --------------------
-// Quẻ Lục Xung: hàm nghĩa, ý nghĩa.
-function module14_QueLucXung(queChu) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 15 --------------------
-// Quẻ Phản Ngâm: hàm nghĩa, ý nghĩa.
-function module15_QuePhanNgam(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 16 --------------------
-// Quẻ Phục Ngâm: hàm nghĩa, ý nghĩa.
-function module16_QuePhucNgam(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 17 --------------------
-// Data các quẻ tốt trong những phạm vi thông dụng.
-const module17_DataQueTot = {
-    "***Input Here***": null
-};
-
-// -------------------- MODULE 18 --------------------
-// Data các quẻ xấu trong những phạm vi thông dụng.
-const module18_DataQueXau = {
-    "***Input Here***": null
-};
-
-// -------------------- MODULE 19 --------------------
-// Hào vị (hào 1...hào 6): ý nghĩa, vận động, hàm nghĩa riêng của từng vị trí hào.
-const module19_HaoVi = {
-    "***Input Here***": null
-};
-
-// -------------------- MODULE 20 --------------------
-// Hào đối ứng với Phong Thủy — ví dụ: Huynh Đệ = cửa nẻo, Phụ Mẫu = bàn thờ,
-// hào ngũ hành Thủy = giếng nước, v.v.
-const module20_HaoPhongThuy = {
-    "***Input Here***": null
-};
-
-// -------------------- MODULE 21 --------------------
-// Lục Thần: Thanh Long, Huyền Vũ, Bạch Hổ, Chu Tước, Đằng Xà, Câu Trần —
-// ý nghĩa, hàm nghĩa khi tương ứng với hào có Lục Thân tại vị trí tương ứng.
-const module21_LucThan6 = {
-    "***Input Here***": null
-};
-
-// -------------------- MODULE 22 --------------------
-// Thiên Tinh: chủ tinh của quẻ, ý nghĩa, vượng suy và tác động.
-function module22_ThienTinh(queChu) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 23 --------------------
-// Quẻ Hỗ diễn dịch: nhiều tầng quẻ Hỗ (Nhất Hỗ, Nhị Hỗ, Tam Hỗ, Tứ Hỗ, Ngũ Hỗ, Lục Hỗ...).
-// Áp dụng chung cho cả Quẻ Chủ và Quẻ Biến (truyền vào object {c, n} tương ứng).
-//
-// Quy ước bit dùng lại đúng layout đã có trong code nền: que.c[0]=hào6 ... que.c[5]=hào1
-// (1 = Dương/hào liền, 0 = Âm/hào đứt).
-//
-// Mỗi "cửa sổ" là 3 hào liên tiếp; đơn quái của cửa sổ đọc THEO CHIỀU TRÊN XUỐNG
-// (hào cao nhất trong cửa sổ = top, hào thấp nhất = bot), tra theo bảng bát quái đơn
-// nhị phân bạn cung cấp (111 Càn, 011 Đoài, 101 Ly, 001 Chấn, 000 Khôn, 100 Cấn, 010 Khảm, 110 Tốn).
-const DON_QUAI_TABLE = {
-    "111": "Càn", "011": "Đoài", "101": "Ly", "001": "Chấn",
-    "000": "Khôn", "100": "Cấn", "010": "Khảm", "110": "Tốn"
-};
-
-// Lấy bit (0/1) của 1 hào cụ thể (1-6) từ chuỗi c của 1 quẻ (Chủ hoặc Biến dùng chung hàm này)
-function moduleHo_getHaoBit(que, haoSo) {
-    return que.c[6 - haoSo];
-}
-
-// Dựng 1 cửa sổ 3 hào liên tiếp bắt đầu từ hào thấp nhất = haoThapNhat (vd 3 => hào 3,4,5)
-function moduleHo_layCuaSo(que, haoThapNhat) {
-    const bot = moduleHo_getHaoBit(que, haoThapNhat);
-    const mid = moduleHo_getHaoBit(que, haoThapNhat + 1);
-    const top = moduleHo_getHaoBit(que, haoThapNhat + 2);
-    const code = top + mid + bot;
-    return { top, mid, bot, code, ten: DON_QUAI_TABLE[code] || "?" };
-}
-
-// Ghép 1 cửa sổ Thượng + 1 cửa sổ Hạ thành mã nhị phân 6 hào đầy đủ (đúng layout dataDich),
-// rồi tra ra quẻ kép tương ứng bằng findQueByCode() đã có sẵn trong code nền.
-function moduleHo_ghepQue(cuaSoThuong, cuaSoHa) {
-    const fullCode = cuaSoThuong.top + cuaSoThuong.mid + cuaSoThuong.bot
-                    + cuaSoHa.top + cuaSoHa.mid + cuaSoHa.bot;
-    const found = findQueByCode(fullCode);
-    return {
-        code: fullCode,
-        tenDonQuaiThuong: cuaSoThuong.ten,
-        tenDonQuaiHa: cuaSoHa.ten,
-        queKep: found ? found.name : "(không tìm thấy trong dữ liệu 64 quẻ)"
-    };
-}
-
-// Ba cặp cửa sổ Thượng/Hạ đã xác nhận đúng (dùng chung cho cả Quẻ Chính lẫn Quẻ Biến):
-// haoThapNhat của mỗi cửa sổ = hào thấp nhất trong cụm 3 hào liên tiếp làm cửa sổ đó.
-const HO_QUAI_WINDOWS = [
-    { thuongHaoThapNhat: 4, haHaoThapNhat: 3 }, // Thượng=hào 4-5-6, Hạ=hào 3-4-5
-    { thuongHaoThapNhat: 4, haHaoThapNhat: 2 }, // Thượng=hào 4-5-6, Hạ=hào 2-3-4
-    { thuongHaoThapNhat: 3, haHaoThapNhat: 2 }  // Thượng=hào 3-4-5, Hạ=hào 2-3-4
-];
-// Nhất/Nhị/Tam Hỗ = 3 cặp trên áp dụng cho Quẻ Chính.
-// Tứ/Ngũ/Lục Hỗ  = ĐÚNG 3 cặp trên áp dụng cho Quẻ Biến (không phải công thức khác).
-const HO_QUAI_TEN = ["Nhất Hỗ", "Nhị Hỗ", "Tam Hỗ", "Tứ Hỗ", "Ngũ Hỗ", "Lục Hỗ"];
-
-// Tính 3 tầng Hỗ (theo 3 cặp cửa sổ chuẩn) cho 1 quẻ bất kỳ (Chính hoặc Biến, object {c, n})
-function moduleHo_tinhBaTangHo(que) {
-    return HO_QUAI_WINDOWS.map(level => {
-        const cuaSoThuong = moduleHo_layCuaSo(que, level.thuongHaoThapNhat);
-        const cuaSoHa = moduleHo_layCuaSo(que, level.haHaoThapNhat);
-        return moduleHo_ghepQue(cuaSoThuong, cuaSoHa);
-    });
-}
-
-// Nhất Hỗ, Nhị Hỗ, Tam Hỗ lấy từ Quẻ Chính; Tứ Hỗ, Ngũ Hỗ, Lục Hỗ lấy từ Quẻ Biến
-// (cùng công thức, chỉ khác quẻ nguồn) — nối tiếp nhau thành 6 kết quả.
-function module23_QueHoDienDich(queChu, queBien) {
-    const ketQua = [];
-
-    moduleHo_tinhBaTangHo(queChu).forEach((kq, idx) => {
-        ketQua.push({ ten: HO_QUAI_TEN[idx], nguon: "Quẻ Chính", ...kq });
-    });
-
-    if (queBien && queBien.c) {
-        moduleHo_tinhBaTangHo(queBien).forEach((kq, idx) => {
-            ketQua.push({ ten: HO_QUAI_TEN[idx + 3], nguon: "Quẻ Biến", ...kq });
-        });
-    }
-
-    return ketQua; // mảng tối đa 6 phần tử: [{ten, nguon, code, tenDonQuaiThuong, tenDonQuaiHa, queKep}, ...]
-}
-
-// -------------------- MODULE 24 --------------------
-// Biến khí kép của Quẻ Chính + Quẻ Biến: hàm nghĩa, tác động.
-function module24_BienKhiKep(queChu, queBien) {
-    "***Input Here***"
-}
-
-// -------------------- MODULE 25 --------------------
-// Ứng Kỳ: module có logic chặt chẽ, nạp vào sau cùng, dựa trên toàn bộ dữ liệu
-// của các module 1-24 ở trên (Thái Tuế, Tuần Không, Xung Phá, Hình Hại, Hợp, Mộ Khố,
-// Dụng/Nguyên/Kị/Cừu Thần, Quẻ Hỗ, Biến Khí Kép...).
-function module25_UngKy(queChu, queBien, allModuleResults, ungKyInput) {
-    "***Input Here***"
-}
-
-/* ============  KẾT THÚC VÙNG MỞ RỘNG 25 MODULE  ============ */
 
 populateChiSelects();
 </script>
+
+<!-- ==========================================================================
+     DANH SÁCH 60 MODULE RỜI — khai báo sẵn 1 lần, không cần sửa lại khi thêm module.
+     Chỉ cần up đúng tên file mXX.js lên CÙNG THƯ MỤC với total.html (online:
+     gốc repository GitHub Pages; offline: cùng 1 thư mục trên máy/điện thoại)
+     là module đó tự chạy. Thứ tự load đúng theo thứ tự m01 -> m60 bên dưới,
+     nên module nào cần dùng lại hàm/biến của module khác thì module đó phải
+     có số LỚN HƠN (load sau).
+     ========================================================================== -->
+<script src="m01.js"></script>
+<script src="m02.js"></script>
+<script src="m03.js"></script>
+<script src="m04.js"></script>
+<script src="m05.js"></script>
+<script src="m06.js"></script>
+<script src="m07.js"></script>
+<script src="m08.js"></script>
+<script src="m09.js"></script>
+<script src="m10.js"></script>
+<script src="m11.js"></script>
+<script src="m12.js"></script>
+<script src="m13.js"></script>
+<script src="m14.js"></script>
+<script src="m15.js"></script>
+<script src="m16.js"></script>
+<script src="m17.js"></script>
+<script src="m18.js"></script>
+<script src="m19.js"></script>
+<script src="m20.js"></script>
+<script src="m21.js"></script>
+<script src="m22.js"></script>
+<script src="m23.js"></script>
+<script src="m24.js"></script>
+<script src="m25.js"></script>
+<script src="m26.js"></script>
+<script src="m27.js"></script>
+<script src="m28.js"></script>
+<script src="m29.js"></script>
+<script src="m30.js"></script>
+<script src="m31.js"></script>
+<script src="m32.js"></script>
+<script src="m33.js"></script>
+<script src="m34.js"></script>
+<script src="m35.js"></script>
+<script src="m36.js"></script>
+<script src="m37.js"></script>
+<script src="m38.js"></script>
+<script src="m39.js"></script>
+<script src="m40.js"></script>
+<script src="m41.js"></script>
+<script src="m42.js"></script>
+<script src="m43.js"></script>
+<script src="m44.js"></script>
+<script src="m45.js"></script>
+<script src="m46.js"></script>
+<script src="m47.js"></script>
+<script src="m48.js"></script>
+<script src="m49.js"></script>
+<script src="m50.js"></script>
+<script src="m51.js"></script>
+<script src="m52.js"></script>
+<script src="m53.js"></script>
+<script src="m54.js"></script>
+<script src="m55.js"></script>
+<script src="m56.js"></script>
+<script src="m57.js"></script>
+<script src="m58.js"></script>
+<script src="m59.js"></script>
+<script src="m60.js"></script>
 </body>
 </html>
