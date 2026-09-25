@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Âm Dương & Tiết Khí</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink:       #1a1a2e;
+            --ink-soft:  #4a4a6a;
+            --paper:     #fdfaf5;
+            --paper-alt: #f5f0e8;
+            --gold:      #c9a84c;
+            --gold-lt:   #e8d5a0;
+            --red:       #c0392b;
+            --teal:      #2a7f7f;
+            --teal-lt:   #e8f4f4;
+            --violet:    #6b4fa0;
+            --violet-lt: #eee8f7;
+            --sunday:    #b03030;
+            --saturday:  #2a6060;
+            --today-bg:  #fff8e1;
+            --today-bd:  #c9a84c;
+            --radius:    12px;
+            --shadow:    0 4px 24px rgba(26,26,46,0.08);
+            --shadow-md: 0 8px 32px rgba(26,26,46,0.12);
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            padding-top: 72px;
+        }
+
+        header {
+            position: fixed;
+            inset: 0 0 auto 0;
+            height: 64px;
+            background: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 999;
+            box-shadow: 0 2px 16px rgba(0,0,0,.25);
+        }
+        .logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo svg { width:22px; height:22px; flex-shrink:0; }
+        .nav-home a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--gold-lt);
+            text-decoration: none;
+            font-size: .875rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border: 1px solid rgba(201,168,76,.4);
+            border-radius: 20px;
+            transition: all .2s;
+        }
+        .nav-home a:hover { background: rgba(201,168,76,.15); color: var(--gold); }
+
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 16px 60px;
+        }
+
+        .page-title { text-align: center; margin-bottom: 22px; }
+        .page-title h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: .5px;
+        }
+        .page-title p { color: var(--ink-soft); font-size: .875rem; margin-top: 4px; }
+        .title-rule {
+            width: 60px; height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-lt));
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        /* ── REAL-TIME DUAL BANNER ── */
+        .now-banner {
+            background: linear-gradient(135deg, var(--ink) 0%, #2c2c4e 100%);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow-md);
+        }
+        .now-banner .now-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .now-banner .now-head .clock {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .now-banner .now-head .refresh-note {
+            font-size: .72rem;
+            color: rgba(255,255,255,.5);
+        }
+        .now-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 560px) { .now-grid { grid-template-columns: 1fr; } }
+        .now-card {
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 9px;
+            padding: 12px 14px;
+        }
+        .now-card .now-card-label {
+            font-size: .68rem;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .now-card.soc .now-card-label { color: var(--gold-lt); }
+        .now-card.tiet .now-card-label { color: #7fd6d6; }
+        .now-card .now-line {
+            font-size: .84rem;
+            color: rgba(255,255,255,.9);
+            padding: 2px 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .now-card .now-line b { color: #fff; font-weight: 600; }
+        .now-diff-note {
+            grid-column: 1 / -1;
+            font-size: .76rem;
+            color: var(--gold-lt);
+            background: rgba(201,168,76,.12);
+            border: 1px solid rgba(201,168,76,.3);
+            border-radius: 7px;
+            padding: 7px 10px;
+            margin-top: 2px;
+            display: none;
+        }
+        .now-diff-note.show { display: block; }
+
+        .controls {
+            background: white;
+            border: 1px solid #e8e2d6;
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+        .ctrl-group { display: flex; align-items: center; gap: 8px; }
+        .ctrl-group label {
+            font-size: .8rem; font-weight: 600; color: var(--ink-soft);
+            text-transform: uppercase; letter-spacing: .6px; white-space: nowrap;
+        }
+        select, input[type="number"] {
+            padding: 8px 12px; font-size: .9rem; font-family: 'Be Vietnam Pro', sans-serif;
+            font-weight: 500; border: 1.5px solid #ddd6c8; border-radius: 8px;
+            background: var(--paper); color: var(--ink); outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        select:focus, input[type="number"]:focus {
+            border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,.15);
+        }
+        select#month { min-width: 120px; }
+        input#year { width: 90px; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 6px; padding: 9px 22px;
+            background: var(--ink); color: var(--gold-lt); border: none; border-radius: 8px;
+            font-family: 'Be Vietnam Pro', sans-serif; font-size: .875rem; font-weight: 600;
+            cursor: pointer; transition: background .2s, transform .15s;
+        }
+        .btn-primary:hover { background: #2c2c4e; transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px;
+            background: white; color: var(--ink); border: 1.5px solid #ddd6c8; border-radius: 8px;
+            font-family: 'Be Vietnam Pro', sans-serif; font-size: .875rem; font-weight: 500;
+            cursor: pointer; transition: all .2s; text-decoration: none;
+        }
+        .btn-secondary:hover { border-color: var(--gold); color: var(--gold); background: var(--today-bg); }
+        .btn-red { background: var(--red); color: white; border-color: var(--red); }
+        .btn-red:hover { background: #9b2222; color: white; border-color: #9b2222; }
+        .btn-teal { border-color: var(--teal); color: var(--teal); }
+        .btn-teal:hover { background: var(--teal-lt); border-color: var(--teal); color: var(--teal); }
+
+        .calendar-card {
+            background: white; border: 1px solid #e8e2d6; border-radius: var(--radius);
+            overflow: hidden; box-shadow: var(--shadow); margin-bottom: 20px;
+        }
+        .calendar-month-header {
+            background: var(--ink); padding: 14px 20px; display: flex;
+            align-items: center; justify-content: space-between;
+        }
+        .calendar-month-header h3 {
+            font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.1rem; font-weight: 600;
+        }
+        .calendar-month-header span { font-size: .8rem; color: rgba(255,255,255,.55); font-weight: 400; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            padding: 10px 4px; font-size: .72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .8px; color: var(--ink-soft); background: var(--paper-alt);
+            border-bottom: 1px solid #e0d8cc;
+        }
+        thead th:first-child { color: var(--sunday); }
+        thead th:last-child  { color: var(--saturday); }
+        tbody td {
+            padding: 0; border: 1px solid #f0ebe0; vertical-align: top;
+            cursor: pointer; transition: background .15s; min-height: 64px;
+        }
+        tbody td:empty { cursor: default; background: var(--paper-alt); }
+        tbody td:not(:empty):hover { background: #fffbf0; }
+        .day-cell-inner {
+            padding: 8px 6px 6px; min-height: 64px; display: flex;
+            flex-direction: column; align-items: center; gap: 2px;
+        }
+        .day-solar { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600; line-height: 1; color: var(--ink); }
+        .day-lunar { font-size: .7rem; font-weight: 500; color: var(--ink-soft); line-height: 1; }
+        .day-tietKhi {
+            font-size: .6rem; font-weight: 600; color: var(--teal); background: var(--teal-lt);
+            border-radius: 3px; padding: 1px 4px; line-height: 1.4; margin-top: 1px; text-align: center;
+        }
+        tbody td.sunday .day-solar { color: var(--sunday); }
+        tbody td.saturday .day-solar { color: var(--saturday); }
+        tbody td.today { background: var(--today-bg); border: 2px solid var(--today-bd); border-radius: 2px; }
+        tbody td.today .day-solar { color: var(--gold); font-weight: 700; }
+
+        .tietKhi-section {
+            background: var(--teal-lt); border-left: 4px solid var(--teal);
+            border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; margin: 0 0 20px;
+        }
+        .tietKhi-section h4 {
+            font-size: .78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .7px; color: var(--teal); margin-bottom: 10px;
+        }
+        .tietKhi-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+        .tietKhi-list li {
+            display: flex; align-items: center; gap: 6px; background: white;
+            border: 1px solid rgba(42,127,127,.2); border-radius: 6px; padding: 5px 10px;
+            font-size: .82rem; font-weight: 500; color: var(--ink);
+        }
+        .tietKhi-list li .tk-name { color: var(--teal); font-weight: 700; }
+        .tietKhi-list li .tk-time { color: var(--ink-soft); font-size: .75rem; }
+        .tietKhi-unavail { font-size: .85rem; color: var(--ink-soft); font-style: italic; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        @media (max-width: 580px) { .info-grid { grid-template-columns: 1fr; } }
+        .info-panel { background: white; border: 1px solid #e8e2d6; border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+        .info-panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f0ebe0; }
+        .info-panel-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+        .icon-star { background: #fff3e0; }
+        .icon-light { background: #fce4ec; }
+        .info-panel h4 { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--ink-soft); }
+        .info-list { list-style: none; }
+        .info-list li { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; font-size: .85rem; color: var(--ink); border-bottom: 1px solid #f5f0e8; }
+        .info-list li:last-child { border-bottom: none; }
+        .info-list li .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .dot-gold { background: var(--gold); }
+        .dot-red  { background: var(--red); }
+        .thienxa-item { background: #fff8f8; border: 1px solid #f5c6c6; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: .85rem; }
+        .thienxa-item:last-child { margin-bottom: 0; }
+        .thienxa-item .tx-date { font-weight: 700; color: var(--red); }
+        .thienxa-item .tx-detail { color: var(--ink-soft); font-size: .78rem; margin-top: 2px; }
+        .empty-note { font-size: .83rem; color: var(--ink-soft); font-style: italic; padding: 4px 0; }
+
+        .tool-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 24px; }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(10,10,30,.55);
+            backdrop-filter: blur(4px); z-index: 10000; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white; border-radius: 16px; width: 90%; max-width: 480px;
+            padding: 28px 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            animation: modalIn .2s ease; position: relative;
+            max-height: 85vh; overflow-y: auto;
+        }
+        .modal-box.wide { max-width: 620px; }
+        @keyframes modalIn { from { opacity:0; transform: translateY(16px) scale(.97); } to { opacity:1; transform: translateY(0) scale(1); } }
+        .modal-box h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--ink); margin-bottom: 18px; padding-right: 28px; }
+        .modal-close {
+            position: absolute; top: 18px; right: 18px; width: 28px; height: 28px; border-radius: 50%;
+            background: var(--paper-alt); border: none; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; font-size: 1rem; color: var(--ink-soft); transition: background .15s;
+        }
+        .modal-close:hover { background: #eadec8; color: var(--ink); }
+
+        .detail-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; align-items: baseline; }
+        .detail-grid .lbl { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--ink-soft); white-space: nowrap; }
+        .detail-grid .val { font-size: .95rem; font-weight: 600; color: var(--ink); }
+        .detail-grid .val.highlight { color: var(--teal); }
+        .detail-grid .val.tietKhi-val { color: var(--teal); font-weight: 700; }
+        .detail-grid .val.canchi { color: var(--gold); }
+        .detail-section-label {
+            font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+            margin: 16px 0 8px; padding-top: 12px; border-top: 1px solid #f0ebe0;
+        }
+        .detail-section-label.soc { color: var(--gold); }
+        .detail-section-label.tiet { color: var(--teal); }
+        .transition-note {
+            background: var(--violet-lt); border: 1px solid #d8c8ec; border-radius: 8px;
+            padding: 10px 12px; font-size: .8rem; color: var(--violet); margin-top: 10px; line-height: 1.5;
+        }
+
+        .detail-date-badge {
+            background: var(--ink); color: var(--gold); font-family: 'Playfair Display', serif;
+            font-size: 2.5rem; font-weight: 700; text-align: center; padding: 12px;
+            border-radius: 10px; margin-bottom: 16px; line-height: 1;
+        }
+        .detail-date-badge small { display: block; font-family: 'Be Vietnam Pro', sans-serif; font-size: .75rem; font-weight: 400; color: rgba(255,255,255,.6); margin-top: 4px; }
+
+        .form-section { margin-bottom: 16px; }
+        .form-section label { display: block; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--ink-soft); margin-bottom: 6px; }
+        .form-row { display: flex; gap: 8px; }
+        .form-row select  { flex: 2; }
+        .form-row input   { flex: 1; }
+        .form-row > input[placeholder="Ngày"] { flex: 1; min-width: 60px; }
+        .form-row > input[placeholder="Năm"] { flex: 1.2; min-width: 80px; }
+
+        .calc-result { margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: .9rem; font-weight: 600; display: none; }
+        .calc-result.ok  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; display: block; }
+        .calc-result.err { background: #fce4ec; color: #c62828; border: 1px solid #f8bbd9; display: block; }
+        .calc-result .highlight-date { color: var(--gold); font-weight: 800; background: var(--ink); padding: 1px 6px; border-radius: 4px; }
+
+        hr.modal-divider { border: none; border-top: 1px solid #f0ebe0; margin: 14px 0; }
+
+        .year-ref-season { margin-bottom: 14px; }
+        .year-ref-season h5 {
+            font-size: .72rem; text-transform: uppercase; letter-spacing: .6px;
+            color: var(--ink-soft); margin-bottom: 6px;
+        }
+        .year-ref-list { list-style: none; }
+        .year-ref-list li {
+            display: flex; justify-content: space-between; font-size: .85rem;
+            padding: 5px 0; border-bottom: 1px dashed #f0ebe0;
+        }
+        .year-ref-list li:last-child { border-bottom: none; }
+        .year-ref-list li .yr-name { font-weight: 600; color: var(--teal); }
+        .year-ref-list li .yr-time { color: var(--ink-soft); font-size: .8rem; }
+
+        @media (max-width: 480px) {
+            .page-title h1 { font-size: 1.5rem; }
+            .day-solar { font-size: 1.05rem !important; }
+            .day-lunar { font-size: .62rem !important; }
+            table { font-size: .75rem; }
+            thead th { font-size: .65rem; padding: 8px 2px; }
+            tbody td { min-height: 52px; }
+            .day-cell-inner { padding: 5px 3px 4px; min-height: 52px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a10 10 0 0 1 0 20A10 10 0 0 1 12 2z" fill="rgba(201,168,76,.15)"/>
+            <path d="M12 6v6l4 2"/>
+        </svg>
+        Lịch Âm Dương &amp; Tiết Khí
+    </div>
+    <nav class="nav-home">
+        <a href="https://chudich.github.io/IChing.html">← Trang Chủ</a>
+    </nav>
+</header>
+
+<main class="main">
+
+    <div class="page-title">
+        <h1>Lịch Âm Dương &amp; Tiết Khí</h1>
+        <p>Song song lịch Sóc Vọng (Mặt Trăng) &amp; lịch Tiết Khí (Nguyệt Lệnh thật)</p>
+        <div class="title-rule"></div>
+    </div>
+
+    <!-- REAL-TIME DUAL BANNER -->
+    <div class="now-banner" id="nowBanner"></div>
+
+    <div class="controls">
+        <div class="ctrl-group">
+            <label for="month">Tháng</label>
+            <select id="month">
+                <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
+                <option value="3">Tháng 3</option><option value="4">Tháng 4</option>
+                <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+                <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
+                <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
+                <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+            </select>
+        </div>
+        <div class="ctrl-group">
+            <label for="year">Năm</label>
+            <input type="number" id="year" min="1900" max="2100" value="2025">
+        </div>
+        <button class="btn-primary" onclick="generateCalendar()">Xem lịch</button>
+    </div>
+
+    <div id="calendar"></div>
+
+    <div class="info-grid">
+        <div class="info-panel" id="importantDays">
+            <div class="info-panel-header">
+                <div class="info-panel-icon icon-star">⭐</div>
+                <h4>Ngày quan trọng</h4>
+            </div>
+            <div id="importantDaysList"></div>
+        </div>
+        <div class="info-panel" id="thienXaDays">
+            <div class="info-panel-header">
+                <div class="info-panel-icon icon-light">✨</div>
+                <h4>Ngày Thiên Xá</h4>
+            </div>
+            <div id="thienXaDaysList"></div>
+        </div>
+    </div>
+
+    <div class="tool-row">
+        <button class="btn-secondary" onclick="openModal('calcDaysModal')">📅 Tính số ngày</button>
+        <button class="btn-secondary" onclick="openModal('findTimeModal')">🔍 Tìm thời điểm</button>
+        <button class="btn-secondary btn-teal" onclick="openTietKhiYearModal(currentRealYear())">🌾 Tiết Khí năm hiện hành</button>
+        <button class="btn-secondary btn-teal" onclick="openTietKhiYearModal()">📖 Tra Tiết Khí năm bất kỳ</button>
+        <a href="https://chudich.github.io/phithienxa.html" style="text-decoration:none;">
+            <button class="btn-secondary btn-red">🌟 Phi Thiên Xá</button>
+        </a>
+    </div>
+
+</main>
+
+<!-- Day detail -->
+<div id="dayModal" class="modal-overlay" onclick="outsideClose(event,'dayModal')">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('dayModal')">✕</button>
+        <div id="modal-detail-content"></div>
+    </div>
+</div>
+
+<!-- Calc days -->
+<div id="calcDaysModal" class="modal-overlay" onclick="outsideClose(event,'calcDaysModal')">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('calcDaysModal')">✕</button>
+        <h3>📅 Tính số ngày</h3>
+        <div class="form-section">
+            <label>Chọn mốc thời gian</label>
+            <div class="form-row">
+                <input type="number" id="startDay" placeholder="Ngày" min="1" max="31">
+                <select id="startMonth">
+                    <option value="1">Th.1</option><option value="2">Th.2</option><option value="3">Th.3</option>
+                    <option value="4">Th.4</option><option value="5">Th.5</option><option value="6">Th.6</option>
+                    <option value="7">Th.7</option><option value="8">Th.8</option><option value="9">Th.9</option>
+                    <option value="10">Th.10</option><option value="11">Th.11</option><option value="12">Th.12</option>
+                </select>
+                <input type="number" id="startYear" placeholder="Năm" min="1900" max="2100">
+            </div>
+        </div>
+        <div class="form-section">
+            <label>Số ngày (âm để đếm lùi)</label>
+            <input type="number" id="numDays" placeholder="Ví dụ: 30 hoặc -7" style="width:100%">
+        </div>
+        <button class="btn-primary" onclick="calculateDate()" style="width:100%">Tính toán</button>
+        <div id="calcResult" class="calc-result"></div>
+    </div>
+</div>
+
+<!-- Find time -->
+<div id="findTimeModal" class="modal-overlay" onclick="outsideClose(event,'findTimeModal')">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('findTimeModal')">✕</button>
+        <h3>🔍 Tìm thời điểm</h3>
+        <div class="form-section">
+            <label>Mốc thời gian 1</label>
+            <div class="form-row">
+                <input type="number" id="date1Day" placeholder="Ngày" min="1" max="31">
+                <select id="date1Month">
+                    <option value="1">Th.1</option><option value="2">Th.2</option><option value="3">Th.3</option>
+                    <option value="4">Th.4</option><option value="5">Th.5</option><option value="6">Th.6</option>
+                    <option value="7">Th.7</option><option value="8">Th.8</option><option value="9">Th.9</option>
+                    <option value="10">Th.10</option><option value="11">Th.11</option><option value="12">Th.12</option>
+                </select>
+                <input type="number" id="date1Year" placeholder="Năm" min="1900" max="2100">
+            </div>
+        </div>
+        <div class="form-section">
+            <label>Mốc thời gian 2</label>
+            <div class="form-row">
+                <input type="number" id="date2Day" placeholder="Ngày" min="1" max="31">
+                <select id="date2Month">
+                    <option value="1">Th.1</option><option value="2">Th.2</option><option value="3">Th.3</option>
+                    <option value="4">Th.4</option><option value="5">Th.5</option><option value="6">Th.6</option>
+                    <option value="7">Th.7</option><option value="8">Th.8</option><option value="9">Th.9</option>
+                    <option value="10">Th.10</option><option value="11">Th.11</option><option value="12">Th.12</option>
+                </select>
+                <input type="number" id="date2Year" placeholder="Năm" min="1900" max="2100">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="calculateDaysBetween()" style="width:100%">Tính toán</button>
+        <div id="findResult" class="calc-result"></div>
+    </div>
+</div>
+
+<!-- Tiet Khi year reference -->
+<div id="tietKhiYearModal" class="modal-overlay" onclick="outsideClose(event,'tietKhiYearModal')">
+    <div class="modal-box wide">
+        <button class="modal-close" onclick="closeModal('tietKhiYearModal')">✕</button>
+        <h3>🌾 Tra cứu Tiết Khí theo năm</h3>
+        <div class="form-section">
+            <div class="form-row">
+                <input type="number" id="tkYearInput" placeholder="Nhập năm (2023–2046)" min="1900" max="2100" style="flex:1">
+                <button class="btn-primary" onclick="renderTietKhiYear()">Xem</button>
+            </div>
+        </div>
+        <div id="tkYearContent"></div>
+    </div>
+</div>
+
+<!-- Ngũ Linh: chọn thuật toán (chỉ hiện khi có ≥2 thuật toán đăng ký) -->
+<div id="nlChonModal" class="modal-overlay" onclick="outsideClose(event,'nlChonModal')">
+    <div class="modal-box">
+        <button class="modal-close" onclick="NguLinhEngine.closeNlModal('nlChonModal')">✕</button>
+        <h3>🔮 Chọn thuật toán Ngũ Linh</h3>
+        <div id="nlChonNoiDung"></div>
+    </div>
+</div>
+
+<!-- Ngũ Linh: kết quả lập quẻ -->
+<div id="nlKetQuaModal" class="modal-overlay" onclick="outsideClose(event,'nlKetQuaModal')">
+    <div class="modal-box wide">
+        <button class="modal-close" onclick="NguLinhEngine.closeNlModal('nlKetQuaModal')">✕</button>
+        <h3 id="nlKetQuaTitle">🔮 Kết quả</h3>
+        <textarea id="nlKetQuaText" readonly
+            style="width:100%;min-height:280px;font-family:'Be Vietnam Pro',sans-serif;font-size:.85rem;
+                   line-height:1.5;padding:12px;border:1.5px solid #ddd6c8;border-radius:8px;
+                   background:var(--paper);color:var(--ink);resize:vertical;white-space:pre-wrap;"></textarea>
+        <button id="nlCopyBtn" class="btn-primary" style="width:100%;margin-top:12px" onclick="NguLinhEngine.copyResult()">📋 Copy text</button>
+    </div>
+</div>
+
+<!-- Thư viện âm lịch -->
+<script src="https://cdn.jsdelivr.net/npm/@nghiavuive/lunar_date_vi@latest/dist/index.umd.js"></script>
+
+<!-- Lịch nền (logic gốc + cầu nối dữ liệu NL_*) -->
+<script src="js/calendar-core.js"></script>
+
+<!-- Engine Ngũ Linh (đăng ký + UI chọn thuật toán / hiện kết quả) -->
+<script src="js/ngulinh-engine.js"></script>
+
+<!-- Các file thuật toán Ngũ Linh — nạp SAU dòng trên, mỗi phương pháp 1 file.
+     File dưới đây chỉ là ví dụ minh họa, thay bằng file thuật toán thật. -->
+<script src="js/ngulinh-mau-vi-du.js"></script>
+<!-- <script src="js/ngulinh-ten-phuong-phap-khac.js"></script> -->
+
+</body>
+</html>
