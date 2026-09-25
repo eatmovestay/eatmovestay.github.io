@@ -62,7 +62,7 @@
     // Thoái) nên KHÔNG có mặt ở đây làm key; chiều ngược lại của 4 cặp đó (Mão->Dần,
     // Dậu->Thân, Ngọ->Tỵ, Hợi->Tý) mới là Thoái Thần. 4 cặp Tứ Mộ (Sửu/Thìn/Mùi/Tuất)
     // giữ nguyên như bản gốc.
-    const THOAI_THAN_MAP = { 'Hợi':'Tý','Sửu':'Tuất','Thìn':'Sửu','Mùi':'Thìn','Tuất':'Mùi','Mão':'Dần','Ngọ':'Tỵ','Dậu':'Thân' };
+    const THOAI_THAN_MAP = { 'Tý':'Hợi','Sửu':'Tuất','Thìn':'Sửu','Mùi':'Thìn','Tuất':'Mùi','Mão':'Dần','Ngọ':'Tỵ','Dậu':'Thân' };
 
     // --- Lớp Vượng Suy THEO MÙA (giữ lại làm tham khảo phụ, không còn là lớp chính) ---
     const MUA_VUONG_SUY = {
