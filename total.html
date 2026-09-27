@@ -122,33 +122,6 @@
         </div>
     </div>
 
-    <div class="box">
-        <label>Trường Sinh &amp; Vượng Suy theo Nhật - Nguyệt</label>
-        <div class="ts-grid">
-            <div>
-                <label>Nhật (Ngày)</label>
-                <select id="tsNhat"></select>
-            </div>
-            <div>
-                <label>Nguyệt (Tháng)</label>
-                <select id="tsNguyet"></select>
-            </div>
-        </div>
-        <label>Địa Chi 6 Hào</label>
-        <div class="ts-hao-grid">
-            <select id="tsHao6"></select>
-            <select id="tsHao5"></select>
-            <select id="tsHao4"></select>
-            <select id="tsHao3"></select>
-            <select id="tsHao2"></select>
-            <select id="tsHao1"></select>
-        </div>
-        <button class="btn-secondary" onclick="autoFillFromQueChu()">↺ Lấy Địa Chi Từ Quẻ Chủ Ở Trên</button>
-        <button class="btn-copy" style="display:block;" onclick="tinhTruongSinhVuongSuy()">🔮 TÍNH TRƯỜNG SINH &amp; VƯỢNG SUY</button>
-        <textarea id="tsOutput" class="ts-output" readonly onclick="this.select()"></textarea>
-        <button id="tsBtnCopy" class="btn-copy" style="display:none;" onclick="copyTS()">📋 SAO CHÉP KẾT QUẢ TRƯỜNG SINH</button>
-    </div>
-
     <!-- ================= START MODULE FORM & LOGIC THỜI - NHẬT - NGUYỆT - THÁI TUẾ - TUẦN KHÔNG - HÀO ĐỘNG ================= -->
     <style>
         .module-container {
@@ -293,6 +266,33 @@
         <textarea id="mOutput" class="m-output-box" readonly onclick="this.select()"></textarea>
     </div>
     <!-- ================= END MODULE FORM (HTML) — script hợp nhất ở cuối <script> chính, phía trên vùng 25 module ================= -->
+
+    <div class="box">
+        <label>Trường Sinh &amp; Vượng Suy theo Nhật - Nguyệt</label>
+        <div class="ts-grid">
+            <div>
+                <label>Nhật (Ngày)</label>
+                <select id="tsNhat"></select>
+            </div>
+            <div>
+                <label>Nguyệt (Tháng)</label>
+                <select id="tsNguyet"></select>
+            </div>
+        </div>
+        <label>Địa Chi 6 Hào</label>
+        <div class="ts-hao-grid">
+            <select id="tsHao6"></select>
+            <select id="tsHao5"></select>
+            <select id="tsHao4"></select>
+            <select id="tsHao3"></select>
+            <select id="tsHao2"></select>
+            <select id="tsHao1"></select>
+        </div>
+        <button class="btn-secondary" onclick="autoFillFromQueChu()">↺ Lấy Địa Chi Từ Quẻ Chủ Ở Trên</button>
+        <button class="btn-copy" style="display:block;" onclick="tinhTruongSinhVuongSuy()">🔮 TÍNH TRƯỜNG SINH &amp; VƯỢNG SUY</button>
+        <textarea id="tsOutput" class="ts-output" readonly onclick="this.select()"></textarea>
+        <button id="tsBtnCopy" class="btn-copy" style="display:none;" onclick="copyTS()">📋 SAO CHÉP KẾT QUẢ TRƯỜNG SINH</button>
+    </div>
 
     <!-- ==========================================================================
          KHUNG CHỨA UI CHO CÁC MODULE NẠP TỪ FILE RỜI (m01.js ... m60.js).
@@ -634,8 +634,6 @@ function copyToClipboard() {
         setTimeout(() => { btn.innerText = "📋 SAO CHÉP KẾT QUẢ"; }, 2000);
     }
 
-    // Phương án dự phòng: một số trình duyệt/khung sandbox (vd artifact preview) chặn
-    // Clipboard API. Khi đó hiện ô textarea để người dùng tự chọn & copy thủ công.
     function showFallback() {
         const box = document.getElementById("fallbackBox");
         const ta = document.getElementById("fallbackText");
@@ -1047,7 +1045,7 @@ function processModuleLogic() {
     resText += `• Nguyệt Lệnh          : ${nguyet}\n`;
     resText += `• Thái Tuế             : ${thaiTue}\n`;
     resText += `• Tuần Không           : ${tuanKhong || 'Không có'}\n`;
-    
+
     if (listHaoDong.length === 0) {
         resText += `• Trạng thái Quẻ       : QUẺ TĨNH (Không có hào động)\n`;
     } else {
