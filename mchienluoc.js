@@ -13,7 +13,7 @@
  * findQueByCode) — không khai báo lại, để tra cứu luôn khớp 100% với phần
  * Lập Quẻ chính và không có rủi ro 2 nơi tính ra 2 kết quả khác nhau.
  * Dùng bộ chọn (Họ Quẻ/Tên Quẻ/Hào Động) RIÊNG của module này (id tiền tố
- * m06_), không đụng tới lựa chọn quẻ đang làm việc ở phần Lập Quẻ chính phía
+ * mchienluoc_), không đụng tới lựa chọn quẻ đang làm việc ở phần Lập Quẻ chính phía
  * trên — tra cứu xong không ảnh hưởng gì tới quẻ bạn đang luận dở ở trên.
  * ========================================================================= */
 (function () {
