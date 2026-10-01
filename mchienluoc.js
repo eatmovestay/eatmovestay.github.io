@@ -40,7 +40,7 @@
         </p>
 
         <label>Chọn Họ Quẻ</label>
-        <select id="m06_cung"><option value="">-- Chọn Họ --</option></select>
+        <select id="mchienluoc_cung"><option value="">-- Chọn Họ --</option></select>
 
         <label>Chọn Tên Quẻ</label>
         <select id="m06_que"><option value="">-- Chọn Họ Quẻ trước --</option></select>
