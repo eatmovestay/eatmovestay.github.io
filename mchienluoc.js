@@ -1,5 +1,5 @@
 /* =========================================================================
- * m06.js — MODULE: TRA CỨU HÀO ĐỘNG ĐƠN (1/6) — 64 QUẺ
+ * mchienluoc.js — MODULE: TRA CỨU QUẺ
  * Kinh Dịch Lục Hào — công cụ tra cứu nhanh: chọn bất kỳ 1 trong 64 quẻ,
  * chọn đúng 1 hào Động (1-6), hiển thị:
  *   - Quẻ Chính (đã chọn) + Họ Quẻ của nó
@@ -32,7 +32,7 @@
 
     const boxHtml = `
         <div class="header" style="border-bottom: 1px solid var(--gold); padding: 5px 0 10px 0; margin-bottom: 15px;">
-            <h1 style="font-size: 1.1rem;">Module 6 — Tra Cứu Hào Động Đơn (64 Quẻ)</h1>
+            <h1 style="font-size: 1.1rem;">Module chienluoc — Tra Cứu Hào Động Đơn (64 Quẻ)</h1>
         </div>
         <p style="font-size:0.72rem;color:#888;margin:0 0 12px;">
             Công cụ tra cứu độc lập — không ảnh hưởng tới quẻ đang chọn ở phần Lập Quẻ phía trên.
@@ -56,21 +56,21 @@
             <option value="6">Hào 6</option>
         </select>
 
-        <button class="m-btn-process" id="m06_traCuuBtn">🔍 TRA CỨU</button>
+        <button class="m-btn-process" id="mchienluoc_traCuuBtn">🔍 TRA CỨU</button>
         <textarea id="m06_output" class="m-output-box" readonly></textarea>
         <button class="btn-copy" id="m06_copyBtn" style="display:none;">📋 SAO CHÉP KẾT QUẢ TRA CỨU</button>
-        <div class="fallback-box" id="m06_fallbackBox">
-            <textarea id="m06_fallbackText" readonly></textarea>
+        <div class="fallback-box" id="mchienluoc_fallbackBox">
+            <textarea id="mchienluoc_fallbackText" readonly></textarea>
             <div class="fallback-hint">Trình duyệt chặn copy tự động — bấm vào ô trên để chọn hết rồi copy thủ công (Ctrl+C / giữ để copy)</div>
         </div>
     `;
     const box = moduleSlot(boxHtml);
     const $ = (id) => box.querySelector("#" + id);
-    $("m06_output").addEventListener("click", function () { this.select(); });
-    $("m06_fallbackText").addEventListener("click", function () { this.select(); });
+    $("mchienluoc_output").addEventListener("click", function () { this.select(); });
+    $("mchienluoc_fallbackText").addEventListener("click", function () { this.select(); });
 
     function populateCungSelect() {
-        const sel = $("m06_cung");
+        const sel = $("mchienluoc_cung");
         sel.innerHTML = '<option value="">-- Chọn Họ --</option>';
         CUNG_OPTIONS.forEach(o => {
             const opt = document.createElement("option");
@@ -82,7 +82,7 @@
 
     function populateQueSelect() {
         const cungKey = $("m06_cung").value;
-        const sel = $("m06_que");
+        const sel = $("mchienluoc_que");
         sel.innerHTML = '<option value="">-- Chọn quẻ --</option>';
         if (cungKey && dataDich[cungKey]) {
             Object.keys(dataDich[cungKey].quẻ).forEach(qName => {
@@ -91,15 +91,15 @@
                 sel.appendChild(opt);
             });
         }
-        $("m06_output").style.display = "none";
-        $("m06_copyBtn").style.display = "none";
+        $("mchienluoc_output").style.display = "none";
+        $("mchienluoc_copyBtn").style.display = "none";
     }
 
     function traCuu() {
-        const cungKey = $("m06_cung").value;
-        const qName = $("m06_que").value;
-        const haoSo = $("m06_hao").value;
-        const outputEl = $("m06_output");
+        const cungKey = $("mchienluoc_cung").value;
+        const qName = $("mchienluoc_que").value;
+        const haoSo = $("mchienluoc_hao").value;
+        const outputEl = $("mchienluoc_output");
 
         if (!cungKey || !qName) {
             alert("Vui lòng chọn Họ Quẻ và Tên Quẻ trước.");
@@ -129,7 +129,7 @@
         const bienCode = chuCodeArr.join("");
         const queBien = findQueByCode(bienCode);
 
-        let text = `=== MODULE 6 — TRA CỨU HÀO ĐỘNG ĐƠN ===\n`;
+        let text = `=== MODULE Chiến Lược — TRA CỨU QUẺ ===\n`;
         text += `Quẻ Chính: ${qName} (Họ ${cungChu.name} - ${cungChu.hanh})\n`;
         text += `Hào Động ${h}: ${lucThanDong} ${chiDong} ${hanhDong}\n`;
 
@@ -153,22 +153,22 @@
 
         outputEl.value = text;
         outputEl.style.display = "block";
-        $("m06_copyBtn").style.display = "block";
-        $("m06_fallbackBox").style.display = "none";
+        $("mchienluoc_copyBtn").style.display = "block";
+        $("mchienluoc_fallbackBox").style.display = "none";
     }
 
     function copyKetQua() {
-        const text = $("m06_output").value;
+        const text = $("mchienluoc_output").value;
         if (!text) return;
         function showSuccess() {
-            const btn = $("m06_copyBtn");
-            $("m06_fallbackBox").style.display = "none";
+            const btn = $("mchienluoc_copyBtn");
+            $("mchienluoc_fallbackBox").style.display = "none";
             btn.innerText = "✅ ĐÃ SAO CHÉP!";
             setTimeout(() => { btn.innerText = "📋 SAO CHÉP KẾT QUẢ TRA CỨU"; }, 2000);
         }
         function showFallback() {
-            const fbBox = $("m06_fallbackBox");
-            const ta = $("m06_fallbackText");
+            const fbBox = $("mchienluoc_fallbackBox");
+            const ta = $("mchienluoc_fallbackText");
             ta.value = text;
             fbBox.style.display = "block";
             ta.focus();
@@ -199,8 +199,8 @@
         }
     }
 
-    $("m06_cung").addEventListener("change", populateQueSelect);
-    $("m06_traCuuBtn").addEventListener("click", traCuu);
-    $("m06_copyBtn").addEventListener("click", copyKetQua);
+    $("mchienluoc_cung").addEventListener("change", populateQueSelect);
+    $("mchienluoc_traCuuBtn").addEventListener("click", traCuu);
+    $("mchienluoc_copyBtn").addEventListener("click", copyKetQua);
 
 })();
