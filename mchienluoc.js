@@ -43,10 +43,10 @@
         <select id="mchienluoc_cung"><option value="">-- Chọn Họ --</option></select>
 
         <label>Chọn Tên Quẻ</label>
-        <select id="m06_que"><option value="">-- Chọn Họ Quẻ trước --</option></select>
+        <select id="mchienluoc_que"><option value="">-- Chọn Họ Quẻ trước --</option></select>
 
         <label>Chọn Hào Động (chỉ 1 hào)</label>
-        <select id="m06_hao">
+        <select id="mchienluoc_hao">
             <option value="">-- Chọn Hào --</option>
             <option value="1">Hào 1</option>
             <option value="2">Hào 2</option>
@@ -57,8 +57,8 @@
         </select>
 
         <button class="m-btn-process" id="mchienluoc_traCuuBtn">🔍 TRA CỨU</button>
-        <textarea id="m06_output" class="m-output-box" readonly></textarea>
-        <button class="btn-copy" id="m06_copyBtn" style="display:none;">📋 SAO CHÉP KẾT QUẢ TRA CỨU</button>
+        <textarea id="mchienluoc_output" class="m-output-box" readonly></textarea>
+        <button class="btn-copy" id="mchienluoc_copyBtn" style="display:none;">📋 SAO CHÉP KẾT QUẢ TRA CỨU</button>
         <div class="fallback-box" id="mchienluoc_fallbackBox">
             <textarea id="mchienluoc_fallbackText" readonly></textarea>
             <div class="fallback-hint">Trình duyệt chặn copy tự động — bấm vào ô trên để chọn hết rồi copy thủ công (Ctrl+C / giữ để copy)</div>
@@ -81,7 +81,7 @@
     populateCungSelect();
 
     function populateQueSelect() {
-        const cungKey = $("m06_cung").value;
+        const cungKey = $("mchienluoc_cung").value;
         const sel = $("mchienluoc_que");
         sel.innerHTML = '<option value="">-- Chọn quẻ --</option>';
         if (cungKey && dataDich[cungKey]) {
