@@ -124,95 +124,44 @@
 
     <!-- ================= START MODULE FORM & LOGIC THỜI - NHẬT - NGUYỆT - THÁI TUẾ - TUẦN KHÔNG - HÀO ĐỘNG ================= -->
     <style>
-        .module-container {
-            position: relative;
-        }
-        .input-suggest-box {
-            position: relative;
-            margin-bottom: 12px;
-        }
+        .module-container { position: relative; }
+        .input-suggest-box { position: relative; margin-bottom: 12px; }
         .input-suggest-box input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #252525;
-            color: white;
-            font-family: inherit;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            outline: none;
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444;
+            background: #252525; color: white; font-family: inherit; font-size: 0.9rem;
+            box-sizing: border-box; outline: none;
         }
-        .input-suggest-box input:focus {
-            border-color: var(--gold);
-        }
+        .input-suggest-box input:focus { border-color: var(--gold); }
         .suggestions-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #1a1a1a;
-            border: 1px solid var(--gold);
-            border-radius: 8px;
-            max-height: 180px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a;
+            border: 1px solid var(--gold); border-radius: 8px; max-height: 180px;
+            overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
-        .suggestion-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            color: #eee;
-            border-bottom: 1px solid #2a2a2a;
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .suggestion-item:hover {
-            background: var(--gold);
-            color: #000;
-            font-weight: bold;
-        }
-        .m-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
+        .suggestion-item { padding: 8px 12px; cursor: pointer; font-size: 0.85rem; color: #eee; border-bottom: 1px solid #2a2a2a; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: var(--gold); color: #000; font-weight: bold; }
+        .m-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .m-btn-process {
-            width: 100%;
-            padding: 12px;
-            background: var(--gold);
-            color: #000;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            margin-bottom: 15px;
+            width: 100%; padding: 12px; background: var(--gold); color: #000; border: none;
+            border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit;
+            font-size: 0.9rem; margin-top: 5px; margin-bottom: 15px;
         }
-        .m-btn-process:hover {
-            opacity: 0.9;
-        }
+        .m-btn-process:hover { opacity: 0.9; }
         .m-output-box {
-            width: 100%;
-            min-height: 200px;
-            box-sizing: border-box;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--gold);
-            background: #252525;
-            color: #eee;
-            font-family: monospace;
-            font-size: 0.8rem;
-            white-space: pre-wrap;
-            resize: vertical;
-            display: none;
-            margin-top: 10px;
+            width: 100%; min-height: 200px; box-sizing: border-box; padding: 12px;
+            border-radius: 8px; border: 1px solid var(--gold); background: #252525;
+            color: #eee; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap;
+            resize: vertical; display: none; margin-top: 10px;
         }
+        .dl-grid {
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1.2fr; gap: 8px; margin-bottom: 10px;
+        }
+        .dl-grid select, .dl-grid input {
+            width: 100%; padding: 10px 6px; border-radius: 8px; border: 1px solid #444;
+            background: #252525; color: white; font-family: inherit; font-size: 0.85rem;
+            box-sizing: border-box; text-align: center;
+        }
+        .dl-grid select { text-align: left; }
     </style>
 
     <div class="box module-container">
@@ -220,36 +169,8 @@
             <h1 style="font-size: 1.1rem;">Lập Quẻ &amp; Xử Lý Dữ Liệu Lập Thời</h1>
         </div>
 
-        <!-- ========= NHẬP NHANH THEO DƯƠNG LỊCH (tự suy Can Chi qua calendar-core.js) =========
-             Tuỳ chọn — không bắt buộc. Điền 4 ô dưới rồi bấm nút để TỰ ĐỘNG điền vào đúng
-             4 ô Thời/Nhật/Nguyệt/Thái Tuế bên dưới (vẫn có thể sửa tay sau khi điền nếu cần). -->
         <label>Nhập Nhanh Theo Dương Lịch (tuỳ chọn — tự suy Can Chi, phạm vi Tiết Khí 2023–2046)</label>
         
-        </div>
-        <button class="btn-secondary" onclick="tinhCanChiTuDuongLich()">📅 TÍNH CAN CHI TỪ DƯƠNG LỊCH</button>
-        <!-- Đặt thông số layout riêng cho phần Nhập Dương Lịch -->
-        <style>
-            .dl-grid {
-                display: grid;
-                grid-template-columns: 2fr 1fr 1fr 1.2fr; /* Tỉ lệ: Giờ (rộng) - Ngày (nhỏ) - Tháng (vừa) - Năm (vừa) */
-                gap: 8px;
-                margin-bottom: 10px;
-            }
-            .dl-grid select, .dl-grid input {
-                width: 100%;
-                padding: 10px 6px;
-                border-radius: 8px;
-                border: 1px solid #444;
-                background: #252525;
-                color: white;
-                font-family: inherit;
-                font-size: 0.85rem;
-                box-sizing: border-box;
-                text-align: center;
-            }
-            .dl-grid select { text-align: left; }
-        </style>
-
         <div class="dl-grid">
             <select id="lichGioChi">
                 <option value="">-- Giờ --</option>
@@ -269,6 +190,8 @@
             <input type="number" id="lichThang" placeholder="Tháng" min="1" max="12">
             <input type="number" id="lichNam" placeholder="Năm" min="1900" max="2100">
         </div>
+        <button class="btn-secondary" onclick="tinhCanChiTuDuongLich()">📅 TÍNH CAN CHI TỪ DƯƠNG LỊCH</button>
+
         <!-- 1. THỜI -->
         <div class="input-suggest-box">
             <label>1. Thời ( Can &amp; Chi )</label>
@@ -311,10 +234,8 @@
         </div>
 
         <button class="m-btn-process" onclick="processModuleLogic()">⚡ BẮT ĐẦU XỬ LÝ LOGIC</button>
-
         <textarea id="mOutput" class="m-output-box" readonly onclick="this.select()"></textarea>
     </div>
-    <!-- ================= END MODULE FORM (HTML) — script hợp nhất ở cuối <script> chính, phía trên vùng 25 module ================= -->
 
     <div class="box">
         <label>Trường Sinh &amp; Vượng Suy theo Nhật - Nguyệt</label>
@@ -343,14 +264,10 @@
         <button id="tsBtnCopy" class="btn-copy" style="display:none;" onclick="copyTS()">📋 SAO CHÉP KẾT QUẢ TRƯỜNG SINH</button>
     </div>
 
-    <!-- ==========================================================================
-         KHUNG CHỨA UI CHO CÁC MODULE NẠP TỪ FILE RỜI (m01.js ... m60.js).
-         Mỗi module tự tạo box UI của nó bằng JS và tự chèn vào đây qua hàm
-         moduleSlot(html) (đã định nghĩa sẵn trong khối <script> chính bên dưới).
-         KHÔNG cần sửa gì ở đây khi thêm module mới — chỉ cần up file mXX.js.
-         ========================================================================== -->
+    <!-- KHUNG CHỨA UI CHO CÁC MODULE NẠP TỪ FILE RỜI -->
     <div id="module-slots"></div>
 </div>
+
 <script>
 // Data chuẩn 64 quẻ
 const dataDich = {
@@ -436,7 +353,6 @@ const dataDich = {
     }}
 };
 
-// selectedDong: mảng các hào động đang chọn (1-6), tối đa 4
 let selectedDong = [];
 let bienQueGiam = null;
 
@@ -450,8 +366,6 @@ function getChiHanh(fullString) {
 }
 
 function getHanh(napName) {
-    // Mỗi hành liệt kê kèm các biến thể đánh dấu thanh khác nhau có thể gặp trong data
-    // (vd "Hỏa"/"Hoả", "Thủy"/"Thuỷ") để không bị bỏ sót Lục Thân khi data gõ lệch dấu.
     const hanhs = [
         { std: "Kim",  alts: ["Kim"] },
         { std: "Mộc",  alts: ["Mộc"] },
@@ -498,7 +412,6 @@ function updateQueList() {
     processDich();
 }
 
-// Cho phép chọn tối đa 4 hào động, bỏ chọn nếu bấm lại
 function toggleDong(num) {
     const idx = selectedDong.indexOf(num);
     if (idx > -1) {
@@ -583,7 +496,6 @@ function processDich() {
     document.getElementById("btnCopy").style.display = "block";
 }
 
-// dongHaoArr: mảng hào động (chỉ dùng để vẽ ký hiệu O/X, luôn rỗng khi vẽ quẻ biến)
 function renderQue(containerId, nameId, cungId, name, que, cung, dongHaoArr, dataChu = null, cungChu = null) {
     document.getElementById(nameId).innerText = name;
     document.getElementById(cungId).innerText = `HỌ ${cung.name.toUpperCase()} - CUNG ${cung.hanh}`;
@@ -591,7 +503,6 @@ function renderQue(containerId, nameId, cungId, name, que, cung, dongHaoArr, dat
     container.innerHTML = "";
 
     const isQueBien = dataChu !== null;
-    // Nội/ngoại quái nào chứa ít nhất 1 hào động thì cả quái đó tính lại lục thân theo quẻ biến
     const thuongDong = selectedDong.some(h => h >= 4);
     const haDong = selectedDong.some(h => h <= 3);
 
@@ -604,17 +515,14 @@ function renderQue(containerId, nameId, cungId, name, que, cung, dongHaoArr, dat
         let displayNap = "";
         if (isQueBien) {
             const isHaoThuong = (haoThu >= 4);
-            // Thế/Ứng luôn cố định theo vị trí hào của quẻ CHỦ, không đổi theo quẻ biến
             const theUngLabel = getTheUngLabel(dataChu.n[i]);
 
             if ((isHaoThuong && thuongDong) || (!isHaoThuong && haDong)) {
-                // Quái này có hào động -> nạp giáp lấy theo quẻ biến, lục thân tính lại theo hành Cung Chủ
                 let napGocBien = que.n[i];
                 let chiHanh = getChiHanh(napGocBien);
                 let lucThanMoi = tinhLucThan(getHanh(chiHanh), cungChu.hanh);
                 displayNap = lucThanMoi + " " + chiHanh + theUngLabel;
             } else {
-                // Quái này không động -> giữ nguyên như quẻ chủ
                 displayNap = dataChu.n[i];
             }
         } else {
@@ -720,11 +628,10 @@ function copyToClipboard() {
         showFallback();
     }
 }
-// ===================== TRƯỜNG SINH & VƯỢNG SUY =====================
 
+// ===================== TRƯỜNG SINH & VƯỢNG SUY =====================
 const CHI_LIST = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
 
-// Nhóm Trường Sinh: chi của bản thân hào quyết định nhóm nào áp dụng
 const TS_GROUPS = {
     "Dần": "Moc", "Mão": "Moc",
     "Tỵ": "Hoa", "Ngọ": "Hoa",
@@ -732,7 +639,6 @@ const TS_GROUPS = {
     "Tý": "ThuyTho", "Hợi": "ThuyTho", "Sửu": "ThuyTho", "Thìn": "ThuyTho", "Mùi": "ThuyTho", "Tuất": "ThuyTho"
 };
 
-// Với mỗi nhóm: ứng với Nhật/Nguyệt là chi nào thì hào đang ở giai đoạn nào
 const TS_STAGE_BY_CHI = {
     Moc: { "Hợi":"Trường Sinh","Tý":"Mộc Dục","Sửu":"Quan Đới","Dần":"Lâm Quan","Mão":"Đế Vượng","Thìn":"Suy","Tỵ":"Bệnh","Ngọ":"Tử","Mùi":"Mộ","Thân":"Tuyệt","Dậu":"Thai","Tuất":"Dưỡng" },
     Hoa: { "Dần":"Trường Sinh","Mão":"Mộc Dục","Thìn":"Quan Đới","Tỵ":"Lâm Quan","Ngọ":"Đế Vượng","Mùi":"Suy","Thân":"Bệnh","Dậu":"Tử","Tuất":"Mộ","Hợi":"Tuyệt","Tý":"Thai","Sửu":"Dưỡng" },
@@ -745,7 +651,6 @@ function getTruongSinh(haoChi, relChi) {
     return TS_STAGE_BY_CHI[group][relChi];
 }
 
-// Bảng Vượng Suy: mỗi Địa Chi có bảng trạng thái riêng ứng với Nhật/Nguyệt là chi gì
 const VUONG_SUY_TABLE = {
     "Tý": { "Tý":"Vượng, Trực Nhật/Trực Nguyệt", "Hợi":"Vượng, Lâm Nhật/Lâm Nguyệt", "Sửu":"Hợp, Vượng nhẹ, Vượng bó buộc", "Dần":"Hưu", "Mão":"Hưu + Hình", "Thìn":"Mộ + Suy", "Tỵ":"Tù", "Ngọ":"Tù + Xung Tán", "Mùi":"Tử + Hại", "Thân":"Tướng", "Dậu":"Tướng", "Tuất":"Tử" },
     "Sửu": { "Tý":"Vượng + Hợp", "Hợi":"Tù", "Sửu":"Trực Nhật/Trực Nguyệt, Vượng", "Dần":"Tử", "Mão":"Tử", "Thìn":"Vượng", "Tỵ":"Tướng", "Ngọ":"Tướng + Hại", "Mùi":"Vượng + Xung", "Thân":"Hưu", "Dậu":"Hưu", "Tuất":"Vượng" },
@@ -761,8 +666,6 @@ const VUONG_SUY_TABLE = {
     "Hợi": { "Tý":"Vượng, Lâm Nhật/Lâm Nguyệt", "Hợi":"Vượng, Trực Nhật/Trực Nguyệt", "Sửu":"Tử", "Dần":"Hưu + Hợp", "Mão":"Hưu", "Thìn":"Tử + Mộ", "Tỵ":"Tù + Xung", "Ngọ":"Tù", "Mùi":"Tử", "Thân":"Tướng + Hại", "Dậu":"Tướng", "Tuất":"Tử" }
 };
 
-// Chuẩn hoá text trạng thái: gộp "Trực/Lâm Nhật/Nguyệt" thành 1 biến thể đúng ngữ cảnh,
-// và đưa về dạng "Trạng thái khác + Trực/Lâm X" cho nhất quán dù data gốc viết thứ tự nào.
 function resolveVuongSuy(raw, ctx) {
     let s = raw;
     const variantOf = (label) => (ctx === "Nhật" ? label + " Nhật" : label + " Nguyệt");
@@ -794,7 +697,6 @@ function populateChiSelects() {
     });
 }
 
-// Lấy nguyên địa chi của 6 hào từ quẻ Chủ đang chọn ở phần trên, điền tự động vào form
 function autoFillFromQueChu() {
     const cungKeyChu = document.getElementById("selectCung").value;
     const qNameChu = document.getElementById("selectQue").value;
@@ -858,9 +760,6 @@ function tinhTruongSinhVuongSuy() {
         text += `Hào ${h} : ${chi} ${status} ở Nguyệt ${nguyet}.\n`;
     }
 
-    // ---- MỞ RỘNG: Trường Sinh & Vượng Suy cho HÀO BIẾN — CHỈ các vị trí đang có
-    // Hào Động ở Quẻ Chính (selectedDong). Hào Biến lấy tự động từ bienQueGiam,
-    // không cần nhập tay; các hào không Động thì không có Hào Biến nên bỏ qua. ----
     const chiHaoBien = layDiaChiHaoBienTheoDong();
     const cacHaoDong = Object.keys(chiHaoBien).map(Number).sort((a, b) => b - a);
 
@@ -899,10 +798,6 @@ function tinhTruongSinhVuongSuy() {
     copyBtn.style.display = "block";
 }
 
-// Lấy Địa Chi của các Hào Biến — CHỈ tại đúng những vị trí đang có Hào Động ở Quẻ
-// Chính (selectedDong). Đây là data nền cơ bản (basic) để mọi module sau này tham
-// chiếu trạng thái Vượng/Suy/Trường Sinh của Hào Biến so với Tứ Trị, không cần
-// module nào tự tính lại. Hào không Động thì không sinh ra Hào Biến nên bỏ qua.
 function layDiaChiHaoBienTheoDong() {
     const ketQua = {};
     if (!bienQueGiam || !bienQueGiam.data) return ketQua;
@@ -950,16 +845,12 @@ function copyTS() {
 }
 
 // ================= TỨ TRỊ: THỜI - NHẬT - NGUYỆT - THÁI TUẾ - TUẦN KHÔNG - HÀO ĐỘNG =================
-// (Nền móng dữ liệu dùng chung cho các module 1,2,3,5,6,9-12,25...)
-
-// Data Thiên Can & Địa Chi phân chia Âm Dương
 const CAN_DUONG = ["Giáp", "Bính", "Mậu", "Canh", "Nhâm"];
 const CAN_AM    = ["Ất", "Đinh", "Kỷ", "Tân", "Quý"];
 
 const CHI_DUONG = ["Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất"];
 const CHI_AM    = ["Sửu", "Mão", "Tỵ", "Mùi", "Dậu", "Hợi"];
 
-// Bản đồ viết tắt Địa chi theo yêu cầu
 const CHI_SHORT_MAP = [
     { keys: ["ty", "tý", "tỵ"], values: ["Tý", "Tỵ"] },
     { keys: ["th", "thìn", "thân"], values: ["Thìn", "Thân"] },
@@ -973,14 +864,12 @@ const CHI_SHORT_MAP = [
     { keys: ["hợ", "hợi"], values: ["Hợi"] }
 ];
 
-// Helper ẩn tất cả menu gợi ý khi click bên ngoài
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.input-suggest-box')) {
         document.querySelectorAll('.suggestions-list').forEach(box => box.style.display = 'none');
     }
 });
 
-// Logic gợi ý Thiên Can + Địa Chi (Âm đi với Âm, Dương đi với Dương)
 function handleSuggestGanChi(inputEl, sugId) {
     const val = inputEl.value.trim().toLowerCase();
     const sugBox = document.getElementById(sugId);
@@ -993,14 +882,12 @@ function handleSuggestGanChi(inputEl, sugId) {
 
     let results = [];
 
-    // Kiểm tra Thiên can Dương
     CAN_DUONG.forEach(can => {
         if (can.toLowerCase().startsWith(val)) {
             CHI_DUONG.forEach(chi => results.push(`${can} ${chi}`));
         }
     });
 
-    // Kiểm tra Thiên can Âm
     CAN_AM.forEach(can => {
         if (can.toLowerCase().startsWith(val)) {
             CHI_AM.forEach(chi => results.push(`${can} ${chi}`));
@@ -1024,7 +911,6 @@ function handleSuggestGanChi(inputEl, sugId) {
     }
 }
 
-// Logic gợi ý viết tắt Địa Chi cho Tuần Không (Gõ 2 ký tự)
 function handleSuggestChiShort(inputEl, sugId) {
     const val = inputEl.value.trim().toLowerCase();
     const sugBox = document.getElementById(sugId);
@@ -1061,14 +947,12 @@ function handleSuggestChiShort(inputEl, sugId) {
     }
 }
 
-// Hàm parse chuỗi Hào động người dùng nhập (Xử lý chuỗi 1,3 hoặc 2,4,5...)
 function parseHaoDongInput(str) {
     if (!str || !str.trim()) return [];
     let parts = str.split(/[,;\s]+/).map(p => parseInt(p.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 6);
     return [...new Set(parts)].sort((a, b) => a - b);
 }
 
-// Hàm thực thi logic chính khi đã có đủ thông tin
 function processModuleLogic() {
     const thoi = document.getElementById('mThoi').value.trim();
     const nhat = document.getElementById('mNhat').value.trim();
@@ -1079,7 +963,6 @@ function processModuleLogic() {
 
     const outputEl = document.getElementById('mOutput');
 
-    // Kiểm tra điều kiện có đủ thông tin mới làm việc
     if (!thoi || !nhat || !nguyet || !thaiTue) {
         alert("Vui lòng nhập đầy đủ thông tin: Thời, Nhật Thần, Nguyệt Lệnh và Thái Tuế!");
         return;
@@ -1087,7 +970,6 @@ function processModuleLogic() {
 
     const listHaoDong = parseHaoDongInput(haoDongStr);
 
-    // Xây dựng kết quả xử lý theo logic
     let resText = `=== DỮ LIỆU ĐẦU VÀO ĐÃ ĐƯỢC XỬ LÝ ===\n`;
     resText += `• Thời gian (Can Chi) : ${thoi}\n`;
     resText += `• Nhật Thần            : ${nhat}\n`;
@@ -1109,7 +991,6 @@ function processModuleLogic() {
     outputEl.value = resText;
     outputEl.style.display = 'block';
 
-    // Tự động đồng bộ hào động lên giao diện quẻ phía trên (nếu chọn trùng khớp)
     if (typeof selectedDong !== 'undefined' && typeof toggleDong === 'function') {
         selectedDong = [];
         listHaoDong.forEach(h => {
@@ -1121,10 +1002,7 @@ function processModuleLogic() {
         if (typeof processDich === 'function') processDich();
     }
 }
-// Cầu nối sang calendar-core.js (+ thư viện âm lịch CDN mà nó cần) để tự suy
-// Can Chi Giờ/Ngày/Tháng/Năm từ ngày Dương Lịch, điền thẳng vào 4 ô Thời/Nhật/
-// Nguyệt/Thái Tuế ở trên — mọi module m01->m60 phía sau đọc đúng 4 ô đó như
-// cũ, không cần biết gì về lịch; đây chỉ là 1 cách điền nhanh thay vì gõ tay.
+
 function tinhCanChiTuDuongLich() {
     const gioChi = document.getElementById('lichGioChi').value;
     const ngay = parseInt(document.getElementById('lichNgay').value);
@@ -1157,8 +1035,6 @@ function tinhCanChiTuDuongLich() {
     document.getElementById('mNhat').value = ctx.socVong.canChiNgay;
 
     if (ctx.tietKhi && ctx.tietKhi.canChiThang && ctx.tietKhi.canChiNam) {
-        // Nguyệt Lệnh & Thái Tuế lấy theo TIẾT KHÍ thật (đúng quy ước Lục Hào/Tử
-        // Bình) — KHÔNG lấy theo ranh giới tháng Âm Lịch thường (Sóc Vọng).
         document.getElementById('mNguyet').value = ctx.tietKhi.canChiThang;
         document.getElementById('mThaiTue').value = ctx.tietKhi.canChiNam;
     } else {
@@ -1167,20 +1043,8 @@ function tinhCanChiTuDuongLich() {
         alert("Đã điền Giờ + Nhật. Riêng Tháng/Năm ngoài phạm vi dữ liệu Tiết Khí (2023–2046) của calendar-core.js nên chưa tự suy được — vui lòng tự gõ tay 2 ô Nguyệt Lệnh / Thái Tuế bên dưới.");
     }
 }
-// ================= HẾT PHẦN TỨ TRỊ =================
 
-
-/* =========================================================================
- * KHUNG NẠP MODULE RỜI (m01.js ... m60.js)
- * - moduleSlot(html): mỗi file module gọi hàm này 1 lần để tự chèn UI (nếu có)
- *   của nó vào khung #module-slots, không cần sửa total.html.
- * - Toàn bộ 60 thẻ <script src="mXX.js"> được khai báo sẵn ở cuối file
- *   (ngay trước </body>). File nào CHƯA tồn tại trên server/thư mục sẽ chỉ
- *   báo lỗi 404 êm trong Console (F12) — KHÔNG làm hỏng hay dừng trang.
- *   File nào ĐÃ có sẽ tự chạy, dùng lại toàn bộ hàm/biến nền phía trên
- *   (dataDich, getChiHanh, getHanh, tinhLucThan, findQueByCode, selectedDong,
- *   bienQueGiam, VUONG_SUY_TABLE, resolveVuongSuy, getTruongSinh...).
- * ========================================================================= */
+/* KHUNG NẠP MODULE RỜI (m01.js ... m60.js) */
 function moduleSlot(html) {
     const div = document.createElement("div");
     div.className = "box module-container";
@@ -1192,31 +1056,11 @@ function moduleSlot(html) {
 populateChiSelects();
 </script>
 
-<!-- ==========================================================================
-     CẦU NỐI LỊCH ÂM DƯƠNG + TIẾT KHÍ (calendar-core.js) — nạp TRƯỚC danh sách
-     module m01->m60 để NL_getDayContext() sẵn sàng khi hàm tinhCanChiTuDuongLich()
-     (đã định nghĩa trong khối <script> phía trên) được gọi. Chỉ cần up đúng
-     "calendar-core.js" lên CÙNG THƯ MỤC với total.html — dòng CDN bên dưới tự
-     tải thư viện âm lịch, không cần upload thêm file nào cho dòng đó.
-     LƯU Ý: calendar-core.js (bản gốc trong app Lịch/Ngũ Linh) có đoạn code tự
-     chạy lúc nạp (gọi document.getElementById('month')/('calendar')/('nowBanner')
-     và setInterval mỗi 60s) — những phần tử đó KHÔNG tồn tại trong total.html
-     nên sẽ báo lỗi (vô hại, không ảnh hưởng NL_getDayContext) trong Console, và
-     phần setInterval sẽ báo lỗi lặp lại mỗi phút. Khuyến nghị: mở calendar-core.js,
-     xoá hoặc comment đúng khối IIFE/`setInterval` tự chạy đó ở cuối file trước khi
-     upload, để Console sạch — không bắt buộc, chỉ để gọn, không sửa thì vẫn chạy đúng.
-     ========================================================================== -->
+<!-- Thư viện Âm Lịch & Calendar Core -->
 <script src="https://cdn.jsdelivr.net/npm/@nghiavuive/lunar_date_vi@latest/dist/index.umd.js"></script>
 <script src="calendar-core.js"></script>
 
-<!-- ==========================================================================
-     DANH SÁCH 60 MODULE RỜI — khai báo sẵn 1 lần, không cần sửa lại khi thêm module.
-     Chỉ cần up đúng tên file mXX.js lên CÙNG THƯ MỤC với total.html (online:
-     gốc repository GitHub Pages; offline: cùng 1 thư mục trên máy/điện thoại)
-     là module đó tự chạy. Thứ tự load đúng theo thứ tự m01 -> m60 bên dưới,
-     nên module nào cần dùng lại hàm/biến của module khác thì module đó phải
-     có số LỚN HƠN (load sau).
-     ========================================================================== →
+<!-- DANH SÁCH MODULE RỜI NẠP TỰ ĐỘNG -->
 <script src="mchienluoc.js"></script>
 <script src="m01.js"></script>
 <script src="m02.js"></script>
