@@ -224,14 +224,39 @@
              Tuỳ chọn — không bắt buộc. Điền 4 ô dưới rồi bấm nút để TỰ ĐỘNG điền vào đúng
              4 ô Thời/Nhật/Nguyệt/Thái Tuế bên dưới (vẫn có thể sửa tay sau khi điền nếu cần). -->
         <label>Nhập Nhanh Theo Dương Lịch (tuỳ chọn — tự suy Can Chi, phạm vi Tiết Khí 2023–2046)</label>
-        <div class="m-grid">
+        
+        </div>
+        <button class="btn-secondary" onclick="tinhCanChiTuDuongLich()">📅 TÍNH CAN CHI TỪ DƯƠNG LỊCH</button>
+        <!-- Đặt thông số layout riêng cho phần Nhập Dương Lịch -->
+        <style>
+            .dl-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1.2fr; /* Tỉ lệ: Giờ (rộng) - Ngày (nhỏ) - Tháng (vừa) - Năm (vừa) */
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+            .dl-grid select, .dl-grid input {
+                width: 100%;
+                padding: 10px 6px;
+                border-radius: 8px;
+                border: 1px solid #444;
+                background: #252525;
+                color: white;
+                font-family: inherit;
+                font-size: 0.85rem;
+                box-sizing: border-box;
+                text-align: center;
+            }
+            .dl-grid select { text-align: left; }
+        </style>
+
+        <div class="dl-grid">
             <select id="lichGioChi">
-                <option value="">-- Giờ (Chi) --</option>
+                <option value="">-- Giờ --</option>
                 <option value="Tý">Tý (23h-1h)</option>
                 <option value="Sửu">Sửu (1h-3h)</option>
                 <option value="Dần">Dần (3h-5h)</option>
                 <option value="Mão">Mão (5h-7h)</option>
-                <option value="Thìn">Thìn (7h-9h)</option>
                 <option value="Tỵ">Tỵ (9h-11h)</option>
                 <option value="Ngọ">Ngọ (11h-13h)</option>
                 <option value="Mùi">Mùi (13h-15h)</option>
@@ -240,14 +265,10 @@
                 <option value="Tuất">Tuất (19h-21h)</option>
                 <option value="Hợi">Hợi (21h-23h)</option>
             </select>
-            <input type="number" id="lichNgay" placeholder="Ngày DL (1-31)" min="1" max="31">
+            <input type="number" id="lichNgay" placeholder="Ngày" min="1" max="31">
+            <input type="number" id="lichThang" placeholder="Tháng" min="1" max="12">
+            <input type="number" id="lichNam" placeholder="Năm" min="1900" max="2100">
         </div>
-        <div class="m-grid">
-            <input type="number" id="lichThang" placeholder="Tháng DL (1-12)" min="1" max="12">
-            <input type="number" id="lichNam" placeholder="Năm DL (vd 2026)" min="1900" max="2100">
-        </div>
-        <button class="btn-secondary" onclick="tinhCanChiTuDuongLich()">📅 TÍNH CAN CHI TỪ DƯƠNG LỊCH</button>
-
         <!-- 1. THỜI -->
         <div class="input-suggest-box">
             <label>1. Thời ( Can &amp; Chi )</label>
@@ -1195,7 +1216,7 @@ populateChiSelects();
      là module đó tự chạy. Thứ tự load đúng theo thứ tự m01 -> m60 bên dưới,
      nên module nào cần dùng lại hàm/biến của module khác thì module đó phải
      có số LỚN HƠN (load sau).
-     ========================================================================== -->
+     ========================================================================== →
 <script src="mchienluoc.js"></script>
 <script src="m01.js"></script>
 <script src="m02.js"></script>
