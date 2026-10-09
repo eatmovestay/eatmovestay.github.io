@@ -1,5 +1,5 @@
 /* =========================================================================
- * mchienluoc.js — MODULE CHIẾN LƯỢC: LUẬN SINH KHẮC HÀO ĐỘNG ĐƠN (64 QUẺ)
+ * m07.js — MODULE CHIẾN LƯỢC: LUẬN SINH KHẮC HÀO ĐỘNG ĐƠN (64 QUẺ)
  * (nâng cấp từ m06.js — Tra Cứu Hào Động Đơn)
  *
  * NẠP: gõ Tên Quẻ (tự gợi ý, tự nhận Họ Quẻ — KHÔNG cần chọn Họ trước) + chọn
@@ -23,7 +23,7 @@
     "use strict";
 
     if (typeof dataDich === "undefined" || typeof moduleSlot !== "function") {
-        console.error("mchienluoc.js: thiếu dataDich / moduleSlot của file gốc — module không chạy.");
+        console.error("m07.js: thiếu dataDich / moduleSlot của file gốc — module không chạy.");
         return;
     }
 
