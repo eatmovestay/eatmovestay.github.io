@@ -1,5 +1,5 @@
 /* =========================================================================
- * m07.js — MODULE CHIẾN LƯỢC: LUẬN SINH KHẮC HÀO ĐỘNG ĐƠN (64 QUẺ)
+ * m07.js — MODULE 07 Chiến Lược: LUẬN SINH KHẮC HÀO ĐỘNG ĐƠN (64 QUẺ)
  * (nâng cấp từ m06.js — Tra Cứu Hào Động Đơn)
  *
  * NẠP: gõ Tên Quẻ (tự gợi ý, tự nhận Họ Quẻ — KHÔNG cần chọn Họ trước) + chọn
