@@ -286,7 +286,7 @@
 
   /* ---------------- 4. CHẠY TOÀN BỘ QUY TRÌNH ---------------- */
 
-  function m07_run() {
+  window.m07_run = function m07_run() {
     var outEl = document.getElementById("m07Output");
     var que = m07_getQueChinh();
     if (!que) {
@@ -394,7 +394,7 @@
     lines.push("❌ Case 3: " + r3.reason + " Không tìm được Lục Thân Thật qua cả 3 case.");
     outEl.value = lines.join("\n");
     outEl.style.display = "block";
-  }
+  };
 
   function m07_finish(outEl, lines, resultObj) {
     outEl.value = lines.join("\n");
