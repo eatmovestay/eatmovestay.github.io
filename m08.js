@@ -18,6 +18,12 @@
  * xung Không đã qua chưa, Thế có "quá vượng" không, người hỏi đang lo lắng
  * hay bình thường...) để user xác nhận tay qua form.
  *
+ * LIÊN KẾT mchienluoc.js: m08 tự gọi window.MCL_CORE (thuật toán sinh-khắc
+ * Thế/Ứng/Hào Động/Hào Biến/Dụng Thần của Module Chiến Lược) để mở rộng output:
+ * thêm Ứng, Hào Động, Hào Biến, Vượng Suy Nhật+Nguyệt, quan hệ sinh khắc, nền
+ * tảng của Thế, kết luận chiến lược, và đối chiếu/tổng hợp với case Thế–Dụng.
+ * Không có MCL_CORE thì đọc tạm panel mchienluoc; không có gì thì bỏ qua phần mở rộng.
+ *
  * Có nút Sao Chép text thuần + nút Thu/Mở rộng (mẫu dùng lại cho m09 trở đi).
  * Expose window.M08_DATA cho module sau.
  * ========================================================================= */
@@ -268,6 +274,177 @@
         }
 
         /* ------------------------------------------------------------------
+         * CẦU NỐI MODULE CHIẾN LƯỢC (mchienluoc.js)
+         * ------------------------------------------------------------------ */
+        // Chiều hướng sơ bộ của mã ketLuan m08 (+1 thuận, -1 bất lợi, 0 lẫn lộn). Chỉnh tay tại đây nếu cần.
+        const KETLUAN_TONE = {
+            TAI_HOA: -1, BAT_THANH_DAUMOI_NOI_KHAC: -1, HONG: -1, TAI_HOA_LUY_VIEC: -1, NGUY_HIEM: -1,
+            NGUY_CO_HOA: -1, TUONG_THANH_MA_KHONG_THANH: -1, DAI_RISK: -1, XOI_HONG_BONG_KHONG: -1,
+            HONG_NGUY_HIEM_TINH_MANG: -1,
+            MAY_MAN: 1, DA_HAY_CON_HEN: 1, VUOT_QUA_MAY_MAN: 1, THANH_TRONG_BONG_TOI: 1,
+            THANH_NHUNG_QUA_TAI: 0, THANH_TRUOC_KHI_GAP_HOA: 0, THANH_KHONG_GOC: 0
+        };
+        const TEN_TONE = { tot: "THUẬN", xau: "BẤT LỢI", lan_lon: "LẪN LỘN (có lợi lẫn bất lợi)", trung: "TRUNG TÍNH / GIẰNG CO", chua_ro: "CHƯA RÕ" };
+
+        function mclApi() {
+            return (window.MCL_CORE && typeof window.MCL_CORE.phanTich === "function") ? window.MCL_CORE : null;
+        }
+        function toneCaseList(list) {
+            let pos = 0, neg = 0, mix = 0;
+            list.forEach(c => {
+                if (!c.ketLuan) return;
+                const t = KETLUAN_TONE[c.ketLuan];
+                if (t > 0) pos++; else if (t < 0) neg++; else if (t === 0) mix++;
+            });
+            if (!pos && !neg && !mix) return "chua_ro";
+            if (neg && !pos && !mix) return "xau";
+            if (pos && !neg && !mix) return "tot";
+            return "lan_lon";
+        }
+        function toneChienLuoc(verdict) {
+            if (!verdict) return null;
+            if (/🚨|❌/.test(verdict)) return "xau";
+            if (/✅|🟢/.test(verdict)) return "tot";
+            return "trung";
+        }
+        function tongHopHaiLop(toneM08, toneCL) {
+            if (!toneCL) return "";
+            if (toneM08 === "chua_ro") return "Lớp Thế–Dụng (m08) chưa có kết luận định tính cho tổ hợp này; tham khảo lớp Chiến Lược: " + TEN_TONE[toneCL] + ".";
+            if (toneM08 === toneCL) return "Hai lớp ĐỒNG THUẬN: Thế–Dụng (m08) và Chiến Lược cùng nghiêng về " + TEN_TONE[toneCL] + ".";
+            if ((toneM08 === "tot" && toneCL === "xau") || (toneM08 === "xau" && toneCL === "tot"))
+                return "⚠ Hai lớp ĐỐI NGHỊCH: Thế–Dụng (m08) nghiêng " + TEN_TONE[toneM08] + ", Chiến Lược nghiêng " + TEN_TONE[toneCL] + ". m08 xét quan hệ cụ thể Thế–Dụng Thần; Chiến Lược xét nền tảng chung của Thế (Ứng, Hào Động, Hào Biến) — nên đọc cả hai, không bên nào tự động thắng.";
+            return "Hai lớp lệch mức độ (không đối nghịch): Thế–Dụng (m08) " + TEN_TONE[toneM08] + " | Chiến Lược " + TEN_TONE[toneCL] + ".";
+        }
+        function nhanHao(e) {
+            return e.isBien ? "vị trí hào " + e.pos + ": " + e.lt + " " + e.chi + " (" + e.hanh + ")"
+                            : "Hào " + e.pos + " " + e.lt + " " + e.chi + " (" + e.hanh + ")";
+        }
+        function dongHao(ten, e, vs) {
+            return "• " + ten + ": " + nhanHao(e) + "\n" + (vs ? "    Vượng suy → " + vs + "\n" : "");
+        }
+        function catPhan(text, tuKhoa, denKhoa) {
+            const a = text.indexOf(tuKhoa);
+            if (a < 0) return "";
+            const b = denKhoa ? text.indexOf(denKhoa, a + 1) : -1;
+            return (b < 0 ? text.slice(a) : text.slice(a, b)).trim();
+        }
+
+        // Trả {text, tongHop, nguon, verdict, toneCL, nenTang}
+        function xayDungMoRongChienLuoc(c) {
+            const res = { text: "", tongHop: "", nguon: null, verdict: null, toneCL: null, nenTang: null };
+            const api = mclApi();
+            const dong = c.dong || [];
+            const queInfo = { name: c.queName, cung: c.cungChu, data: c.chuData };
+
+            if (api && dong.length === 1) {
+                // ===== Chế độ đầy đủ: hào động đơn =====
+                const kq = api.phanTich({ que: queInfo, hao: dong[0], dt: c.dungLT });
+                if (!kq || !kq.ok) {
+                    res.text = "(Module Chiến Lược không chạy được cho quẻ này: " + ((kq && kq.loi) || "không rõ") + ")\n";
+                    return res;
+                }
+                res.nguon = "api";
+                let t = "Nguồn: Module Chiến Lược — hào động đơn: Hào " + kq.hao + " | Quẻ Biến: " + (kq.queBien || "(không tìm thấy)") + "\n";
+                t += dongHao("Hào Ứng", kq.U, kq.vuongSuy.U);
+                if (kq.D.pos !== c.haoThe) t += dongHao("Hào Động", kq.D, kq.vuongSuy.D);
+                else t += "• Hào Động trùng Hào Thế" + (kq.vuongSuy.D ? "\n    Vượng suy (Nhật/Nguyệt) → " + kq.vuongSuy.D : "") + "\n";
+                if (kq.B) t += dongHao("Hào Biến", kq.B, kq.vuongSuy.B);
+                if (kq.vuongSuy.T) t += "• Vượng suy Thế (Nhật/Nguyệt) → " + kq.vuongSuy.T + "\n";
+                if (kq.yFromBien) t += "• Lưu ý: Dụng Thần " + c.dungLT + " không có ở 6 hào Quẻ Chính nhưng xuất hiện ở Hào Biến (" + nhanHao(kq.B) + ") — Chiến Lược xét như Hào Biến.\n";
+                if (c.nhieuHaoDung) t += "• Lưu ý: Chiến Lược xét TẤT CẢ các hào cùng Lục Thân " + c.dungLT + " là Dụng Thần (không riêng hào đã chọn ở trên).\n";
+                if (kq.dataWarn && kq.dataWarn.length) t += "• ⚠ Cảnh báo data: " + kq.dataWarn.join("; ") + "\n";
+
+                // Quan hệ sinh khắc liên quan Thế / Dụng Thần
+                const rUT = api.relDir(kq.U, kq.T);
+                const ctx = { UT: rUT.type === "hoa" ? "hoa" : (rUT.from === "a" ? (rUT.type === "sinh" ? "Usinh" : "Ukhac") : (rUT.type === "sinh" ? "Tsinh" : "Tkhac")) };
+                const RN = api.ROLE_NAME;
+                const lienQuan = (kq.E || []).filter(e => e.a === "T" || e.t === "T" || e.a === "Y" || e.t === "Y");
+                if (lienQuan.length) {
+                    t += "\nQuan hệ sinh–khắc liên quan Thế / Dụng Thần (theo ngũ hành Địa Chi):\n";
+                    lienQuan.forEach(e => {
+                        const verb = e.type === "sinh" ? "SINH" : e.type === "khac" ? "KHẮC" : "TỶ HÒA với";
+                        t += "• [" + RN[e.a] + "] " + nhanHao(e.ae) + "  " + verb + "  [" + RN[e.t] + "] " + nhanHao(e.te) + "\n    → " + api.meaning(e.a, e.t, e.type, ctx) + "\n";
+                    });
+                }
+
+                // Đối chiếu phân loại Thế–Dụng (lục thân) với quan hệ ngũ hành chi của Chiến Lược
+                if (c.haoDungChosen && c.category) {
+                    const yLine = (kq.Ys || []).find(y => y.pos === c.haoDungChosen);
+                    if (yLine) {
+                        const rd = api.relDir(kq.T, yLine);
+                        let catCL = null;
+                        if (rd.type === "hoa") catCL = "E";
+                        else if (rd.from === "a") catCL = rd.type === "sinh" ? "A" : "B";
+                        else catCL = rd.type === "sinh" ? "D" : "C";
+                        t += "\nĐối chiếu: phân loại m08 = " + c.category + " (" + TEN_CASE[c.category] + "); quan hệ ngũ hành Thế–Dụng theo Chiến Lược → " + catCL +
+                             (catCL === c.category ? " ✔ khớp.\n" : " ⚠ LỆCH — kiểm tra lại data Lục Thân / ngũ hành Chi của 2 hào này.\n");
+                    }
+                }
+
+                const sec3 = catPhan(kq.text, "[3] NỀN TẢNG", "[4] KẾT LUẬN");
+                const sec4 = catPhan(kq.text, "[4] KẾT LUẬN", "=== HẾT LUẬN GIẢI");
+                if (sec3) t += "\n" + sec3 + "\n";
+                if (sec4) t += "\n" + sec4 + "\n";
+
+                res.text = t;
+                res.verdict = kq.verdict;
+                res.toneCL = toneChienLuoc(kq.verdict);
+                res.nenTang = kq.nenTang;
+                return res;
+            }
+
+            if (api) {
+                // ===== Quẻ tĩnh hoặc nhiều hào động: chỉ mượn phần Thế–Ứng–Dụng Thần (tĩnh) =====
+                res.nguon = "api-tinh";
+                let t = dong.length === 0
+                    ? "Quẻ không có hào động: Chiến Lược (chuyên hào động đơn) chỉ được mượn phần Thế – Ứng – Dụng Thần.\n"
+                    : "Quẻ có " + dong.length + " hào động: Chiến Lược chuyên hào động đơn nên m08 chỉ mượn phần Thế – Ứng – Dụng Thần (không xét Hào Động/Hào Biến riêng lẻ để tránh sai Hào Biến).\n";
+                const lines = c.chuData.n.map((n, k) => api.parseLine(n, k + 1));
+                const T = lines[c.haoThe - 1];
+                const U = lines.find(l => l.ung);
+                const Y = c.haoDungChosen ? lines[c.haoDungChosen - 1] : null;
+                const RN = api.ROLE_NAME;
+                const cap = [];
+                if (T && U && T.pos !== U.pos) cap.push([T, "T", U, "U"]);
+                if (T && Y && Y.pos !== T.pos) cap.push([T, "T", Y, "Y"]);
+                if (U && Y && Y.pos !== U.pos) cap.push([U, "U", Y, "Y"]);
+                cap.forEach(pr => {
+                    const x = pr[0], xr = pr[1], y = pr[2], yr = pr[3];
+                    const rd = api.relDir(x, y);
+                    if (rd.type === "none") return;
+                    let actor = x, ar = xr, target = y, tr = yr;
+                    if (rd.type !== "hoa" && rd.from === "b") { actor = y; ar = yr; target = x; tr = xr; }
+                    const verb = rd.type === "sinh" ? "SINH" : rd.type === "khac" ? "KHẮC" : "TỶ HÒA với";
+                    t += "• [" + RN[ar] + "] " + nhanHao(actor) + "  " + verb + "  [" + RN[tr] + "] " + nhanHao(target) + "\n    → " + api.meaning(ar, tr, rd.type, {}) + "\n";
+                });
+                res.text = t;
+                return res;
+            }
+
+            // ===== Không có MCL_CORE: đọc tạm panel Chiến Lược đang hiển thị (nếu khớp quẻ + hào) =====
+            const el = document.getElementById("mcl_output");
+            const v = el && el.value ? el.value : "";
+            if (v && dong.length === 1) {
+                const mq = v.match(/Quẻ Chính\s*:\s*(.+?)\s*\(Họ/);
+                const mh = v.match(/• Hào Động:\s*Hào\s*(\d)/);
+                if (mq && mh && mq[1].trim() === c.queName && Number(mh[1]) === dong[0]) {
+                    const sec3 = catPhan(v, "[3] NỀN TẢNG", "[4] KẾT LUẬN");
+                    const sec4 = catPhan(v, "[4] KẾT LUẬN", "=== HẾT LUẬN GIẢI");
+                    if (sec3 || sec4) {
+                        res.nguon = "panel";
+                        res.text = "Nguồn: panel Module Chiến Lược đang hiển thị (cùng quẻ & Hào " + dong[0] + ") — chưa có cầu nối MCL_CORE nên chỉ đọc lại kết quả có sẵn.\n" +
+                                   (sec3 ? "\n" + sec3 + "\n" : "") + (sec4 ? "\n" + sec4 + "\n" : "");
+                        const mv = sec4.match(/KẾT LUẬN\s*\n([^\n]+)/);
+                        res.verdict = mv ? mv[1] : null;
+                        res.toneCL = toneChienLuoc(res.verdict);
+                        return res;
+                    }
+                }
+            }
+            return res;
+        }
+
+        /* ------------------------------------------------------------------
          * UI
          * ------------------------------------------------------------------ */
         const dungThanOptionsHtml = LUC_THAN_LIST.map(lt => `<option value="${lt}">${lt}</option>`).join("");
@@ -281,6 +458,7 @@
                 <p style="font-size:0.72rem;color:#888;margin:0 0 12px;">
                     Tự lấy Thế hào, Tứ Trị, Tuần Không (m01), Nhập Mộ (m03) từ dữ liệu đã có.
                     Bạn chỉ cần chọn Dụng Thần và xác nhận vài yếu tố không tự suy được (mốc thời gian, tâm lý người hỏi...).
+                    Kết quả được mở rộng tự động bằng thuật toán sinh-khắc của Module Chiến Lược (mchienluoc).
                 </p>
                 <label>Chọn Dụng Thần (Lục Thân đại diện việc hỏi)</label>
                 <select id="m08_dungThan">
@@ -379,6 +557,11 @@ $("m08_toggleBtn").addEventListener("click", function () {
             $("m08_xuLyBtn").style.display = "block";
             $("m08_output").style.display = "none";
             $("m08_copyBtn").style.display = "none";
+        }
+
+        function queEl_name() {
+            const qe = document.getElementById("selectQue");
+            return qe ? qe.value : "";
         }
 
         function xuLy() {
@@ -502,6 +685,20 @@ $("m08_toggleBtn").addEventListener("click", function () {
             else if (category === 'E') caseList = xetDungThanTriThe(p);
             caseList = caseList.concat(xetHopXung(p));
 
+            // Mở rộng bằng logic Module Chiến Lược (lỗi ở đây không được làm hỏng m08)
+            let mo = { text: "", tongHop: "", nguon: null, verdict: null, toneCL: null, nenTang: null };
+            try {
+                mo = xayDungMoRongChienLuoc({
+                    queName: queEl_name(), cungChu, chuData, haoThe, haoDungChosen, dungLT, category, dong,
+                    nhieuHaoDung: haoDungCandidates.length > 1
+                });
+            } catch (err) {
+                console.error("m08 ↔ mchienluoc:", err);
+                mo.text = "(Lỗi khi liên kết Module Chiến Lược: " + err.message + ")\n";
+            }
+            const toneM08 = toneCaseList(caseList);
+            if (mo.toneCL) mo.tongHop = tongHopHaiLop(toneM08, mo.toneCL);
+
             // Xuất text
             let text = "=== MODULE 8 — THẾ & DỤNG THẦN ===\n";
             text += `Thế: Hào ${haoThe} (${theLT}) — Chi ${theInfo.chi} ${theInfo.hanh} — ${theInfo.isDong ? "Động" : "Tĩnh"}${theHaoBien ? ` -> Biến: ${theHaoBien.lucThan} ${theHaoBien.chi} ${theHaoBien.hanh}` : ""}\n`;
@@ -519,13 +716,17 @@ $("m08_toggleBtn").addEventListener("click", function () {
                     text += `• [${c.case}]${c.ketLuan ? " → " + c.ketLuan : ""}\n  ${c.ghiChu}\n`;
                 });
             }
+            if (mo.text) text += "\n[MỞ RỘNG — LIÊN KẾT MODULE CHIẾN LƯỢC]\n" + mo.text;
+            else text += "\n(Chưa có dữ liệu từ Module Chiến Lược: mchienluoc.js chưa nạp/chưa có cầu nối MCL_CORE, hoặc dữ liệu chưa đủ.)\n";
+            if (mo.tongHop) text += "\n[TỔNG HỢP 2 LỚP]\n" + mo.tongHop + "\n";
             text += "\nGhi chú: \"Thế lâm Phá\" (Nhật/Nguyệt Phá) và \"Thế lâm Tuyệt\" không có diễn giải riêng trong tài liệu nền cho category này (tài liệu nói rõ các trường hợp không liệt kê nghĩa là không tồn tại) — module chưa tự suy trạng thái Phá (cần Module Xung-Phá chuyên trách); nếu biết Thế đang Phá, bạn tự đối chiếu bằng tay.\n";
             text += "=== HẾT MODULE 8 ===";
 
             window.M08_DATA = {
                 haoThe, theLT, dungLT, haoDungChosen, category, caseList,
                 vuongSuyThe: vsThe, vuongSuyDung: vsDung,
-                theTuanKhong, theNhapMo
+                theTuanKhong, theNhapMo,
+                chienLuoc: { nguon: mo.nguon, verdict: mo.verdict, tone: mo.toneCL, toneM08: toneM08, nenTang: mo.nenTang }
             };
 
             const outputEl = $("m08_output");
