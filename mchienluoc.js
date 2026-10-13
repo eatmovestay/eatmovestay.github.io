@@ -288,14 +288,17 @@
     }
 
     // ---------- Luận giải chính ----------
-    function luanGiai(silent) {
-        const q = resolveQue();
-        const h = Number($("mcl_hao").value);
+    // opts (tuỳ chọn, do module khác như m08 gọi qua window.MCL_CORE): {que:{name,cung,data}, hao, dt}
+    // Có opts => chạy đúng thuật toán này nhưng KHÔNG đọc/ghi UI của module, chỉ trả về object kết quả.
+    function luanGiai(silent, opts) {
+        const q = opts ? opts.que : resolveQue();
+        const h = opts ? Number(opts.hao) : Number($("mcl_hao").value);
         if (!q || !h) {
+            if (opts) return { ok: false, loi: "Thiếu Quẻ hoặc Hào Động." };
             if (!silent) alert("Vui lòng gõ/chọn Tên Quẻ hợp lệ và chọn đúng 1 Hào Động.");
             return;
         }
-        const dtChon = $("mcl_dt").value;
+        const dtChon = opts ? (opts.dt || "") : $("mcl_dt").value;
         const cung = q.cung;
         const chu = q.data;
         const i = h - 1;
@@ -311,6 +314,7 @@
         const U = lines.find(l => l.ung);
         const D = lines[i];
         if (!T || !U) {
+            if (opts) return { ok: false, loi: "Dữ liệu quẻ thiếu đánh dấu Thế/Ứng." };
             alert("Dữ liệu quẻ này thiếu đánh dấu Thế/Ứng — kiểm tra lại data.");
             return;
         }
@@ -602,6 +606,17 @@
         text += "(Nền tảng 1: " + mark(s1) + " | Điều kiện phụ: " + goods + " thuận lợi, " + bads + " bất lợi)\n";
         text += "=== HẾT LUẬN GIẢI ===";
 
+        if (opts) {
+            return {
+                ok: true, text: text, que: q.name, queBien: qb ? qb.name : null, hao: h, dt: dtChon,
+                T: T, U: U, D: D, B: B, Ys: Ys, yFromBien: yFromBien, E: E,
+                nenTang: { s1: s1, s21: s21, s22: s22, s23: s23, s24: s24, s25: s25 },
+                nguyHiem: nguyHiem, verdict: verdict, goods: goods, bads: bads,
+                vuongSuy: { T: vuongSuy(T), U: vuongSuy(U), D: vuongSuy(D), B: B ? vuongSuy(B) : null },
+                dataWarn: dataWarn
+            };
+        }
+
         const out = $("mcl_output");
         out.value = text;
         out.style.display = "block";
@@ -673,5 +688,13 @@
         const el = document.getElementById(id);
         if (el) el.addEventListener("change", function () { if ($("mcl_output").style.display === "block") autoRun(); });
     });
+
+    // ---------- Cầu nối cho module khác (m08...) — chỉ THÊM, không đổi hành vi UI ----------
+    window.MCL_CORE = {
+        version: 1,
+        phanTich: function (opts) { return luanGiai(true, opts || {}); },
+        parseLine: parseLine, relDir: relDir, meaning: meaning,
+        ROLE_NAME: ROLE_NAME, CHI_HANH: CHI_HANH
+    };
 
 })();
