@@ -177,10 +177,8 @@
                 <option value="Tý">Tý (23h-1h)</option>
                 <option value="Sửu">Sửu (1h-3h)</option>
                 <option value="Dần">Dần (3h-5h)</option>
-                <option value="Mão">Mão 
-(7h-9h)</option>
-                <option value="Thìn">Thìn
-(5h-7h)</option>
+                <option value="Mão">Mão (7h-9h)</option>
+                <option value="Thìn">Thìn (5h-7h)</option>
                 <option value="Tỵ">Tỵ (9h-11h)</option>
                 <option value="Ngọ">Ngọ (11h-13h)</option>
                 <option value="Mùi">Mùi (13h-15h)</option>
@@ -444,6 +442,13 @@ function toggleDong(num) {
     });
 
     updateDongCounter();
+
+    // --- TỰ ĐỘNG ĐỒNG BỘ SANG KHỐI TỨ TRỊ & MODULES ---
+    const inputHaoDong = document.getElementById("mHaoDong");
+    if (inputHaoDong) {
+        inputHaoDong.value = selectedDong.join(",");
+    }
+
     processDich();
 }
 
@@ -962,7 +967,13 @@ function processModuleLogic() {
     const nguyet = document.getElementById('mNguyet').value.trim();
     const thaiTue = document.getElementById('mThaiTue').value.trim();
     const tuanKhong = document.getElementById('mTuanKhong').value.trim();
-    const haoDongStr = document.getElementById('mHaoDong').value.trim();
+    let haoDongStr = document.getElementById('mHaoDong').value.trim();
+
+    // Nếu ô mHaoDong trống nhưng selectedDong từ Chặng 1 đã có, tự lấy selectedDong
+    if (!haoDongStr && typeof selectedDong !== 'undefined' && selectedDong.length > 0) {
+        haoDongStr = selectedDong.join(",");
+        document.getElementById('mHaoDong').value = haoDongStr;
+    }
 
     const outputEl = document.getElementById('mOutput');
 
@@ -988,19 +999,15 @@ function processModuleLogic() {
     }
 
     resText += `\n=== BẮT ĐẦU KẾT NỐI VỚI THUẬT TOÁN TRAINING ===\n`;
-    resText += `-> Đã xác thựcCan Chi Dương / Âm khớp logic thành công.\n`;
+    resText += `-> Đã xác thực Can Chi Dương / Âm khớp logic thành công.\n`;
     resText += `-> Dữ liệu đã sẵn sàng để chèn trực tiếp vào hệ thống Lục Hào.`;
 
     outputEl.value = resText;
     outputEl.style.display = 'block';
 
-    if (typeof selectedDong !== 'undefined' && typeof toggleDong === 'function') {
-        selectedDong = [];
-        listHaoDong.forEach(h => {
-            if (h <= 4 && !selectedDong.includes(h)) {
-                selectedDong.push(h);
-            }
-        });
+    // Đồng bộ lại selectedDong và vẽ lại quẻ biến
+    if (typeof selectedDong !== 'undefined') {
+        selectedDong = listHaoDong;
         if (typeof updateDongCounter === 'function') updateDongCounter();
         if (typeof processDich === 'function') processDich();
     }
@@ -1064,66 +1071,66 @@ populateChiSelects();
 <script src="calendar-core.js"></script>
 
 <!-- DANH SÁCH MODULE RỜI NẠP TỰ ĐỘNG -->
-<script src="mchienluoc.js"></script>
-<script src="m01.js"></script>
-<script src="m02.js"></script>
-<script src="m03.js"></script>
-<script src="m04.js"></script>
-<script src="m05.js"></script>
-<script src="m06.js"></script>
-<script src="m07.js"></script>
-<script src="m08.js"></script>
-<script src="m09.js"></script>
-<script src="m10.js"></script>
-<script src="m11.js"></script>
-<script src="m12.js"></script>
-<script src="m13.js"></script>
-<script src="m14.js"></script>
-<script src="m15.js"></script>
-<script src="m16.js"></script>
-<script src="m17.js"></script>
-<script src="m18.js"></script>
-<script src="m19.js"></script>
-<script src="m20.js"></script>
-<script src="m21.js"></script>
-<script src="m22.js"></script>
-<script src="m23.js"></script>
-<script src="m24.js"></script>
-<script src="m25.js"></script>
-<script src="m26.js"></script>
-<script src="m27.js"></script>
-<script src="m28.js"></script>
-<script src="m29.js"></script>
-<script src="m30.js"></script>
-<script src="m31.js"></script>
-<script src="m32.js"></script>
-<script src="m33.js"></script>
-<script src="m34.js"></script>
-<script src="m35.js"></script>
-<script src="m36.js"></script>
-<script src="m37.js"></script>
-<script src="m38.js"></script>
-<script src="m39.js"></script>
-<script src="m40.js"></script>
-<script src="m41.js"></script>
-<script src="m42.js"></script>
-<script src="m43.js"></script>
-<script src="m44.js"></script>
-<script src="m45.js"></script>
-<script src="m46.js"></script>
-<script src="m47.js"></script>
-<script src="m48.js"></script>
-<script src="m49.js"></script>
-<script src="m50.js"></script>
-<script src="m51.js"></script>
-<script src="m52.js"></script>
-<script src="m53.js"></script>
-<script src="m54.js"></script>
-<script src="m55.js"></script>
-<script src="m56.js"></script>
-<script src="m57.js"></script>
-<script src="m58.js"></script>
-<script src="m59.js"></script>
-<script src="m60.js"></script>
+<script src="mchienluoc.js" defer></script>
+<script src="m01.js" defer></script>
+<script src="m02.js" defer></script>
+<script src="m03.js" defer></script>
+<script src="m04.js" defer></script>
+<script src="m05.js" defer></script>
+<script src="m06.js" defer></script>
+<script src="m07.js" defer></script>
+<script src="m08.js" defer></script>
+<script src="m09.js" defer></script>
+<script src="m10.js" defer></script>
+<script src="m11.js" defer></script>
+<script src="m12.js" defer></script>
+<script src="m13.js" defer></script>
+<script src="m14.js" defer></script>
+<script src="m15.js" defer></script>
+<script src="m16.js" defer></script>
+<script src="m17.js" defer></script>
+<script src="m18.js" defer></script>
+<script src="m19.js" defer></script>
+<script src="m20.js" defer></script>
+<script src="m21.js" defer></script>
+<script src="m22.js" defer></script>
+<script src="m23.js" defer></script>
+<script src="m24.js" defer></script>
+<script src="m25.js" defer></script>
+<script src="m26.js" defer></script>
+<script src="m27.js" defer></script>
+<script src="m28.js" defer></script>
+<script src="m29.js" defer></script>
+<script src="m30.js" defer></script>
+<script src="m31.js" defer></script>
+<script src="m32.js" defer></script>
+<script src="m33.js" defer></script>
+<script src="m34.js" defer></script>
+<script src="m35.js" defer></script>
+<script src="m36.js" defer></script>
+<script src="m37.js" defer></script>
+<script src="m38.js" defer></script>
+<script src="m39.js" defer></script>
+<script src="m40.js" defer></script>
+<script src="m41.js" defer></script>
+<script src="m42.js" defer></script>
+<script src="m43.js" defer></script>
+<script src="m44.js" defer></script>
+<script src="m45.js" defer></script>
+<script src="m46.js" defer></script>
+<script src="m47.js" defer></script>
+<script src="m48.js" defer></script>
+<script src="m49.js" defer></script>
+<script src="m50.js" defer></script>
+<script src="m51.js" defer></script>
+<script src="m52.js" defer></script>
+<script src="m53.js" defer></script>
+<script src="m54.js" defer></script>
+<script src="m55.js" defer></script>
+<script src="m56.js" defer></script>
+<script src="m57.js" defer></script>
+<script src="m58.js" defer></script>
+<script src="m59.js" defer></script>
+<script src="m60.js" defer></script>
 </body>
 </html>
