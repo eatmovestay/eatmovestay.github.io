@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 Tượng Đơn - Data cứng</title>
+<style>
+:root{
+  --paper:#eef1f0; --card:#fbfcfb; --ink:#1d2a2a; --mute:#5c6b6a; --line:#cfd8d6;
+  --jade:#2f7f6b; --jade-soft:#dcebe6; --brick:#b4472f; --brick-soft:#f4dfd8;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141b1b; --card:#1b2424; --ink:#e4ece9; --mute:#9aaaa7; --line:#2c3a39;
+    --jade:#6fc2aa; --jade-soft:#1f3a33; --brick:#e08a73; --brick-soft:#3a2520;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141b1b; --card:#1b2424; --ink:#e4ece9; --mute:#9aaaa7; --line:#2c3a39;
+  --jade:#6fc2aa; --jade-soft:#1f3a33; --brick:#e08a73; --brick-soft:#3a2520;
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:860px;margin:0 auto;padding:20px 16px 64px}
+h1{font:600 1.5rem/1.2 "Noto Serif","Source Serif 4",Georgia,serif;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 18px;font-size:.92rem}
+.status{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.85rem;margin-bottom:16px;
+  background:var(--jade-soft);color:var(--jade)}
+.status.bad{background:var(--brick-soft);color:var(--brick)}
+.glyphs{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:0 0 20px}
+.glyphs button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:10px;padding:8px 0 6px;text-align:center;line-height:1.1}
+.glyphs button .g{display:block;font-size:2rem}
+.glyphs button .n{display:block;font-size:.78rem;color:var(--mute);margin-top:2px}
+.glyphs button[aria-current="true"]{border-color:var(--jade);background:var(--jade-soft)}
+.glyphs button:focus-visible,summary:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+.glyphs button:disabled{opacity:.4;cursor:default}
+.head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 6px}
+.head h2{font:600 1.7rem/1.15 "Noto Serif","Source Serif 4",Georgia,serif;margin:0}
+.meta{color:var(--mute);font-size:.9rem;margin:0 0 14px}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:0 0 10px}
+summary{cursor:pointer;padding:11px 14px;font-weight:600;list-style-position:inside}
+.body{padding:2px 14px 12px}
+.row{padding:9px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.k{font-size:.82rem;color:var(--mute);margin-bottom:4px;word-break:break-word}
+.k b{color:var(--ink);font-weight:600;margin-right:6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:var(--jade-soft);color:var(--ink);padding:2px 9px;border-radius:7px;font-size:.92rem}
+.chip.ref{background:transparent;border:1px solid var(--jade);color:var(--jade)}
+.chip.empty{background:var(--brick-soft);color:var(--brick)}
+.mt{font-weight:600;margin:0 0 2px}
+.issues{background:var(--brick-soft);color:var(--ink);border-radius:10px;padding:10px 14px;margin:0 0 16px;font-size:.9rem}
+.issues ul{margin:6px 0 0;padding-left:20px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.tools button{font:inherit;font-size:.88rem;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 12px}
+@media (max-width:520px){.glyphs button .g{font-size:1.6rem}.glyphs button .n{font-size:.68rem}}
+</style>
+</head>
+<body>
+<main>
+  <h1>8 Tượng Đơn</h1>
+  <p class="sub">Kho data cứng cho các module. Mỗi quẻ tra theo ID từ 1 đến 8.</p>
+  <div id="status" class="status">Đang đọc data</div>
+  <div id="issues"></div>
+  <div class="glyphs" id="glyphs" role="tablist" aria-label="Chọn quẻ đơn"></div>
+  <div class="tools"><button type="button" id="openAll">Mở hết các tầng</button><button type="button" id="closeAll">Đóng hết</button></div>
+  <section id="view"></section>
+</main>
+
+<!--
+  CÁCH CHÈN DATA:
+  Tìm dòng chữ placeholder nằm trong khối script id="td-data" ngay bên dưới, bôi đen cả dòng đó,
+  rồi dán toàn bộ text 8 quẻ từ file Word thay vào. Không cần xóa tiêu đề "1.CÀN :",
+  dòng trống hay dấu rào code, bộ đọc tự bỏ qua.
+  Giữ nguyên hai dòng thẻ script mở và đóng.
+-->
+<script type="text/plain" id="td-data">
+1.CÀN :
+```
+[QUE]
+ID=01
+TEN=Càn
+TEN_KHAC=Kiền
+KY_HIEU=☰
+
+[A_DINH_DANH]
+A01.DUC=Kiện
+A02.VAT_TUONG_CHINH=Ngựa
+A03.THE_TUONG_CHINH=Đầu
+A04.QUAN_HE_CHINH=Cha|Lãnh đạo|Vua
+
+[B_TUONG_TONG_QUAT]
+B01.NHAN_TUONG_CHUNG=Ông già|Quyền lực|Tính tự cao tự phụ
+B02.TRANG_THAI=Giàu có đầy đủ|Viên mãn|Cứng rắn|Trên cao
+B03.HINH_VAT=Quả bóng|Bánh xe|Tượng vàng|Tượng ngọc|Tượng băng|Trái cây hình tròn
+B04.MAU_CUC_THINH=Càn cực dương thịnh là màu cực đỏ|Đỏ đậm
+B05.HANH_VI_TICH_CUC=Từng trải|Quyết liệt|Hoạt động|Tiến bước|Quyết đoán|Uy nghiêm|Công trạng|Thống nhất|Thống soái|Ơn cũ|Hành nhân|Khuếch đại|Phát sáng
+B06.HANH_VI_TRUNG_TINH_HAI_MAT=Phản đối|Kiềm chế
+B07.HANH_VI_TIEU_CUC=Ngang bướng|Trừng phạt|Phẫn nộ|Xâm lược|Chế tài|Cưỡng chế|Cay nghiệt|Quá đáng|Khinh thường|Tai hại|Ngang ngược|Độc quyền|Coi mình nhất, chỉ lo cho mình|Độc chiếm|Tử tang
+B08.GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[C_NHAN_VAT]
+C01.CAP_TREN_QUYEN_LUC=Cấp trên|Người có địa vị lãnh đạo|Người có vai trò quyết định|Người có quyền|Người đứng đầu|Giám đốc
+C02.QUAN_CHUC_THANH_NHAN=Người làm quan|Thần|Vua|Thánh nhân|Quân tử
+C03.GIA_DINH=Ông nội|Cha|Gia trưởng
+C04.PHAP_LUAT_AN_NINH=Quân cảnh|Người chấp pháp
+C05.KINH_TE_TIEN_BAC=Người giàu có|Người làm kinh tế|Người quản lý tiền
+C06.HANH_CHINH=Thư ký
+C07.DANH_VONG_CHUYEN_MON=Danh nhân|Chuyên gia
+C08.BIEN_THE_QUA_MUC=Quá ngạo mạn, ngang ngược, không nói phải trái thì là người ác
+C09.BIEN_THE_THIEU_MUC=Quá nhún nhường thì là ăn xin, đầy tớ
+
+[D_TINH_CACH]
+D01.TICH_CUC=Cương kiện vũ dũng|Quả quyết|Trọng nghĩa khí|Uy nghiêm|Quang minh|Rộng lượng|Chính trực|Cần mẫn
+D02.GIOI_HAN=Động mà thiếu tĩnh|Tự tôn
+D03.TIEU_CUC=Kiêu ngạo|Bá đạo
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Đầu|Ngực|Ruột già|Phổi|Chân trái|Bụng dưới bên trái|Tinh dịch|Bộ phận sinh dục nam giới
+E02.THE_CHAT=Thân thể cường tráng|Người thể hàn cốt sấu (cơ thể lạnh, gầy gò)
+E03.TAT_BENH_VUNG=Bệnh về đầu và mặt|Bệnh gân cốt|Bệnh phổi|Bệnh xương|Bệnh ruột kết|Táo bón
+E04.TAT_BENH_TINH_CHAT=Hàn chứng|Bệnh xơ cứng|Bệnh già|Bệnh cấp tính|Bệnh biến hóa dị thường
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Mặt trời|Tạnh|Băng|Mưa đá|Lạnh|Mát mẻ
+
+[G_VAT_TUONG]
+G01.KIM_LOAI_QUY=Vàng|Ngọc|Châu báu|Mã não|Ngọc trai|Đồ trang sức
+G02.BAO_VAT_CO_VAT=Bảo vật bảo khí|Văn vật cổ|Thần vật
+G03.TIEN_BAC=Tiền bạc
+G04.VAT_DUNG_CAO_CAP=Vật dụng cao cấp|Đồng hồ|Gương|Kính mắt|Mũ nón
+G05.PHUONG_TIEN=Xe cao cấp|Xe lửa|Máy bay|Bánh xe
+G06.MAY_MOC_KIM_LOAI=Máy móc|Sản phẩm kim loại rắn
+G07.HINH_TRON_THUC_VAT=Vật thể hình tròn|Quả bóng|Quả dưa|Trái cây hình tròn|Vật cay
+G08.TUONG=Tượng vàng|Tượng ngọc|Tượng băng
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT=Rồng|Ngựa|Thiên nga|Sư tử|Voi
+H02.KIEN_TRUC_QUYEN_LUC=Hoàng cung|Kinh thành|Đô thị|Cơ quan chính phủ|Đại lễ đường|Quảng trường
+H03.KIEN_TRUC_VAN_HOA_TON_GIAO=Nhà bảo tàng|Tự viện|Danh thắng|Di tích cổ|Tòa giảng đường
+H04.GIAO_THONG_DIA_HINH=Bến xe|Đường lớn uốn lượn|Vùng đất ngoại ô|Phương xa
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Canh|Tân|Thân|Dậu|Mậu|Kỷ|Thìn|Tuất|Sửu|Mùi
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Bính|Đinh|Tị|Ngọ
+I03.THOI_GIAN_BAT_LOI_NHE=Năm tháng ngày giờ Nhâm|Quý|Hợi|Tý
+I04.PHUONG_VI_LOI=Tây Bắc|Tây|Đông Bắc|Tây Nam
+I05.PHUONG_VI_KY_NANG=Nam
+I06.PHUONG_VI_KY_NHE=Bắc
+I07.MAU_LOI=Vàng|Trắng
+I08.MAU_KY_NANG=Đỏ
+I09.MAU_KY_NHE=Đen
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc có quyền hạn, vai trò quyết định|Cấp trên giao trọng trách|Quyết đoán tiến bước, có công trạng|Lĩnh vực chính quyền, quản lý, kinh tế, tài chính, kim loại, máy móc, vận tải
+M01.TIEU_CUC=Độc quyền, cưỡng chế, cay nghiệt|Một mình gánh hết|Động mà thiếu tĩnh, dễ quá tải
+M01.NHAN_VAT_LIEN_QUAN=C01|C05|C06
+M01.REF=B05|B07|D01|D02
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Lên chức vị lãnh đạo|Được thống soái, có uy|Công trạng được ghi nhận|Có quý nhân là cấp trên
+M02.TIEU_CUC=Kiêu ngạo, bá đạo gây tổn hại|Đứng cao nhưng chỉ lo cho mình|Bị chế tài, trừng phạt nếu quá đáng
+M02.NHAN_VAT_LIEN_QUAN=C01|C02|C07
+M02.REF=B01|B05|D03
+
+M03.TEN=Học hành
+M03.TICH_CUC=Có thầy giỏi, chuyên gia, danh nhân dẫn dắt|Học nơi giảng đường, di tích, bảo tàng|Từng trải, quyết liệt, cần mẫn|Hợp học luật, quản trị, khoa học, kỹ thuật
+M03.TIEU_CUC=Ngang bướng không nghe|Tự tôn, thiếu tĩnh để tiếp thu|Áp lực thành tích
+M03.REF=C07|D01|H03
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương chính trực, quang minh, có bản lĩnh|Chủ động tiến bước
+M04.TINH_YEU_TIEU_CUC=Tự cao, ngang bướng|Muốn kiểm soát|Khinh thường đối phương
+M04.HON_NHAN_TICH_CUC=Người chồng, gia trưởng làm trụ cột|Nền nếp, viên mãn
+M04.HON_NHAN_TIEU_CUC=Độc đoán, cứng nhắc|Ơn cũ biến thành ràng buộc|Xung đột quyền quyết định
+M04.QUAN_HE_KHAC_TICH_CUC=Gặp người trên giúp đỡ, trọng nghĩa khí|Bạn bè quân tử
+M04.QUAN_HE_KHAC_TIEU_CUC=Đối đầu cái tôi|Cấp trên áp đặt|Giữ khoảng cách vì kiêu ngạo
+M04.REF=D01|D03|C03
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Dòng tiền lớn, giàu có đầy đủ|Hợp vàng, ngọc, châu báu, kim loại, bất động sản lớn|Hợp ngành tài chính, quản lý tiền
+M05.TIEU_CUC=Tham lớn, tự tin thái quá|Độc chiếm gây thiệt người khác|Chi quá tay|Đầu tư cưỡng cầu
+M05.NHAN_VAT_LIEN_QUAN=C05
+M05.REF=G01|G03|B02
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Đòi chính đáng có pháp lý|Người nợ có thực lực
+M06.DOI_NO_TIEU_CUC=Người nợ ngang bướng, khinh thường|Đòi bằng cưỡng chế dễ phản tác dụng
+M06.CHO_MUON_TICH_CUC=Người mượn có địa vị, trọng nghĩa khí
+M06.CHO_MUON_TIEU_CUC=Người mượn tự cao, ơn cũ bị quên|Khoản lớn khó đòi|Độc chiếm tài sản
+M06.REF=B07|C05|D01
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Đối tác có uy tín, tầm nhìn lớn|Có người thống soái rõ|Thống nhất mục tiêu
+M07.TIEU_CUC=Tranh quyền chủ đạo|Đối tác độc quyền, chỉ lo cho mình|Hai bên cùng cứng
+M07.REF=B05|B07|C01
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Đi xa, phương xa thuận|Máy bay, xe lửa, đường lớn|Đi về hướng Tây Bắc, Tây, Đông Bắc, Tây Nam thuận
+M08.TIEU_CUC=Hướng Nam kỵ nặng, hướng Bắc kỵ nhẹ|Đi gấp, tai hại do phương tiện
+M08.REF=G05|H04|I04|I05|I06
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Mua đất, nhà quy mô lớn, nền cao|Công trình có uy|Di tích, kiến trúc cổ giá trị
+M09.TIEU_CUC=Chi tiền quá mức|Phá dỡ cưỡng chế, vội vàng|Độc đoán không hỏi ý kiến
+M09.REF=H02|H03|G06
+
+M10.TEN=Gia đình
+M10.ONG_BA=Ông nội, ông già
+M10.CHA_ME=Cha, gia trưởng
+M10.VO_CHONG=Chồng|Người chủ gia đình
+M10.CON_CHAU=Con có chí khí|Con ngang bướng
+M10.TICH_CUC=Trụ cột vững|Gia đạo nề nếp
+M10.TIEU_CUC=Gia trưởng áp đặt|Căng thẳng giữa người lớn và con cái
+M10.REF=C03|B01
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E03|E04
+M11.THE_CHAT=E02
+M11.TICH_CUC=Thân thể cường tráng
+M11.TIEU_CUC=Bệnh đầu mặt, gân cốt, phổi, xương, ruột kết, táo bón|Hàn chứng, xơ cứng|Bệnh già, cấp tính, biến hóa dị thường
+M11.REF=E01|E02|E03|E04
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Cấp trên|Người có quyền|Chuyên gia|Danh nhân|Quân tử
+M12.THAY_THUOC=Chuyên gia đầu ngành|Người từng trải
+M12.CAU_AN=Nơi tự viện, bảo tàng|Cầu bình tâm, giảm áp lực
+M12.LUU_Y=Bệnh cấp tính hoặc biến hóa dị thường cần chẩn đoán sớm
+M12.REF=C01|C07|H03|E04
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Phương Tây Bắc, Tây, Đông Bắc, Tây Nam lợi|Kỵ Nam, kỵ Bắc|Màu vàng, trắng lợi, kỵ đỏ, đen|Vật hình tròn, kim loại
+M13.TAM_LINH=Thần vật, bảo vật bảo khí|Thánh nhân, tổ tiên, người cha
+M13.TON_GIAO=Tự viện|Đạo trời
+M13.REF=G02|H03|I04|I05|I06|I07|I08|I09
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Bên chính nghĩa, có uy thế|Người xử lý quyết đoán, công bằng|Có người chấp pháp ủng hộ
+M14.TIEU_CUC=Bên chế tài, trừng phạt quá đáng|Cưỡng chế, cay nghiệt|Đối phương ngang bướng, kéo dài
+M14.NHAN_VAT_LIEN_QUAN=C04|C01
+M14.REF=B07|C04
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Mưa đá|Băng giá|Lạnh|Tai nạn phương tiện|Gãy do quá cứng
+M15.REF=F01|G05
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Ngựa|Rồng|Thiên nga|Sư tử|Voi
+M16.CAY_TRAI=Quả dưa|Trái cây hình tròn|Vật cay
+M16.MUA_MANG=Hợp thời tiết mát lạnh, tạnh|Hại do mưa đá, băng
+M16.REF=H01|G07|F01
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Có quân cảnh, người chấp pháp bảo vệ|Nơi có quản lý chặt
+M17.TIEU_CUC=Xâm lược, cưỡng chế, độc chiếm|Trộm cướp nhắm vào tài vật quý (vàng, ngọc, tiền bạc)|Tử tang
+M17.REF=C04|G01|G03|B07
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Thống nhất, thống soái|Kỷ cương|Cơ quan chính phủ quyết đoán
+M18.TIEU_CUC=Chế tài, cưỡng chế, trừng phạt|Quyền lực quá đáng|Độc quyền
+M18.REF=B05|B07|H02
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Tự chủ, kiềm chế|Cần mẫn|Ăn vật cay, trái cây tròn|Tập luyện thân thể cường tráng
+M19.TIEU_CUC=Táo bón, hàn chứng|Gồng quá, thiếu tĩnh, ít nghỉ|Cứng nhắc
+M19.REF=E02|E03|G07|D01|D02
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_CAN_01]
+```
+Cách đọc nhanh cho code: giá trị "A01" hay "G03" trong các trường REF, NHAN_VAT_LIEN_QUAN, BO_PHAN, THUAN_LOI là mã chỉ mục trỏ về tầng A đến I, tách bằng "|". Chỉ mục kiểu "E01|E03" thì tra ngược về dòng cùng mã.
+
+2.ĐOÀI :
+```
+[QUE]
+ID=02
+TEN=Đoài
+KY_HIEU=☱
+
+[A_DINH_DANH]
+A01.DUC=Thuyết (nói)
+A02.VAT_TUONG_CHINH=Dê
+A03.THE_TUONG_CHINH=Miệng|Da|Lông|Phổi|Ruột già
+A04.MUA=Thu
+A05.NGU_TINH=Hoạt náo / buồn
+A06.KHI=Khô
+A07.SAC=Trắng
+A08.VI=Cay
+A09.QUAN_HE_CHINH=Người con út giới tính nữ|Người con gái trẻ tuổi chưa qua tuổi 30|Người hoạt náo nhưng không bằng Ly (hoạt náo là diễn thuyết, ca hát tạo hưng phấn sôi động)|Diễn giả|Cổ động viên (dùng miệng)
+A10.SO=2
+A11.NGU_HANH=Kim
+A12.PHUONG_VI_GOC=Tây
+A13.MAU_GOC=Trắng
+A14.TUONG_DAC_BIET=Cốc nước sôi
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Đoài là đầm|Thiếu nữ|Pháp sư|Miệng lưỡi|Hủy chiết (hoại)|Phụ quyết (bám vào thứ nứt vỡ)
+B02.TUONG_CAU_NOI_DAT=Cứng mặn
+B03.TUONG_CAU_NOI_KHAC=Vợ nhỏ|Con dê
+B04.BAN_CHAT=Một hào âm ở trên, hai hào dương ở dưới|Sự vật có xu thế phát triển hướng thượng|Ngoài nhu trong cương, ngoài hư trong thực|Bàng thông với quẻ Cấn, tương phản
+B05.LY_GIAI_01=Đoài là đầm >> Có chức năng hấp thu, dễ dàng trao đổi thông tin với các sự vật xung quanh bên ngoài
+B06.LY_GIAI_02=Hào âm gặp ở ngoài, tượng miệng lưỡi, thiếu nữ vui vẻ vô ưu >> Vui vẻ
+B06.LY_GIAI_03=Đoài là miệng, là vui vẻ, là thiếu nữ >> Pháp sư khiêu đại thần (phương thức cầu thần nhập xác)
+B06.LY_GIAI_04=Đoài ở Tây là tháng mùa thu Thân Dậu kim, chủ túc sát (tàn lụi), vạn vật bị hủy chiết >> Hủy chiết
+B06.LY_GIAI_05=Đoài có một âm nhu bám ở trên hai dương cương >> Phụ quyết
+B06.LY_GIAI_06=Quẻ là kim, phương Tây có nhiều đất mặn >> Cứng mặn
+B06.LY_GIAI_07=Là thiếu nữ >> Vợ nhỏ
+B06.LY_GIAI_08=Đoài là vui vẻ, dê là động vật cát tường >> Dê
+B07.TUONG_Y_TICH_CUC=Nói|Hùng biện|Diễn giảng|Thông báo|Lời lẽ|Ngôn ngữ|Nghị luận|Cười|Sức hấp dẫn|Thương lượng|Âm nhạc|Tín ngưỡng
+B08.TUONG_Y_TRUNG_TINH_HAI_MAT=Ồn ào|Rao hàng|Ngước (nguồn)|Ái dục|Uống thuốc|Miệng lưỡi|Không đủ|Bất tiện|Bên phải|Sự vật ngoài mềm trong cứng|Đồ vật mở miệng phía trên
+B09.TUONG_Y_TIEU_CUC=Chửi|Than thở|Phỉ báng|Hư hại|Hình phạt|Phá hoại
+B10.TUONG_Y_GHI_CHU=Nguồn kết thúc danh sách bằng dấu chấm (không có "v.v.")
+
+[C_NHAN_VAT]
+C01.GIA_DINH_NU=Thiếu nữ|Cô gái khả ái|Vợ nhỏ|Thân thích
+C02.BAN_BE_QUAN_HE=Bạn bè|Hàng xóm|Người hòa nhã dễ gần|Người làm nũng|Người hấp dẫn giới tính|Người làm mối
+C03.NGHE_MANG_TINH_VUI_VE=Người có nghề úi hát (nguồn)|Người có nghề nghiệp mang tính vui vẻ|Ca sĩ|Ca sĩ nữ|Diễn viên|Nghệ sĩ dương cầm|Nhạc sĩ|Nhân viên trung tâm giải trí|Thằng hề
+C04.NGHE_MANG_TINH_PHA_HOAI=Người có nghề nghiệp mang tính phá hoại|Người phá hoại|Người thất bại
+C05.TAM_LINH=Pháp sư|Bà đồng
+C06.GIAO_DUC_DIEN_THUYET=Giáo viên|Giáo sư|Người diễn thuyết|Người thuyết minh|Phiên dịch
+C07.Y_TE=Ngoại khoa|Bác sĩ nha khoa
+C08.THUC_PHAM_DICH_VU_KIM_KHI=Công nhân nhà máy thực phẩm|Nhân viên nhà hàng|Người gia công kim khí|Nhân viên bán hàng|Nhân vật giới tài chính
+C09.HANH_CHINH_TRUYEN_DAT=Thư ký|Nhân viên truyền đạt|Nhân viên phục vụ|Nhân viên tổng đài|Trợ thủ|Người cấp phó
+C10.VE_SINH=Công nhân dọn rác|Công nhân vệ sinh
+C11.QUAN_LAI_HINH_PHAP=Hình quan (quan lại nắm về hình pháp)|Huyện lệnh
+C12.NHAN_CACH_TIEU_CUC=Kỹ nữ|Không phải trinh nữ|Tiểu nhân
+
+[D_TINH_CACH]
+D01.TICH_CUC=Vui vẻ|Thân mật|Hòa thuận|Ôn hòa|Giỏi nói|Thích ca hát|Sôi nổi|Hiền hậu|Trọng tình cảm|Sức hấp dẫn mạnh|Trọng nghĩa khí
+D02.GIOI_HAN=Hiếu sắc|Ưu sầu
+D03.TIEU_CUC=Cãi cọ|Phỉ báng|Nịnh bợ|Đê hèn|Phá hoại|Gièm pha
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Miệng|Lưỡi|Phổi|Đàm|Khí quản|Yết hầu|Xương gò má|Răng|Sườn phải|Hậu môn|Vai phải
+E02.TAT_BENH_MIENG_HO_HAP=Miệng|Lưỡi|Yết hầu|Răng|Ho|Đàm suyễn|Ngực|Bệnh phổi|Bệnh khí quản|Chán ăn
+E03.TAT_BENH_THAN_SINH_DUC_HAU_MON=Bệnh bàng quang|Bệnh hậu môn|Bệnh sinh dục
+E04.TAT_BENH_MAU=Thiếu máu|Huyết áp thấp
+E05.TAT_BENH_NGOAI_THUONG=Ngoại thương|Phẫu thuật|Bị thương vì dụng cụ cắt gọt|Bệnh ngoài da|Bệnh phần đầu|Phá tướng (tổn hại khuôn mặt)
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Mưa nhỏ|Thời tiết ẩm thấp|Khí áp thấp|Mưa phùn|Tình trạng khí tượng ngắn hạn|Trăng non|Sao|Hạt sương
+
+[G_VAT_TUONG]
+G01.AN_UONG_DUNG_CU_NUOC=Dụng cụ ăn uống|Thực phẩm|Dụng cụ chứa nước
+G02.KIM_LOAI=Tiền kim loại|Đao kiếm|Cây kéo|Sản phẩm kim loại trang trí|Kim loại mềm
+G03.DO_CHOI_NHAC_CU=Đồ chơi|Nhạc cụ
+G04.DO_MIENG_MO=Bình hộp mở miệng|Đồ vật có miệng|Đồ đựng dụng cụ|Thùng rác
+G05.HU_HONG_KHIEM_KHUYET=Vật hư hại|Vật khiếm khuyết|Vật sửa chữa|Vật không có đầu|Phế phẩm
+G06.THUC_VAT=Cây lựu|Hồ đào
+G07.DONG_HO=Các loại đồng hồ
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT=Dê|Báo|Vượn|Khỉ|Thỏ|Vật trong đầm lầy
+H02.DAT_NUOC_TRUNG=Đầm lầy|Đất trũng|Giếng nước|Rãnh cạn|Ao hồ|Hố giếng
+H03.AM_THUC_GIAI_TRI=Hòa nhạc|Cửa hàng ẩm thực|Tiệm cơm|Sân trượt băng|Khu vui chơi|Phòng biểu diễn|Điểm karaoke tiệc tùng
+H04.HOI_HOP_QUAN_HE=Phòng họp|Công đoàn|Phòng quan hệ công chúng|Nhà hữu nghị
+H05.KIEN_TRUC_GIAO_LO=Cửa|Giao lộ
+H06.RAC_PHE_THAI=Trạm rác|Phòng đống gạch vụn (nguồn)
+H07.HANG_DONG_AM_PHAN=Hang động|Sào huyệt|Hang núi|Mộ huyệt|Hố núi|Miệng núi
+H08.NHA_CU=Nhà cũ
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Canh|Tân|Thân|Dậu|Mậu|Kỷ|Thìn|Tuất|Sửu|Mùi
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Bính|Đinh|Tỵ|Ngọ
+I03.THOI_GIAN_BAT_LOI_NHE=Năm tháng ngày giờ Nhâm|Quý|Hợi|Tý
+I04.PHUONG_VI_LOI=Tây|Tây Bắc|Đông Bắc|Tây Nam
+I05.PHUONG_VI_KY_NANG=Nam
+I06.PHUONG_VI_KY_NHE=Bắc
+I07.MAU_LOI=Trắng|Vàng
+I08.MAU_KY_NANG=Đỏ
+I09.MAU_KY_NHE=
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc cần nói, truyền đạt, diễn giảng, thuyết trình|Việc thương lượng, giao tiếp, bán hàng|Ngành ẩm thực, giải trí, âm nhạc, giáo dục, y tế (ngoại khoa, nha khoa), kim khí, truyền thông
+M01.TIEU_CUC=Tranh cãi, ồn ào|Phỉ báng, gièm pha đồng nghiệp|Nịnh bợ, đê hèn|Lời nói gây hại
+M01.NHAN_VAT_LIEN_QUAN=C06|C08|C09
+M01.REF=B07|B08|B09|D01|D02|D03
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Dùng lời nói tạo ảnh hưởng, uy tín|Làm diễn giả, phát ngôn, đại diện|Trợ thủ, cấp phó đắc lực|Nghề giải trí, truyền đạt
+M02.TIEU_CUC=Họa từ miệng mà ra|Phỉ báng, bị gièm pha|Hủy chiết, hư hại danh tiếng|Phá hoại, thất bại
+M02.NHAN_VAT_LIEN_QUAN=C06|C09|C11
+M02.REF=A09|B07|B09|D03|C04
+
+M03.TEN=Học hành
+M03.TICH_CUC=Học ngôn ngữ, diễn thuyết, âm nhạc, giảng dạy|Thầy giỏi nói, hòa nhã dễ gần|Thảo luận, nghị luận, thương lượng
+M03.TIEU_CUC=Ồn ào, mất tập trung|Chán ăn, ốm|Học hời hợt, hiếu sắc, ưu sầu|Phỉ báng bạn học
+M03.REF=B07|C06|D01|D02|E02
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương vui vẻ, hòa nhã, sức hấp dẫn mạnh|Thân mật, trọng tình cảm|Nói chuyện hợp
+M04.TINH_YEU_TIEU_CUC=Hiếu sắc, ái dục|Nịnh bợ, lời lẽ hoa mỹ|Cãi cọ, phỉ báng|Người làm nũng, hấp dẫn nhưng không bền
+M04.HON_NHAN_TICH_CUC=Vợ trẻ, vợ nhỏ vui vẻ|Hòa thuận, ôn hòa
+M04.HON_NHAN_TIEU_CUC=Cãi cọ, chửi, than thở|Ái dục, hiếu sắc|Ưu sầu
+M04.QUAN_HE_KHAC_TICH_CUC=Bạn bè, hàng xóm, người làm mối|Thân thích hòa nhã
+M04.QUAN_HE_KHAC_TIEU_CUC=Tiểu nhân, gièm pha|Phỉ báng, chửi
+M04.REF=A05|C01|C02|D01|D02|D03
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Tiền kim loại, giao dịch, thương lượng|Bán hàng, rao hàng, ẩm thực, giải trí|Giới tài chính
+M05.TIEU_CUC=Không đủ, thiếu hụt|Hư hại, phá hoại|Lời nói hoa mỹ, hứa suông|Phế phẩm
+M05.NHAN_VAT_LIEN_QUAN=C08
+M05.REF=G02|B08|B09|G05|C08
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Dùng thương lượng, nói chuyện|Người nợ hòa nhã, dễ gần
+M06.DOI_NO_TIEU_CUC=Người nợ nói khéo, hứa suông|Cãi cọ, chửi, phỉ báng
+M06.CHO_MUON_TICH_CUC=Người mượn thân mật, hòa thuận
+M06.CHO_MUON_TIEU_CUC=Người mượn nịnh bợ, đê hèn|Thiếu hụt, không đủ trả
+M06.REF=B07|B08|D01|D03
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Đối tác giỏi nói, giỏi thương lượng|Dự án truyền thông, ẩm thực, giải trí, giáo dục
+M07.TIEU_CUC=Tranh cãi lời nói|Nịnh bợ, gièm pha|Hứa suông, không đủ nguồn lực
+M07.REF=B07|B08|B09|D03
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Hướng Tây, Tây Bắc, Đông Bắc, Tây Nam thuận|Đi để giao lưu, giảng dạy, biểu diễn
+M08.TIEU_CUC=Hướng Nam kỵ nặng, hướng Bắc kỵ nhẹ|Bất tiện, thiếu hụt nơi mới|Ẩm thấp
+M08.REF=I04|I05|I06|F01
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Mua nhà cũ, sửa chữa|Công trình giải trí, ẩm thực, hòa nhạc|Công trình nước, giếng, ao
+M09.TIEU_CUC=Đất trũng, ẩm thấp, hang hố|Hư hại, phá hoại|Sửa chữa không đủ ngân sách
+M09.REF=H02|H03|H07|H08|B09
+
+M10.TEN=Gia đình
+M10.ONG_BA=Không có tượng riêng
+M10.CHA_ME=Không có tượng riêng
+M10.VO_CHONG=Vợ nhỏ
+M10.CON_CHAU=Con gái út|Thiếu nữ
+M10.TICH_CUC=Vui vẻ, hòa thuận|Thân mật
+M10.TIEU_CUC=Cãi cọ, ồn ào|Phỉ báng, than thở
+M10.REF=C01|D01|D03
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04|E05
+M11.TICH_CUC=Hồi phục nhờ nói chuyện, vui vẻ
+M11.TIEU_CUC=Miệng, lưỡi, yết hầu, răng, ho, phổi|Chán ăn|Bàng quang, hậu môn, sinh dục|Thiếu máu, huyết áp thấp|Ngoại thương, phẫu thuật, bệnh ngoài da, phá tướng
+M11.REF=E01|E02|E03|E04|E05
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Bạn bè|Người làm mối|Giáo viên, giáo sư|Trợ thủ
+M12.THAY_THUOC=Bác sĩ ngoại khoa, nha khoa|Người dùng thuốc, uống thuốc
+M12.CAU_AN=Pháp sư, bà đồng, tín ngưỡng
+M12.LUU_Y=Bệnh liên quan miệng, phổi cần điều trị sớm
+M12.REF=C02|C05|C07|C06|B07
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Hướng Tây, Tây Bắc, Đông Bắc, Tây Nam lợi|Màu trắng, vàng lợi, kỵ đỏ|Nước, đầm, giếng
+M13.TAM_LINH=Pháp sư khiêu đại thần (cầu thần nhập xác)|Bà đồng|Túc sát (tàn lụi) mùa thu
+M13.TON_GIAO=Tín ngưỡng
+M13.REF=A11|A12|A13|C05|B06|I04|I07|I08
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Dùng lời nói, thương lượng hòa giải|Người diễn thuyết, người làm mối giúp
+M14.TIEU_CUC=Họa từ miệng mà ra|Phỉ báng, gièm pha, chửi|Hình phạt|Phá hoại
+M14.NHAN_VAT_LIEN_QUAN=C11
+M14.REF=B07|B09|C11|D03
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Mưa phùn, ẩm thấp|Bị thương do dụng cụ cắt gọt|Hư hại, khiếm khuyết|Hố, giếng, hang
+M15.REF=F01|E05|G05|H07
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Dê|Báo|Vượn|Khỉ|Thỏ|Vật trong đầm lầy
+M16.CAY_TRAI=Cây lựu|Hồ đào
+M16.MUA_MANG=Mùa thu, đất cứng mặn
+M16.REF=H01|G06|A04|B02
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Có người trực, tổng đài, cảnh báo qua lời nói
+M17.TIEU_CUC=Phá hoại, kẻ trộm khéo miệng|Hư hại|Ngoại thương, dụng cụ cắt gọt
+M17.REF=C09|C04|E05|G02
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Thông báo, truyền thông, diễn giảng|Thương lượng, nghị luận
+M18.TIEU_CUC=Hình phạt, phá hoại|Phỉ báng, tin đồn|Ồn ào
+M18.NHAN_VAT_LIEN_QUAN=C11
+M18.REF=B07|B09|C11|C03
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Vị cay (theo Vị)|Nhà hàng, tiệm cơm, đồ ăn|Ca hát, trò chuyện giải trí
+M19.TIEU_CUC=Chán ăn|Miệng, răng, hô hấp có vấn đề|Nói nhiều, hiếu sắc, ưu sầu
+M19.REF=A08|G01|D02|E02|H03
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_DOAI_02]
+```
+3.LY :
+```
+[QUE]
+ID=03
+TEN=Ly
+KY_HIEU=☲
+
+[A_DINH_DANH]
+A01.DUC=Lệ|Toả|Phát ra
+A02.VAT_TUONG_CHINH=Chim Trĩ
+A03.THE_TUONG_CHINH=Mắt|Mạch Máu|Tim|Ruột non
+A04.KHI=Thử (nóng)
+A05.SAC=Đỏ / hồng
+A06.VI=Đắng
+A07.NGU_TINH=Vui mừng
+A08.QUAN_HE_CHINH=Người con giữa giới tính nữ|Người có tính hoạt náo / dẫn dắt cộng đồng nhỏ (ví dụ phóng viên, nhà hoạt động môi trường v.v.)
+A09.HINH_DANG=Dễ ứng người con gái tóc khô
+A10.SO=3
+A11.NGU_HANH=Hỏa
+A12.PHUONG_VI_GOC=Nam
+A13.MAU_GOC=Đỏ
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Ly là hỏa|Mặt trời|Điện|Trung nữ|Giáp trụ|Binh khí
+B02.TUONG_CAU_NOI_NGUOI=Bụng to
+B03.TUONG_CAU_NOI_KHAC=Khô hanh|Ba ba|Cua|Ốc|Trai|Rùa
+B04.TUONG_CAU_NOI_CAY=Cây rỗng ruột đã khô
+B05.BAN_CHAT=Một hào âm ở giữa, hai hào dương ở ngoài|Ngoài cương trong nhu|Xu thế phát triển từ trung tâm hướng ra ngoài|Có tượng ly tán|Bàng thông với quẻ Khảm, tương phản
+B06.LY_GIAI_01=Các vật ngoài cứng trong mềm như ba ba, cua, rùa, sò, giáp trụ của binh lính >> Thuộc quẻ Ly
+B06.LY_GIAI_02=Ly là hỏa >> Khô hanh
+B06.LY_GIAI_03=Ly trung hư, đối với người >> Tượng người bụng phệ
+B06.LY_GIAI_04=Ly là mặt trời, là hỏa >> Thiểm điện (chớp)
+B06.LY_GIAI_05=Hỏa tính viêm thượng, đối với cây cối >> Cành khô héo
+B07.TUONG_Y_TICH_CUC=Minh (sáng)|Tiến thăng|Hoa lệ|Tươi đẹp|Văn minh|Lễ nghi|Minh sát (xem xét rõ ràng)|Lưu hành|Hiển thị
+B08.TUONG_Y_TRUNG_TINH_HAI_MAT=Phụ thuộc|Bài xích|Kháng cự|Phủ định|Phê phán|Tổ giác|Trinh sát
+B09.TUONG_Y_TIEU_CUC=Nôn nóng|Kích động|Khiếm nhã|Tự mãn|Lời đường mật|Nói dối|Khô héo|Khô khan|Trống rỗng
+B10.TUONG_Y_GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[C_NHAN_VAT]
+C01.GIA_DINH=Trung nữ
+C02.VAN_HOA=Văn nhân
+C03.THAN_THE=Người bụng to|Người đau mắt
+C04.QUAN_SU_AN_NINH=Người đội mũ bảo hiểm|Binh lính
+
+[D_TINH_CACH]
+D01.TICH_CUC=Trọng lễ|Mỹ mạo|Thông minh hiếu học|Xử sự khiêm tốn|Có tri thức hiểu lễ nghĩa|Thích sách và văn chương|Hiếu thảo
+D02.GIOI_HAN=Có tính ỷ lại|Nội tâm trong rồng (nguồn)|Hiếu động
+D03.TIEU_CUC=Nóng tính|Dễ kích động|Tà ác
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Mắt|Tim|Thị giác|Hồng cầu|Máu|Vú|Thượng tiêu|Đầu và mặt|Yết hầu|Ruột non
+E02.TAT_BENH_MAT_TIM_MAU=Bệnh mắt|Bệnh thị giác|Bệnh tim|Bệnh máu|Bệnh huyết áp
+E03.TAT_BENH_NHIET_VIEM=Bị bóng (nguồn)|Bệnh phóng xạ|Sốt|Bệnh nhiệt|Viêm|Nước tiểu đỏ vàng
+E04.TAT_BENH_TUYEN_PHU_KHOA=Bệnh tuyến sữa|Bệnh phụ khoa|U nang khuếch tán|Chứng phì đại (phì đại tuyến tiền liệt, tăng sinh, nhũ tuyến tăng sinh, tim phì đại)
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Trời nắng|Trời nóng|Hè nóng bức|Mặt trời chói chang|Khô hạn|Mặt trời sáng rực|Cầu vồng|Ánh sáng|Ráng mây|Chớp
+
+[G_VAT_TUONG]
+G01.VAN_HOC_NGHE_THUAT_SACH=Văn học|Nghệ thuật|Mỹ thuật|Tranh chữ|Văn khoa|Y khoa|Văn kiện|Văn chương|Sách báo|Tạp chí|Bản đồ|Sách giáo khoa|Văn thư
+G02.GIAY_TO_PHAP_LY_TAI_CHINH=Con dấu|Giấy chứng nhận|Chứng khoán|Thư từ|Hợp đồng|Giấy khen
+G03.TRANG_TRI_QUANG_CAO=Hoa|Đồ vật đẹp|Lá cờ|Quảng cáo|Quần áo vải hoa
+G04.DIEN_LUA_NHIET=Điện thoại|Điện báo|Diêm|Bật lửa|Bếp lò|Nồi hơi|Động cơ điện|Động cơ đốt trong|Bếp gas hóa lỏng|Lò nướng
+G05.VU_KHI_LUA=Súng phun lửa|Bom cháy|Mỏ hàn
+G06.PHUONG_TIEN=Thuyền trống (nguồn)|Toa xe lửa|Tàu điện|Xe kiệu
+G07.THUC_PHAM=Thịt khô|Mứt|Món xào|Đồ nướng
+G08.DO_CHUA_KINH=Cửa sổ kính|Cái lồng|Bình|Hộp|Túi lưới
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT_CHIM=Chim trĩ|Chim công|Phượng hoàng|Cun cút|Các loài chim có lông đẹp
+H02.DONG_VAT_CA_BO_SAT=Cá vàng|Cá nhiệt đới|Tắc kè hoa
+H03.DONG_VAT_VO_CUNG_COT_TRUNG=Tôm|Cua|Sò|Rùa|Ba ba|Đom đóm|Bọ vỏ cứng
+H04.DIA_THE_THANH_DIA=Mảnh đất hướng về phía mặt trời|Thẳng cảnh (nguồn)|Thánh địa|Giáo đường|Cung điện|Đại lễ đường
+H05.VAN_HOA_GIAO_DUC=Trường học|Viện bảo tàng|Phòng triển lãm|Nhà hát|Thư viện|Cửa hàng thư họa
+H06.TAI_CHINH=Sở giao dịch chứng khoán|Ngân hàng
+H07.NANG_LUONG_Y_TE_NHIET=Nhà máy điện|Nhà in|Bệnh viện|Khoa phóng xạ|Khoa kiểm nghiệm|Nhà bếp|Lò lửa|Nhà máy luyện kim|Núi lửa|Miệng núi lửa|Nơi hỏa hoạn
+H08.KIEN_TRUC_GIAO_THONG=Đại sảnh lộng lẫy|Ban công|Nhà kho|Nhà trống|Cầu cống|Cầu vượt|Kiệu|Lều|Ga xe lửa|Tháp canh|Đài truyền hình|Tháp (bảng) quảng cáo
+H09.QUAN_SU_PHAP_LUAT=Bộ đội|Doanh trại|Đồn công an|Cục công an|Tòa án|Viện kiểm sát
+H10.SAN_BAN_CAU_CA=Khu vực săn bắn|Khu vực câu cá.
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Bính|Đinh|Tị|Ngọ|Giáp|Ất|Dần|Mão
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Nhâm|Quý|Hợi|Tý
+I03.THOI_GIAN_BAT_LOI_NHE=
+I04.PHUONG_VI_LOI=Đông|Nam|Đông Nam
+I05.PHUONG_VI_KY_NANG=Bắc
+I06.PHUONG_VI_KY_NHE=Đông Bắc|Tây Nam
+I07.MAU_LOI=Đỏ|Xanh lá cây
+I08.MAU_KY_NANG=Đen
+I09.MAU_KY_NHE=
+I10.KHONG_PHAN_MUC=I02|I08
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc cần trình bày, minh bạch, hiển thị|Việc văn phòng, văn kiện, hợp đồng, quảng cáo|Ngành văn học, nghệ thuật, truyền thông, y khoa, điện, năng lượng, ngân hàng|Làm việc có lễ nghi, thông minh hiếu học
+M01.TIEU_CUC=Nôn nóng, kích động|Tự mãn, lời đường mật, nói dối|Bài xích, kháng cự đồng nghiệp|Phụ thuộc, ý lại, bề ngoài rỗng
+M01.NHAN_VAT_LIEN_QUAN=C01|C02
+M01.REF=B07|B08|B09|D01|D02|D03|G01|G02
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Tiến thăng, danh tiếng sáng|Hiển thị, được nhìn thấy|Lưu hành, ảnh hưởng truyền thông|Có văn bằng, giấy khen, chứng nhận
+M02.TIEU_CUC=Hư danh, bề ngoài rỗng|Tự mãn, lời đường mật|Bị phê phán, tổ giác|Nóng nảy mất cơ hội
+M02.NHAN_VAT_LIEN_QUAN=C02|C04
+M02.REF=A08|B07|B09|G02|G03|D03
+
+M03.TEN=Học hành
+M03.TICH_CUC=Thông minh hiếu học, thích sách và văn chương|Học văn khoa, y khoa, nghệ thuật, mỹ thuật|Có thầy giỏi, hiểu lễ nghĩa|Thi cử có chứng nhận, giấy khen
+M03.TIEU_CUC=Nôn nóng, hiếu động thiếu bền|Tự mãn, học bề ngoài|Khô khan, trống rỗng kiến thức|Phụ thuộc, ý lại
+M03.REF=D01|D02|G01|H05|B09
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương mỹ mạo, trọng lễ|Bộc lộ, vui mừng|Có văn hóa, hiểu lễ nghĩa
+M04.TINH_YEU_TIEU_CUC=Lời đường mật, nói dối|Nóng tính, dễ kích động|Tự mãn, khiếm nhã|Tà ác
+M04.HON_NHAN_TICH_CUC=Vợ, trung nữ hiếu thảo, đảm đang|Gia đạo lễ nghi
+M04.HON_NHAN_TIEU_CUC=Bài xích, kháng cự|Cãi vã vì nóng tính|Ý lại, phụ thuộc
+M04.QUAN_HE_KHAC_TICH_CUC=Văn nhân, người hoạt náo dẫn dắt|Giao lưu minh bạch
+M04.QUAN_HE_KHAC_TIEU_CUC=Phê phán, tổ giác lẫn nhau|Khiếm nhã|Nói dối
+M04.REF=C01|C02|D01|D03|B08|B09
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Chứng khoán, ngân hàng, hợp đồng|Ngành văn hóa, in ấn, quảng cáo, điện, năng lượng, y tế|Thông tin minh bạch
+M05.TIEU_CUC=Hư danh, trống rỗng|Nôn nóng, kích động|Tự mãn, nói dối|Phụ thuộc vào thông tin hoặc người khác
+M05.REF=G02|H06|H07|B09
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Đòi có hợp đồng, giấy tờ rõ|Minh sát, trinh sát, tổ giác trước
+M06.DOI_NO_TIEU_CUC=Người nợ lời đường mật, nói dối|Bài xích, kháng cự|Kích động, nóng nảy
+M06.CHO_MUON_TICH_CUC=Người mượn minh bạch, có giấy tờ
+M06.CHO_MUON_TIEU_CUC=Người mượn tự mãn, hứa suông|Hư danh bên ngoài
+M06.REF=G02|B07|B08|B09
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Đối tác minh bạch, văn minh|Dự án văn hóa, truyền thông, y tế, năng lượng|Hợp đồng rõ ràng
+M07.TIEU_CUC=Đối tác nói dối, tự mãn|Nôn nóng, phản đối|Bên ngoài hoa lệ, bên trong rỗng
+M07.REF=A08|B07|B09|G02
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Hướng Đông, Nam, Đông Nam thuận|Ga xe lửa, tàu điện, toa xe lửa|Đi để hiển thị, quảng bá
+M08.TIEU_CUC=Hướng Bắc kỵ nặng, Đông Bắc và Tây Nam kỵ nhẹ|Nôn nóng, vội|Khô hạn, nóng nực
+M08.REF=I04|I05|I06|G06|H08
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Mảnh đất hướng về phía mặt trời|Đại sảnh lộng lẫy, ban công, cửa sổ kính|Công trình văn hóa, giáo đường, trường học
+M09.TIEU_CUC=Hỏa hoạn, điện chập|Nhà trống, kết cấu rỗng|Nôn nóng làm vội
+M09.REF=H04|H05|H07|H08|G08|F01
+
+M10.TEN=Gia đình
+M10.ONG_BA=Không có tượng riêng
+M10.CHA_ME=Không có tượng riêng
+M10.VO_CHONG=Trung nữ
+M10.CON_CHAU=Con gái giữa
+M10.TICH_CUC=Hiếu thảo, lễ nghĩa|Gia đạo văn hóa, minh bạch
+M10.TIEU_CUC=Nóng tính, dễ kích động|Ý lại, phụ thuộc|Nói dối
+M10.REF=C01|D01|D03
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04
+M11.TICH_CUC=Khí sắc tươi
+M11.TIEU_CUC=Mắt, thị giác, tim, huyết áp|Sốt, nhiệt, viêm, bỏng, phóng xạ|Tuyến sữa, phụ khoa, u nang, phì đại|Nước tiểu đỏ vàng
+M11.REF=E01|E02|E03|E04
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Văn nhân|Người có văn hóa, hiểu lễ nghĩa|Trung nữ
+M12.THAY_THUOC=Bác sĩ mắt, tim, nội tiết, viêm|Nơi bệnh viện, khoa kiểm nghiệm
+M12.CAU_AN=Thánh địa, giáo đường|Cầu giảm nhiệt, bình tâm
+M12.LUU_Y=Bệnh mắt, tim, huyết áp cần chẩn đoán sớm
+M12.REF=C02|E02|H04|H07
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Mảnh đất hướng về phía mặt trời|Hướng Đông, Nam, Đông Nam lợi|Màu đỏ, xanh lá cây lợi, kỵ đen|Cửa sổ kính, ánh sáng
+M13.TAM_LINH=Mặt trời, lửa, ánh sáng|Thánh địa
+M13.TON_GIAO=Giáo đường|Đại lễ đường
+M13.REF=A11|A12|A13|F01|H04|I04|I07|I08
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Có hợp đồng, văn kiện, chứng cứ minh bạch|Minh sát, tổ giác, trinh sát có lợi
+M14.TIEU_CUC=Bài xích, kháng cự kéo dài|Nói dối, lời đường mật|Nóng nảy, kích động
+M14.REF=B07|B08|B09|G02|H09
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Hỏa hoạn|Nắng gắt, khô hạn|Chớp, điện|Bỏng, cháy nổ
+M15.REF=F01|G05|H07
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Chim trĩ|Chim công|Phượng hoàng|Cun cút|Cá vàng|Cá nhiệt đới|Tắc kè hoa|Tôm|Cua|Sò|Rùa|Ba ba
+M16.CAY_TRAI=Cây rỗng ruột đã khô|Hoa
+M16.MUA_MANG=Hợp mùa nắng nóng|Hại do khô hạn
+M16.REF=H01|H02|H03|B04|F01
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Có trinh sát, công an, bộ đội|Tháp canh, camera, ánh sáng
+M17.TIEU_CUC=Hỏa hoạn, cháy nổ|Khiếm nhã, kích động|Bom cháy, súng phun lửa
+M17.REF=C04|H08|H09|G05
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Văn minh, lễ nghi, minh sát|Tòa án, viện kiểm sát|Lưu hành chính sách, văn kiện
+M18.TIEU_CUC=Bài xích, phản đối, kháng cự|Tổ giác, phê phán|Nôn nóng, kích động
+M18.REF=B07|B08|B09|H09
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Thịt khô, mứt, món xào, đồ nướng|Vị đắng|Thích sách, văn chương
+M19.TIEU_CUC=Nóng nực, khô hanh|Sốt, nhiệt, viêm|Nôn nóng, kích động, hiếu động
+M19.REF=A04|A06|G07|D01|D03|E03
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_LY_03]
+```
+4.CHẤN :
+```
+[QUE]
+ID=04
+TEN=Chấn
+KY_HIEU=☳
+
+[A_DINH_DANH]
+A01.DUC=Động
+A02.VAT_TUONG_CHINH=Rồng
+A03.THE_TUONG_CHINH=Chân
+A04.QUAN_HE_CHINH=Người con trưởng giới tính nam|Người đứng đầu 1 bộ phận / cộng đồng nhỏ|Trưởng nhóm|Chỉ huy 1 nhóm (thuộc tính nam, cứng)
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Chấn là sấm|Rồng|Huyền hoàng (khí âm dương tương giao như 2 màu đen đỏ trộn nhau)|Xanh|Đường lớn|Con trai trưởng|Quyết táo (như dòng chảy thông suốt tốc độ cao và mạnh)|Thương lang trúc (trúc mới mọc, màu xanh vẻ đẹp mùa xuân)|Lau sậy
+B02.TUONG_CAU_NOI_NGUA=Loài ngựa hí to|Chân trái sau màu trắng|Bốn chân chạy nhanh|Trán trắng
+B03.TUONG_CAU_NOI_TRONG_TROT=Phản sinh (sinh ngược như quả sinh trong đất)
+B04.TUONG_CAU_NOI_KHAC=Kỳ cứu vi kiện (âm tiêu dương trưởng, phản cực của âm)|Tươi tốt|Tươi sáng
+B05.TUONG_AM_THANH_HOAT_DONG=Pháo nổ|Chạy|Kêu (sủa v.v.)|Loa phát thanh|Tiếng ồn
+B06.BAN_CHAT=Hai hào âm ở trên, một dương ở dưới|Xu thế phát triển hướng thượng, hướng ngoại|Chấn là động, là sấm
+B07.LY_GIAI_01=Âm ở trên có dạng bập bềnh không ngừng >> Rồng
+B07.LY_GIAI_02=Thiên huyền địa hoàng, Càn Khôn thủy giao sinh Chấn >> Huyền hoàng
+B07.LY_GIAI_03=Một dương ở dưới, hai âm ở trên >> Đường lớn
+B07.LY_GIAI_04=Một dương ở dưới chuyên tĩnh mà động >> Chuyên
+B07.LY_GIAI_05=Hào dương động ở sơ, sắc sảo tiến thủ >> Quyết táo
+B07.LY_GIAI_06=Chấn là màu xanh đậm >> Thương lang trúc
+B07.LY_GIAI_07=Lau sậy rỗng ở trên, thân dưới đặc, tượng Chấn dương ở dưới, âm ở trên >> Lau sậy
+B07.LY_GIAI_08=Chấn là động >> Ngựa chạy nhanh hí to
+B07.LY_GIAI_09=Chấn dương cương, táo động >> Kiện
+B07.LY_GIAI_10=Sơ dương ở dưới >> Vật trong đất như đậu phộng, khoai tây, khoai lang
+B07.NGUYEN_TAC=Tất cả sự vật đều là sự suy diễn tương đồng theo quái tượng, hào tượng, hào vị và quái tính
+B08.TUONG_Y_TICH_CUC=Lên cao|Tiến bộ|Xuất phát|Hưng khởi|Tân sinh|Dũng cảm|Cao|Công danh lớn|Nhân từ|Theo đuổi|Chăm chỉ suy nghĩ|Ảnh hưởng rộng|Hăng hái
+B09.TUONG_Y_TRUNG_TINH_HAI_MAT=Hiếu động|Đi lại|Ra trận|Tiếng động|Âm thanh cao
+B10.TUONG_Y_TIEU_CUC=Phẫn nộ|Kinh khủng|Sợ bóng sợ gió|Cẩu thả|Manh động|Nóng nảy|Xung đột|Phóng đại|Vô lễ
+B11.TUONG_Y_GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[C_NHAN_VAT]
+C01.GIA_DINH_NAM=Trưởng nam|Đại nam (đàn ông trưởng thành)
+C02.CHI_HUY_DAU_NAO=Người chỉ huy|Người đứng đầu
+C03.PHUC_VU_HANH_CHINH=Nhân viên phục vụ|Nhân viên hành chính
+
+[D_TINH_CACH]
+D01.TICH_CUC=Siêng năng|Có tài cán|Nhân từ|Ngay thẳng|Lòng tự trọng cao
+D02.GIOI_HAN=Động và thiếu tĩnh|Hiếu động|Quật cường
+D03.TIEU_CUC=Nóng tính|Dễ giận|Hay nóng nảy|Phiền muộn|Nôn nóng bất an|Sợ bóng sợ gió
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Chân|Gan|Thần kinh|Gân|Sườn trái|Vai phải|Tóc
+E02.TAT_BENH_VUNG_CO_THE=Bệnh chân|Bệnh can kinh|Can hỏa vượng|Viêm gan|Bệnh phụ khoa|Ho|Chứng bệnh về thanh đới yết hầu
+E03.TAT_BENH_THAN_KINH_TINH_THAN=Bệnh tâm thần|Bệnh cuồng táo (dễ cáu)|Chứng đa động (tăng động)|Suy nhược thần kinh|Chứng cuồng loạn|Bệnh động kinh|Thần kinh quá nhạy cảm|Bệnh hoảng sợ
+E04.TRIEU_CHUNG=Triệu chứng đau nhức|Triệu chứng nghiêm trọng
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Sấm|Giông tố|Động đất|Núi lửa phun
+
+[G_VAT_TUONG]
+G01.THUC_VAT=Cây cối|Trúc|Hoa tươi|Rau|Vật đa tiết (nhiều đoạn)|Chồi non|Vật màu xanh đậm|Trà
+G02.AM_THANH=Pháo|Nhạc cụ âm thanh|Điện thoại truyền thanh|Đồng hồ báo thức
+G03.PHUONG_TIEN=Xe đi lại|Tên lửa|Máy bay|Phi thuyền
+G04.VU_KHI=Đại bác|Thương|Kiếm
+G05.QUAN_AO=Quần|Khố
+G06.THUC_PHAM=Thịt tươi
+G07.KHAC=Móng
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT=Rồng|Rắn|Chim ưng|Đại bàng|Ngựa chạy nhanh hí to|Chim hót hay|Ong|Bách trùng|Hạc|Hộc
+H02.TU_NHIEN=Núi rừng|Đất hoang|Khu rừng|Cánh đồng trà|Nguồn động đất|Miệng núi lửa
+H03.NHA_O=Nhà hướng Đông
+H04.AM_NHAC_VAN_HOA_THUONG_MAI=Chợ rau|Hội trường diễn tấu|Đài phát thanh|Bưu cục|Cửa hàng nhạc cụ nghe nhìn|Phòng ca múa|Phòng trà|Quán trà âm nhạc|Rạp xiếc|Cửa hàng hoa|Khu vui chơi
+H05.DO_THI_ON_AO=Khu phố sầm uất|Nơi ồn ào|Đường lớn
+H06.GIAO_THONG=Sân bay|Bãi đỗ xe|Bến xe
+H07.QUAN_SU_AN_NINH=Bãi phóng tên lửa|Trường bắn|Quân cảnh|Công an|Doanh trại|Quân đội
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Giáp|Ất|Dần|Mão|Nhâm|Quý|Hợi|Tý
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Canh|Tân|Thân|Dậu
+I03.THOI_GIAN_BAT_LOI_NHE=Năm tháng ngày giờ Bính|Đinh|Tị
+I04.PHUONG_VI_LOI=Đông|Bắc|Đông Nam
+I05.PHUONG_VI_KY_NANG=Tây|Tây Bắc
+I06.PHUONG_VI_KY_NHE=Nam
+I07.MAU_LOI=Xanh bích|Lục|Đen
+I08.MAU_KY_NANG=Trắng
+I09.MAU_KY_NHE=Đỏ
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc mới khởi động, xuất phát|Việc cần tốc độ, di chuyển, đi lại|Làm trưởng nhóm, chỉ huy|Ngành truyền thông âm thanh, phát thanh, âm nhạc, vận tải, quân đội công an, trồng trọt hoa trà
+M01.TIEU_CUC=Cẩu thả, manh động|Nóng nảy sinh xung đột|Phóng đại, hăng hái đầu việc nhưng thiếu tĩnh
+M01.NHAN_VAT_LIEN_QUAN=C02|C03
+M01.REF=B08|B09|B10|D01|D02|D03
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Công danh lớn, lên cao, tiến bộ|Ảnh hưởng rộng|Làm người đứng đầu một bộ phận, nhóm|Dũng cảm đảm nhận
+M02.TIEU_CUC=Nóng nảy, vô lễ dễ đắc tội|Phóng đại thành tích|Xung đột với cấp trên hoặc đồng đội
+M02.NHAN_VAT_LIEN_QUAN=C01|C02
+M02.REF=A04|B08|B10|D01|D03
+
+M03.TEN=Học hành
+M03.TICH_CUC=Chăm chỉ suy nghĩ, theo đuổi|Hăng hái, tiếp thu nhanh|Học điều mới, tân sinh|Hợp học nhạc, truyền thông, thể thao, quân sự
+M03.TIEU_CUC=Thiếu tĩnh, hiếu động|Cẩu thả|Nôn nóng bất an|Thần kinh nhạy cảm gây mất tập trung
+M03.REF=B08|D01|D02|D03|E03
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương ngay thẳng, nhân từ, hăng hái|Chủ động theo đuổi
+M04.TINH_YEU_TIEU_CUC=Nóng tính, dễ giận|Sợ bóng sợ gió, nghi ngờ|Phẫn nộ, xung đột
+M04.HON_NHAN_TICH_CUC=Chồng, trưởng nam đứng ra gánh vác|Gia đình sinh khí
+M04.HON_NHAN_TIEU_CUC=Cãi vã ồn ào|Vô lễ, nóng nảy|Thiếu tĩnh để lắng nghe
+M04.QUAN_HE_KHAC_TICH_CUC=Gặp người chỉ huy, trưởng nhóm đỡ đần|Bạn bè hiếu động, nhân từ
+M04.QUAN_HE_KHAC_TIEU_CUC=Xung đột bột phát|Người nóng nảy, phóng đại
+M04.REF=C01|D01|D03|B10
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Khởi sự kinh doanh mới|Lĩnh vực âm thanh, giải trí, vận tải, hoa trà, thực phẩm tươi|Thu nhập nhờ hoạt động, di chuyển
+M05.TIEU_CUC=Manh động, vội vàng|Phóng đại kỳ vọng|Nóng nảy ra quyết định|Đầu voi đuôi chuột vì thiếu tĩnh
+M05.REF=B08|B10|G02|G03|G06|H04
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Người nợ ngay thẳng|Chủ động đòi, nhanh
+M06.DOI_NO_TIEU_CUC=Người nợ nóng nảy, vô lễ|Đòi bằng xung đột
+M06.CHO_MUON_TICH_CUC=Người mượn hăng hái, ngay thẳng
+M06.CHO_MUON_TIEU_CUC=Người mượn phóng đại, hứa mà không giữ|Cẩu thả
+M06.REF=B10|D01|D03
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Dự án khởi sự, tân sinh|Đối tác hăng hái, dám làm|Có người chỉ huy rõ
+M07.TIEU_CUC=Manh động thiếu kế hoạch|Xung đột vì nóng tính|Phóng đại lợi ích
+M07.REF=A04|B08|B10|D03
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Đi lại, xuất phát thuận|Máy bay, sân bay, xe, bến xe|Hướng Đông, Bắc, Đông Nam thuận
+M08.TIEU_CUC=Hướng Tây, Tây Bắc kỵ nặng, hướng Nam kỵ nhẹ|Đi vội, hoảng sợ|Tai nạn do tốc độ
+M08.REF=G03|H06|I04|I05|I06
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Nhà hướng Đông|Khởi công, hưng khởi|Trồng cây, hoa, trà|Công trình hoạt động như phòng trà, khu vui chơi
+M09.TIEU_CUC=Manh động, vội khởi công|Ồn ào ảnh hưởng xung quanh|Nóng nảy vượt tiến độ
+M09.REF=H02|H03|H04|B10
+
+M10.TEN=Gia đình
+M10.ONG_BA=Không có tượng riêng
+M10.CHA_ME=Không có tượng riêng
+M10.VO_CHONG=Chồng (người đàn ông trưởng thành)
+M10.CON_CHAU=Con trai trưởng
+M10.TICH_CUC=Con trai trưởng gánh vác, hưng khởi|Sinh khí
+M10.TIEU_CUC=Cãi vã, nóng nảy|Con nóng tính, hiếu động
+M10.REF=C01|A04|D03
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04
+M11.TICH_CUC=Hoạt động, nhanh nhẹn
+M11.TIEU_CUC=Bệnh chân, gan, thần kinh, tâm thần|Cuồng táo, tăng động, động kinh, hoảng sợ|Thanh đới, ho, phụ khoa|Đau nhức, triệu chứng nghiêm trọng
+M11.REF=E01|E02|E03|E04
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Người chỉ huy|Trưởng nam|Người đứng đầu|Đàn ông trưởng thành
+M12.THAY_THUOC=Thầy thuốc chữa bệnh thần kinh, gan, chân
+M12.CAU_AN=Cầu trấn tĩnh, giảm hoảng sợ
+M12.LUU_Y=Bệnh thần kinh, tâm thần cần điều trị bài bản
+M12.REF=C01|C02|E03
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Nhà hướng Đông|Hướng Đông, Bắc, Đông Nam lợi|Màu xanh bích, lục, đen lợi, kỵ trắng, đỏ|Cây cối, trúc, hoa
+M13.TAM_LINH=Sấm, rồng, thiên tượng mạnh|Khí âm dương tương giao (huyền hoàng)
+M13.TON_GIAO=Không có tượng riêng
+M13.REF=B01|F01|G01|I04|I05|I06|I07|I08|I09
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Bên ngay thẳng, nhân từ|Người chỉ huy, công an hỗ trợ
+M14.TIEU_CUC=Phẫn nộ, nóng nảy phá hỏng|Xung đột bột phát|Phóng đại sự việc|Vô lễ trước nơi xử lý
+M14.REF=B10|C02|H07|D03
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Sấm sét, giông tố|Động đất, núi lửa|Tai nạn tốc độ|Hoảng sợ, giật mình
+M15.REF=F01|B10
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Ngựa chạy nhanh|Chim hót hay|Ong|Rắn|Chim ưng, đại bàng, hạc, hộc|Bách trùng
+M16.CAY_TRAI=Trúc|Hoa tươi|Rau|Trà|Chồi non|Lau sậy|Củ quả sinh trong đất (phản sinh: đậu phộng, khoai tây, khoai lang)
+M16.MUA_MANG=Tươi tốt, mùa xuân, sinh sôi|Cây trồng mọc nhanh
+M16.REF=B01|B03|G01|H01
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Có quân cảnh, công an, quân đội|Cảnh báo bằng âm thanh (loa, chuông)
+M17.TIEU_CUC=Tiếng động, kinh khủng, giật mình|Manh động, xung đột bột phát|Vũ khí, hoảng sợ
+M17.REF=H07|G02|G04|B10
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Hưng khởi, tân sinh|Công danh lớn, ảnh hưởng rộng|Tuyên truyền, truyền thanh
+M18.TIEU_CUC=Xung đột, phóng đại, kinh khủng|Động đất, giông tố|Biến động đột ngột
+M18.REF=B08|B10|F01|H07
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Dậy sớm, hoạt động, siêng năng|Rau, trà, thịt tươi
+M19.TIEU_CUC=Hiếu động thiếu tĩnh, ít nghỉ|Nôn nóng, mất ngủ|Phiền muộn, bất an
+M19.REF=G01|G06|D01|D02|D03
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_CHAN_04]
+```
+5.TỐN :
+```
+[QUE]
+ID=05
+TEN=Tốn
+KY_HIEU=☴
+
+[A_DINH_DANH]
+A01.DUC=Nhập
+A02.VAT_TUONG_CHINH=Gà
+A03.THE_TUONG_CHINH=Đùi|Gân|Lưỡi|Gan|Mật
+A04.QUAN_HE_CHINH=Người con trưởng giới tính nữ|Người đứng đầu 1 bộ phận / cộng đồng nhỏ|Trưởng nhóm|Chỉ huy 1 nhóm (thuộc tính nữ, âm, mềm)
+A05.KHI=Phong (gió)
+A06.SAC=Xanh (Lục)
+A07.VI=Chua
+A08.NGU_TINH=Giận
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Tốn là mộc|Phong|Trưởng nữ|Dây thẳng|Thợ|Bạch (trắng)|Dài|Cao|Tiến thoái|Không quyết đoán|Mùi
+B02.TUONG_CAU_NOI_NGUOI=Ít tóc|Trán rộng|Mắt nhiều lòng trắng|Tiền lãi gấp ba|Kỳ cứu vi táo quái (trạng thái nhanh tích cực / tiêu cực)
+B03.BAN_CHAT=Một hào âm ở dưới|Xu thế phát triển thâm nhập xuống đất, hướng nội|Sự vật phiêu động (thổi)|Tính thẩm thấu
+B04.LY_GIAI_01=Tốn là mộc là phong, rễ cây vươn vào lòng đất, gió chui qua lỗ kim >> Nhập (đi vào)
+B04.LY_GIAI_02=Mộc còn được gọi là khúc trực, thợ mộc dùng chỉ mực làm căn cứ chế tác gỗ >> Dây thẳng|Thợ
+B04.LY_GIAI_03=Gió không màu không vị, phất phơ ở trên cao, qua lại bất định >> Cao|Bạch|Tiến thoái|Không quả quyết|Mùi
+B04.LY_GIAI_04=Tốn hai dương một âm, dương nhiều âm ít >> Ít tóc|Trán rộng|Mắt nhiều lòng trắng
+B04.LY_GIAI_05=Từ hào sơ quẻ Càn biến âm mà được Tốn, Càn là vàng ngọc >> Kinh doanh lãi gấp ba
+B04.LY_GIAI_06=Tốn là bàng thông quái của quẻ Chấn, Chấn dương quyết táo >> Táo quái
+B04.NGUYEN_TAC=Từ quái tượng, hào tượng, hào vị của Tốn còn có thể ngộ ra các sự vật thuộc về quẻ Tốn
+B05.TUONG_Y_TICH_CUC=Ngay thẳng|Thanh khiết sạch sẽ|Chỉnh tề|Truyền đạt|Doanh nghiệp kinh doanh|Phồn vinh hưng thịnh|Giao lưu|Tươi sốt|Thư tín|Sắc lệnh|Tin mừng|Hiệu triệu|Tiến cử|Ưu nghị|Đảm lược quyết đoán
+B06.TUONG_Y_TRUNG_TINH_HAI_MAT=Phụ họa|Bôn ba|Bận rộn|Càn quét|Đa dục|Quyền mưu|Số thuật
+B07.TUONG_Y_TIEU_CUC=Cơ sở bất ổn|Hoán tán (rời rạc, lỏng lẻo)|Bạc tình|Keo kiệt|Ảo giác|Khiếm nhã|Phiền táo
+B08.TUONG_Y_GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[C_NHAN_VAT]
+C01.GIA_DINH_NU=Trưởng nữ|Trình nữ|Quả phụ
+C02.TAM_LINH_TON_GIAO=Tăng ni|Tiên đạo nhân|Thầy khí công|Người luyện công|Nhân viên tôn giáo
+C03.THUONG_MAI_GIAO_TE=Thương nhân|Nhân viên giao tế|Người truyền lệnh
+C04.CHUYEN_MON_KY_THUAT=Giáo sư|Bác sĩ|Nhân viên kỹ thuật|Người làm khoa học kỹ thuật|Phòng học|Nhà thiết kế|Thợ thủ công
+C05.VAN_CHUONG=Tác gia|Người giỏi văn
+C06.NHAN_CACH_TIEU_CUC=Người phao tin đồn nhảm
+C07.DAC_DIEM_NGOAI_HINH_TINH_THAN=Người ngoài cương trong nhu|Thiếu quyết đoán|Người trán rộng|Người có chi dưới vô lực|Người có tóc nhỏ, thẳng và thưa
+
+[D_TINH_CACH]
+D01.TICH_CUC=Dịu dàng|Cẩn thận|Tinh thần trách nhiệm cao|Nhân từ ngay thẳng|Rất thích sạch sẽ
+D02.GIOI_HAN=Hay thay đổi thất thường|Không quyết đoán|Ý chí bất định|Đa dục
+D03.TIEU_CUC=Nịnh hót|Gian nịnh|Bạc tình|Nghi hoặc ẩn phục|Nói dối
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Tóc|Thần kinh|Khí quản|Đảm kinh|Cánh tay|Đùi|Cơ quan hô hấp|Thực quản|Đường ruột|Vai trái|Hệ bạch huyết|Mạch máu
+E02.TAT_BENH_VUNG_CO_THE=Bệnh mật|Bệnh đùi và cánh tay|Bệnh ruột|Đầy hơi|Vai trái đau nhức|Bệnh mạch máu|Bệnh máu trắng
+E03.TAT_BENH_PHONG_HAN_HO_HAP=Trúng gió|Thương phong|Cảm mạo|Phong thấp|Chứng hàn tý|Truyền nhiễm|Viêm phế quản|Hen suyễn
+E04.TAT_BENH_THAN_KINH=Đau thần kinh tọa|Đau thần kinh|Viêm thần kinh|Chuột rút|Chứng u uất
+E05.TINH_CHAT=Bệnh tình không ổn định
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Gió thổi|Các loại gió lớn|Dải mây dài trên không
+
+[G_VAT_TUONG]
+G01.GO_SOI=Vật liệu gỗ|Đồ gỗ|Vật phẩm sợi|Sợi tơ|Dây thừng|Đay|Lụa dâu|Củi
+G02.VAT_DAI_ONG_MONG=Cột cờ|Bàn tủ dài|Giường|Cây lao|Bút|Vật hình ống|Đồ vật mỏng|Thắt lưng
+G03.VU_KHI_CONG_CU=Các loại đao búa
+G04.GIO_THONG_KHI=Quạt|Máy thông gió|Máy sấy|Bóng bay|Khinh khí cầu
+G05.PHUONG_TIEN=Thuyền buồm|Thuyền đua|Máy bay|Phi thuyền|Phao cứu sinh
+G06.BUU_CHINH=Bưu kiện
+G07.THUC_VAT_HUONG_LIEU=Hương thảo mộc|Hoa cỏ cây cối có mùi thơm|Hương liệu|Thảo dược|Nhang muỗi|Hoa cỏ|Trúc|Cành lá|Rong biển|Cây liễu
+G08.KHAC=Lông vũ
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT_GIA_CAM=Gà|Vịt|Ngỗng|Vũ cầm
+H02.DONG_VAT_KHAC=Chim và côn trùng núi rừng|Côn trùng đất như giun đất|Rắn|Bươm bướm|Chuồn chuồn|Con sên|Loài cá thon dài như cá hố, cá chình, lươn|Loài thú có hoa văn, dũng mãnh và kêu to như hổ, mèo, ngựa vằn
+H03.TU_NHIEN_DUONG=Rừng trúc|Thảo nguyên|Đường thẳng và rộng|Hành lang
+H04.TON_GIAO=Chùa|Đạo quán
+H05.THONG_DAO_KY_THUAT=Các loại đường dây|Ống dẫn|Thông gió|Thông khí|Thông đạo xuất nhập|Đường cáp treo|Thang máy|Băng chuyền
+H06.BUU_CANG_GIAO_THONG=Bưu cục|Cửa hàng|Bến tàu|Hải cảng|Sân bay|Bãi phóng tên lửa
+H07.CONG_NGHE_THIET_KE=Nhà máy công nghệ|Viện thiết kế
+H08.GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I00.GHI_CHU=Nguồn Tốn chưa cung cấp thời gian, phương vị, màu sắc lợi/kỵ. Màu lục chỉ có ở A06 (Sắc)
+I01.THOI_GIAN_LOI=
+I02.THOI_GIAN_BAT_LOI_NANG=
+I03.THOI_GIAN_BAT_LOI_NHE=
+I04.PHUONG_VI_LOI=
+I05.PHUONG_VI_KY_NANG=
+I06.PHUONG_VI_KY_NHE=
+I07.MAU_LOI=
+I08.MAU_KY_NANG=
+I09.MAU_KY_NHE=
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc truyền đạt, giao lưu, thư tín|Việc kỹ thuật, thiết kế, thủ công|Ngành thương mại, giao tế, văn chương, y, giáo dục|Làm việc dịu dàng, cẩn thận, có tinh thần trách nhiệm
+M01.TIEU_CUC=Thiếu quyết đoán, ý chí bất định|Hay thay đổi, bôn ba bận rộn|Cơ sở bất ổn|Phiền táo, tin đồn
+M01.NHAN_VAT_LIEN_QUAN=C03|C04|C05
+M01.REF=B05|B06|B07|D01|D02
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Tiến cử, được giới thiệu|Phồn vinh hưng thịnh|Làm trưởng nhóm, chỉ huy (thuộc tính mềm)|Hiệu triệu, truyền đạt có ảnh hưởng
+M02.TIEU_CUC=Do dự bỏ lỡ cơ hội|Cơ sở bất ổn, hoán tán|Quyền mưu, gian nịnh|Bạc tình, keo kiệt
+M02.NHAN_VAT_LIEN_QUAN=C03|C04
+M02.REF=A04|B05|B07|D02|D03
+
+M03.TEN=Học hành
+M03.TICH_CUC=Văn chương, tác gia, giáo sư|Cẩn thận, thanh khiết, chỉnh tề|Học khoa học kỹ thuật, thiết kế|Truyền đạt, tiếp thu thư tín tài liệu
+M03.TIEU_CUC=Ý chí bất định, thay đổi thất thường|Ảo giác, phiền táo|Không quyết đoán
+M03.REF=C04|C05|D01|D02|B07
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương dịu dàng, nhân từ ngay thẳng|Giao lưu, ưu nghị|Thích sạch sẽ, chỉnh tề
+M04.TINH_YEU_TIEU_CUC=Bạc tình|Nghi hoặc ẩn phục, nói dối|Đa dục|Nịnh hót, gian nịnh
+M04.HON_NHAN_TICH_CUC=Vợ, trưởng nữ đảm đang, cẩn thận|Gia đạo thanh khiết
+M04.HON_NHAN_TIEU_CUC=Thay đổi thất thường|Keo kiệt, bạc tình|Nghi ngờ ẩn phục
+M04.QUAN_HE_KHAC_TICH_CUC=Ưu nghị, giao lưu, phụ họa|Truyền đạt tin mừng
+M04.QUAN_HE_KHAC_TIEU_CUC=Người phao tin đồn nhảm|Nịnh hót, gian nịnh|Khiếm nhã
+M04.REF=C01|D01|D03|B05|B07
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Kinh doanh có thể lãi gấp ba|Thương nhân, doanh nghiệp kinh doanh|Hàng hóa dài, nhẹ, thảo dược, hương liệu, lụa, gỗ, thuyền, máy bay|Phồn vinh hưng thịnh
+M05.TIEU_CUC=Cơ sở bất ổn, lợi không bền|Keo kiệt, bạc tình|Quyền mưu, nói dối, ảo giác|Do dự thiếu quyết đoán
+M05.NHAN_VAT_LIEN_QUAN=C03
+M05.REF=B02|B05|B07|G01|G07
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Dùng thư tín, truyền đạt, sắc lệnh|Đòi nhẹ nhàng, ngay thẳng
+M06.DOI_NO_TIEU_CUC=Người nợ nói dối, thoái thác (tiến thoái)|Kéo dài, không dứt khoát
+M06.CHO_MUON_TICH_CUC=Người mượn ngay thẳng, nhân từ
+M06.CHO_MUON_TIEU_CUC=Người mượn gian nịnh, nghi hoặc ẩn phục|Hứa nhưng thất thường
+M06.REF=B05|B07|D02|D03
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Đối tác giao lưu tốt, truyền đạt rõ|Dự án kỹ thuật, thương mại|Phụ họa, ưu nghị
+M07.TIEU_CUC=Đối tác thiếu quyết đoán, ý chí bất định|Quyền mưu, nói dối|Cơ sở bất ổn, rời rạc
+M07.REF=A04|B05|B06|B07|D03
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Bôn ba, đi lại|Thuyền, máy bay, phi thuyền|Bến tàu, hải cảng, sân bay|Đi qua thông đạo xuất nhập
+M08.TIEU_CUC=Tiến thoái bất định|Cơ sở nơi mới bất ổn|Gió lớn gây trở ngại
+M08.GHI_CHU=Nguồn không có phương vị lợi/kỵ cho Tốn
+M08.REF=B06|G05|H06|F01
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Nhà gỗ, vật liệu gỗ|Chỉnh tề, thanh khiết|Lắp đặt đường dây, ống dẫn, thông gió|Thiết kế trước khi làm
+M09.TIEU_CUC=Cơ sở bất ổn, nền móng lỏng lẻo|Hoán tán, thay đổi thiết kế|Do dự dở dang
+M09.REF=G01|H05|H07|B07
+
+M10.TEN=Gia đình
+M10.ONG_BA=Không có tượng riêng
+M10.CHA_ME=Không có tượng riêng
+M10.VO_CHONG=Trưởng nữ|Trình nữ|Quả phụ
+M10.CON_CHAU=Con gái trưởng
+M10.TICH_CUC=Gia đạo sạch sẽ, chỉnh tề|Dịu dàng, cẩn thận
+M10.TIEU_CUC=Do dự, thay đổi thất thường|Nghi hoặc ẩn phục, bạc tình
+M10.REF=C01|D01|D02|D03
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04|E05
+M11.TICH_CUC=Nhẹ nhàng, thanh khiết
+M11.TIEU_CUC=Bệnh mật, gan|Trúng gió, phong thấp, hàn tý|Bệnh hô hấp, ruột, thần kinh|Máu trắng, mạch máu|Bệnh tình không ổn định
+M11.REF=E01|E02|E03|E04|E05
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Giáo sư|Bác sĩ|Thầy khí công|Tăng ni|Tiên đạo nhân
+M12.THAY_THUOC=Bác sĩ|Thầy khí công|Người luyện công|Người dùng thảo dược
+M12.CAU_AN=Chùa, đạo quán|Hương thảo mộc, nhang
+M12.LUU_Y=Bệnh tình không ổn định, cần theo dõi
+M12.REF=C02|C04|H04|G07|E05
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Gỗ, cây cối, hoa cỏ|Gió, thông gió, thông khí|Màu xanh lục (theo Sắc)
+M13.TAM_LINH=Tăng ni, tiên đạo nhân|Thầy khí công, người luyện công|Số thuật
+M13.TON_GIAO=Chùa|Đạo quán|Nhân viên tôn giáo
+M13.REF=A05|A06|C02|H04|G07|B06
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Dùng thư tín, sắc lệnh, giấy tờ|Bên ngay thẳng, chỉnh tề
+M14.TIEU_CUC=Quyền mưu, nói dối|Phao tin đồn nhảm|Kéo dài, thay đổi lời khai
+M14.REF=B05|B06|C06|D03
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Gió lớn|Trúng gió, cảm mạo|Tai nạn thuyền, bay|Tin đồn thất thiệt
+M15.REF=F01|E03|G05
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Gà|Vịt|Ngỗng|Vũ cầm|Rắn|Giun đất|Hổ, mèo, ngựa vằn
+M16.CAY_TRAI=Trúc|Cây liễu|Hoa cỏ|Thảo dược|Rong biển|Cành lá
+M16.MUA_MANG=Hợp cây lấy thân, lá, hương
+M16.REF=H01|H02|G07
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Thanh khiết, chỉnh tề|Thông đạo xuất nhập rõ ràng
+M17.TIEU_CUC=Ảo giác, nghi hoặc ẩn phục|Quyền mưu, nói dối|Càn quét|Trộm lén lút
+M17.REF=B05|B06|B07|D03
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Sắc lệnh, hiệu triệu|Tin mừng, tiến cử|Truyền đạt chính sách
+M18.TIEU_CUC=Tin đồn, quyền mưu|Càn quét|Cơ sở bất ổn, hoán tán
+M18.REF=B05|B06|B07|C06
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Rất thích sạch sẽ|Vị chua (theo Vị)|Thảo dược, hương liệu
+M19.TIEU_CUC=Giận (theo Ngũ tình)|Đầy hơi, bệnh ruột|Hay thay đổi thất thường, thiếu nề nếp
+M19.REF=A07|A08|D01|D02|E02|G07
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.GHI_CHU=Nguồn Tốn chưa cung cấp, nên rỗng
+M20.REF=I01|I02|I03
+
+[HET_QUE_TON_05]
+```
+6.KHẢM :
+```
+[QUE]
+ID=06
+TEN=Khảm
+KY_HIEU=☵
+
+[A_DINH_DANH]
+A01.DUC=Hãm
+A02.VAT_TUONG_CHINH=Lợn
+A03.THE_TUONG_CHINH=Tai|Xương - Tủy|Thận|Bàng Quang
+A04.NGU_TINH=Sợ
+A05.NGU_HANH=Thủy
+A06.PHUONG_VI_GOC=Bắc
+A07.MAU_GOC=Đen
+A08.QUAN_HE_CHINH=Người con giữa|Người tham mưu trong 1 bộ phận / cộng đồng nhỏ|Tham mưu cho nhóm|Mưu sĩ|Người có mưu mô - giấu mình|Hành tung bí mật không rõ sáng / tối (tùy thuộc các chi tiết khác trong quẻ)
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Khảm là thủy|Kênh rạch|Ẩn phục|Uốn nắn|Cung|Bánh xe
+B02.TUONG_CAU_NOI_NGUOI=Thêm lo âu|Đau tim|Đau tai|Quẻ về máu|Giường
+B03.TUONG_CAU_NOI_NGUA=Lưng đẹp|Nóng tính|Đầu thấp|Chạy nhanh|Kéo
+B04.TUONG_CAU_NOI_XE=Nhiều sự cố|Thông|Mặt trăng|Đạo tặc
+B05.TUONG_CAU_NOI_CAY=Cây cứng và lõi nhiều
+B06.TUONG_KHAC_DAU_QUE=Xe đạp|Bệnh
+B07.BAN_CHAT=Hào dương ở giữa, thượng hạ là hào âm|Ngoài nhu trong cương|Xu thế phát triển từ bốn phía về trung tâm|Ngũ hành thuộc thủy, ở phương Bắc, màu đen
+B08.LY_GIAI_01=Nước không nơi nào không chảy, không nơi nào không thấm >> Kênh rạch|Ẩn phục|Hiểm hãm|Thêm lo âu|Tâm bệnh
+B08.LY_GIAI_02=Nước có thể tùy ý uốn nắn, cung cong và bánh xe là kết quả của uốn nắn, quẻ Khảm lại là tượng xe >> Cung|Bánh xe
+B08.LY_GIAI_03=Khảm là tai, đau tim thì đau tai >> Đau tai
+B08.LY_GIAI_04=Khảm là thủy, máu là thủy là màu đỏ >> Quẻ về máu
+B08.LY_GIAI_05=Khảm từ quẻ Càn biến ra, Càn là đỏ thẫm >> Khảm là đỏ
+B08.LY_GIAI_06=Càn là ngựa, Khảm có hào giữa của quẻ Càn, Khảm dương ở giữa là sống lưng, dương là đẹp >> Lưng đẹp
+B08.LY_GIAI_07=Hào âm ở trên >> Đầu thấp
+B08.LY_GIAI_08=Hào âm ở dưới >> Chạy nhanh
+B08.LY_GIAI_09=Nước cọ xát đất mà đi >> Kéo
+B08.LY_GIAI_10=Đối với xe cộ, Khảm là kênh rạch, là hiểm hãm >> Đa hung
+B08.LY_GIAI_11=Nước chảy thông suốt >> Thông
+B08.LY_GIAI_12=Khảm trung mãn, lại thủy hàn >> Mặt trăng|Hiểm hãm|Đạo tặc
+B08.LY_GIAI_13=Đối với cây cối, dương cứng ở trong >> Lõi cây cứng
+B09.TUONG_Y_TICH_CUC=Thông minh|Trí tuệ|Giỏi mưu kế|Có chủ trương|Kiên trì bền bỉ|Lấy nhu thắng cương
+B10.TUONG_Y_TRUNG_TINH_HAI_MAT=Đa nghi|Vất vả|Quanh co|Gập ghềnh|Phiêu bạt|Đa biến|Ám muội bất biến|Lo nghĩ|Tính toán|Tiến vào|Tiếp nhận|Kiện tụng|Pháp luật|Trăng|Rượu
+B11.TUONG_Y_TIEU_CUC=Tai nạn|Bệnh hoạn|Khóc lóc|Đau buồn|Bịp bợm|Xảo quyệt|Âm u lạnh lẽo hội tụ|Dâm dục|Nhà tù|Hung ác|Phá hoại|Tội ác|Hiểm|Tật|Nạn|Đổ máu|Gông cùm xiềng xích
+B12.TUONG_Y_GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[C_NHAN_VAT]
+C01.GIA_DINH=Trung nam
+C02.GIANG_HO_THUY=Người giang hồ|Nhân viên làm việc trên thuyền
+C03.TRI_THUC_SANG_TAO=Nhà tư tưởng|Nhà phát minh|Nhà toán học|Nhà thư pháp|Nhà tâm lý học
+C04.DICH_VU_KY_THUAT_AN_NINH=Nhân viên bảo vệ an ninh|Công nhân công ty cấp nước|Người làm dịch vụ|Công nhân in ấn
+C05.HOAN_CANH_KHO_KHAN=Người cực khổ|Người nghèo khó|Người thất bại phá sản|Người bị nạn|Người lưu vong|Người mạo hiểm
+C06.BENH_TAT_NGHIEN=Bệnh nhân nghiện rượu|Người ngộ độc
+C07.NHAN_CACH_TIEU_CUC=Người đa tình khiếm nhã|Kẻ cám dỗ|Kẻ lừa đảo|Người có lịch sử phạm tội|Kỹ nữ
+
+[D_TINH_CACH]
+D01.TICH_CUC=Thiện mưu đa trí
+D02.GIOI_HAN=Ngoài mềm trong cứng|Thích tính toán|Theo đuổi thời thượng|Nhiều mưu tính|Lòng dạ sâu sắc|Đa dục|Nâng trên đề dưới|Giải quyết công việc không có chủ kiến|Không có lập trường kiên định
+D03.TIEU_CUC=Nham hiểm|Đê tiện|Gian trá
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Thận|Bàng quang|Hệ tiết niệu|Cơ quan sinh dục|Máu|Hệ thống tuần hoàn máu|Tai|Lưng|Thắt lưng|Cột sống
+E02.TAT_BENH_THAN_TIET_NIEU=Thận|Bàng quang|Bệnh hệ tiết niệu|Thận lạnh|Bệnh thủy thũng
+E03.TAT_BENH_MAU_MIEN_DICH=Bệnh về máu|Chứng chảy máu|Bệnh hệ thống miễn dịch|Bệnh do virus|Ngộ độc
+E04.TAT_BENH_SINH_DUC=Bệnh sinh dục|Di tinh|Bệnh liệt dương|Bệnh cơ quan sinh dục
+E05.TAT_BENH_KHAC=Tiêu chảy|Chứng tiêu khát|Đau tai|Bệnh thắt lưng|Bệnh lưng|Bệnh tim
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Mưa|Tuyết|Sương giá|Sương móc|Lạnh lẽo|Âm u ẩm thấp|Trăng tròn|Mây mưa|Nửa đêm|Lũ lụt
+
+[G_VAT_TUONG]
+G01.QUA_HAT=Vật có hạt|Quả đào|Quả hạnh|Quả mận|Quả mơ
+G02.DO_UONG_CHAT_LONG=Rượu|Giấm|Đồ uống|Mỡ|Chất lỏng
+G03.HOA_CHAT_DUOC=Thuốc nhuộm|Chất sơn|Dược phẩm|Chất độc
+G04.TUU_CU=Tửu cụ (dụng cụ đựng và uống rượu)
+G05.THIET_BI_NUOC=Guồng nước|Thiết bị ướp lạnh|Thiết bị cấp thoát nước|Vật ngâm nước|Tàu ngầm
+G06.XE_CUNG=Xe|Bánh xe|Cung tên|Vật cong hình cung
+G07.PHAP_LUAT_HINH_PHAT=Pháp luật pháp tắc kinh điển|Dụng cụ tra tấn
+G08.CONG_NGHE=Máy tính|Đĩa từ|Băng ghi âm ghi hình|Đĩa laser
+G09.AM_THUC=Hải vị (món ăn hải sản quý)
+G10.MAU_DEN=Vật màu đen|Than đá
+G11.KHAC=Đầu
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT=Lợn|Cá|Vật trong nước|Thủy điểu|Chuột|Động vật bốn chân|Động vật có xương sống|Ngựa kéo xe
+H02.NUOC_TU_NHIEN=Sông|Hồ|Biển|Suối|Bùn lầy|Dòng nước
+H03.AM_THUC_GIAI_TRI=Quán bar|Cửa hàng đồ uống lạnh|Nhà tắm|Hồ bơi|Chợ cá|Ao cá
+H04.CONG_NGHIEP_NUOC=Nhà máy nước|Công ty cấp nước|Nhà máy sơn|Kho lạnh thủy cung
+H05.GIAO_THONG=Bến xe|Gara
+H06.TOI_AM_HAM=Tầng hầm|Phòng tối|Nơi tối tăm
+H07.GIAM_GIU_DEN=Lao ngục|Kỹ viện
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Canh|Tân|Nhâm|Quý|Thân|Dậu|Hợi|Tý
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Mậu|Kỷ|Thìn|Tuất|Sửu|Mùi
+I03.THOI_GIAN_BAT_LOI_NHE=Năm tháng ngày giờ Giáp|Ất|Dần|Mão
+I04.PHUONG_VI_LOI=Bắc|Tây|Tây Bắc
+I05.PHUONG_VI_KY_NANG=Tây Nam|Đông Bắc
+I06.PHUONG_VI_KY_NHE=Đông|Đông Nam
+I07.MAU_LOI=Đen|Trắng
+I08.MAU_KY_NANG=Vàng
+I09.MAU_KY_NHE=
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc tham mưu, lập kế hoạch, tính toán|Công việc trí tuệ, sáng tạo, phát minh|Việc cấp thoát nước, in ấn, an ninh, dịch vụ|Kiên trì bền bỉ lấy nhu thắng cương
+M01.TIEU_CUC=Hiểm hãm, nhiều trở ngại, nhiều sự cố|Quanh co gập ghềnh, vất vả|Không có chủ kiến, lập trường không kiên định|Đa nghi, lo nghĩ, gian trá
+M01.NHAN_VAT_LIEN_QUAN=C03|C04
+M01.REF=B09|B10|B11|D01|D02|D03
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Làm mưu sĩ, tham mưu cho người đứng đầu|Giỏi mưu kế, có chủ trương|Phát triển ngành trí tuệ, kỹ thuật, pháp luật
+M02.TIEU_CUC=Bị hãm, phiêu bạt, thất bại phá sản|Mưu mô nham hiểm gây tai tiếng|Hành tung bí mật bị nghi ngờ|Đa biến, ám muội bất biến
+M02.NHAN_VAT_LIEN_QUAN=C03|C05|C07
+M02.REF=A08|B09|B11|D02|D03
+
+M03.TEN=Học hành
+M03.TICH_CUC=Thông minh, trí tuệ, kiên trì|Học toán, thư pháp, tâm lý, tư tưởng, công nghệ|Tiếp nhận kiến thức
+M03.TIEU_CUC=Lo nghĩ, đa nghi, không có lập trường|Vất vả, quanh co|Bịp bợm, gian lận khi thi
+M03.REF=B09|C03|G08|D02|B11
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương thông minh, sâu sắc, kiên trì|Chiều sâu cảm xúc
+M04.TINH_YEU_TIEU_CUC=Đa dục, đa tình khiếm nhã|Kẻ cám dỗ, kẻ lừa đảo|Dâm dục|Lòng dạ sâu, gian trá|Khóc lóc, đau buồn
+M04.HON_NHAN_TICH_CUC=Người con giữa, người hiểu biết trong gia đình|Kiên trì bền bỉ
+M04.HON_NHAN_TIEU_CUC=Nghi ngờ, ám muội bất biến|Ngoại tình, đa dục|Lo âu, cãi vã
+M04.QUAN_HE_KHAC_TICH_CUC=Mưu sĩ, người tham mưu giúp đỡ|Bạn trí tuệ
+M04.QUAN_HE_KHAC_TIEU_CUC=Người giang hồ, kẻ cám dỗ|Lừa đảo, bịp bợm|Nâng trên đề dưới
+M04.REF=C01|C07|D02|D03|B11
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Dòng tiền lưu chuyển như nước|Ngành đồ uống, rượu, hải sản, dược phẩm, cấp thoát nước, công nghệ, in ấn|Kế hoạch tính toán kỹ
+M05.TIEU_CUC=Hiểm hãm, bẫy tài chính|Thất bại phá sản|Lừa đảo, bịp bợm|Đa nghi, quyết định không nhất quán|Đầu tư liều lĩnh như mạo hiểm
+M05.NHAN_VAT_LIEN_QUAN=C05|C07
+M05.REF=B10|B11|G02|G03|G08|H04
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Dùng mưu kế, pháp luật, có văn bản|Kiên trì, từng bước
+M06.DOI_NO_TIEU_CUC=Người nợ gian trá, ẩn mình|Bị kẻ lừa đảo lợi dụng|Dòng tiền chảy đi khó lấy lại
+M06.CHO_MUON_TICH_CUC=Người mượn thông minh, có kế hoạch rõ
+M06.CHO_MUON_TIEU_CUC=Người mượn gian trá, lưu vong, phá sản|Khó đòi, mất dấu|Có lịch sử phạm tội
+M06.REF=B10|B11|C05|C07|D03
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Đối tác thiện mưu đa trí|Dự án trí tuệ, công nghệ, thủy lợi, dịch vụ
+M07.TIEU_CUC=Đối tác nham hiểm, giấu mình|Mưu mô hai mặt|Hiểm hãm, rủi ro tiềm ẩn|Thiếu lập trường chung
+M07.REF=A08|B09|B11|D03
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Hướng Bắc, Tây, Tây Bắc thuận|Đi đường thủy, tàu, biển|Phiêu bạt tìm môi trường mới
+M08.TIEU_CUC=Hướng Tây Nam, Đông Bắc kỵ nặng, Đông và Đông Nam kỵ nhẹ|Nhiều sự cố trên đường|Tai nạn, lũ lụt|Lưu vong, bơ vơ
+M08.REF=I04|I05|I06|C02|C05|B04
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Công trình nước, hồ bơi, cấp thoát nước|Tầng hầm, kho lạnh|Hệ thống ống dẫn
+M09.TIEU_CUC=Thấm dột, ẩm thấp, ngập lụt|Hiểm hãm nền móng|Phá dỡ gặp trục trặc, tai nạn
+M09.REF=H02|H04|H06|G05|F01
+
+M10.TEN=Gia đình
+M10.ONG_BA=Không có tượng riêng
+M10.CHA_ME=Không có tượng riêng
+M10.VO_CHONG=Không có tượng riêng
+M10.CON_CHAU=Người con giữa (trung nam)
+M10.TICH_CUC=Con giữa thông minh, kiên trì
+M10.TIEU_CUC=Con giữa ẩn mình, lo âu|Gia đình khóc lóc đau buồn, hiểm hãm
+M10.REF=C01|B09|B11
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04|E05
+M11.TICH_CUC=Kiên trì bền bỉ
+M11.TIEU_CUC=Thận, bàng quang, tiết niệu, thủy thũng|Máu, tuần hoàn, miễn dịch, virus, ngộ độc|Sinh dục, di tinh, liệt dương|Tim, thắt lưng, cột sống, tai|Tiêu chảy, tiêu khát
+M11.REF=E01|E02|E03|E04|E05
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Mưu sĩ|Nhà tư tưởng|Nhà tâm lý học|Người tham mưu
+M12.THAY_THUOC=Bác sĩ thận, tiết niệu, huyết học, tim|Người dùng dược phẩm
+M12.CAU_AN=Cầu giảm lo âu, sợ hãi|Giải hạn nước
+M12.LUU_Y=Bệnh do virus, ngộ độc cần xử lý sớm
+M12.REF=C03|A04|E02|E03|G03
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Hướng Bắc, Tây, Tây Bắc lợi|Màu đen, trắng lợi, kỵ vàng|Nước, bể cá, hồ|Tránh nơi ẩm tối, tầng hầm
+M13.TAM_LINH=Ẩn phục, ám muội|Trăng, âm u lạnh lẽo
+M13.TON_GIAO=Không có tượng riêng
+M13.REF=A05|A06|A07|B10|B11|I04|I07|I08
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Có mưu lược pháp lý|Bên kiên trì, thông minh
+M14.TIEU_CUC=Hiểm hãm, vướng nhà tù, gông cùm|Đối phương bịp bợm, xảo quyệt|Lịch sử phạm tội ảnh hưởng|Kéo dài, đổ máu
+M14.REF=B09|B10|B11|G07|H07|C07
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Lũ lụt|Ẩm ướt, sương giá|Tai nạn đường thủy|Ngộ độc|Rủi ro đêm tối
+M15.REF=F01|B11|E03
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Lợn|Cá|Thủy điểu|Chuột|Ngựa kéo xe|Động vật có xương sống
+M16.CAY_TRAI=Quả đào|Quả hạnh|Quả mận|Quả mơ|Vật có hạt|Cây cứng, lõi nhiều
+M16.MUA_MANG=Thích hợp thủy sản, cây có hạt|Hại do lũ lụt, mưa nhiều
+M16.REF=H01|G01|B05|F01
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Có nhân viên bảo vệ an ninh
+M17.TIEU_CUC=Đạo tặc, trộm cướp (nhất là ban đêm)|Hung ác, phá hoại, tội ác|Lừa đảo, ngộ độc|Kỹ viện, lao ngục
+M17.REF=B04|B11|C04|C07|H06|H07
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Pháp luật pháp tắc kinh điển|Tiếp nhận, tham mưu chính sách
+M18.TIEU_CUC=Nhà tù, gông cùm, tra tấn|Tội ác, đổ máu, hung ác|Biến động hiểm hãm
+M18.REF=B10|B11|G07|H07
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Hải vị, đồ uống, quả có hạt|Thiện mưu đa trí (nghĩ kỹ)
+M19.TIEU_CUC=Rượu, nghiện rượu|Tiêu khát, tiêu chảy|Đa dục, thức khuya, nửa đêm|Lo nghĩ, sợ|Ngộ độc
+M19.REF=G02|G09|A04|D02|E05|C06
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_KHAM_06]
+```
+7.CẤN :
+```
+[QUE]
+ID=07
+TEN=Cấn
+KY_HIEU=☶
+
+[A_DINH_DANH]
+A01.DUC=Chỉ (Dừng)
+A02.VAT_TUONG_CHINH=Chó
+A03.THE_TUONG_CHINH=Tay|Lưng|Mông|Thịt|Mũi|Lá Lách|Dạ Dày
+A04.KHI=Thấp (ẩm)
+A05.SAC=Vàng
+A06.VI=Ngọt
+A07.NGU_TINH=Ưu tư|Lo lắng|Trầm tính
+A08.QUAN_HE_CHINH=Người con út|Người nam còn trẻ tuổi chưa qua tuổi 30
+A09.SO=7
+A10.NGU_HANH=Thổ
+A11.PHUONG_VI_GOC=Đông Bắc
+A12.MAU_GOC=Vàng
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Cấn là núi|Đường nhỏ|Đá nhỏ|Cửa cung|Trái cây|Người gác cổng|Ngón tay|Chó nhà|Chuột|Chim thú miệng đen
+B02.TUONG_CAU_NOI_CAY=Cành cây có nhiều mấu cứng
+B03.BAN_CHAT=Một hào dương ở trên, hai hào âm ở dưới|Sự vật bề ngoài thực (đặc) bên trong hư (rỗng), trên thực dưới hư|Xu thế phát triển hướng xuống|Sự vật đã phát triển đến đỉnh điểm, phải cẩn thận, nếu không sẽ phát triển theo hướng ngược lại|Sự vật có trắc trở, đình chỉ không tiến
+B04.LY_GIAI_01=Cấn là núi là dừng, một hào dương ở thượng của Khôn thổ >> Đá nhỏ
+B04.LY_GIAI_02=Hào dương ở trên nối liền, hai hào âm ở dưới rỗng ở giữa >> Cửa
+B04.LY_GIAI_03=Quả của cây đều nằm ở bộ phận trên, không nằm ở rễ, là tượng dương >> Trái cây
+B04.LY_GIAI_04=Người gác cổng cấm người vào trong >> Dừng
+B04.LY_GIAI_05=Tay có thể ngăn cản vật thể|Chó sủa khiến người sợ hãi dừng lại không tiến|Răng chuột cứng nhọn|Chim cứng ở mỏ >> Đều là tượng của Cấn
+B04.LY_GIAI_06=Cấn là tượng đá nhỏ, cành cây có nhiều mấu cứng cũng có tượng như vậy
+B05.TUONG_Y_TICH_CUC=Bảo vệ cẩn thận|An cư|Bình tĩnh|Vắng lặng|Thật thà|Dặn dò|Hậu trọng
+B06.TUONG_Y_TRUNG_TINH_HAI_MAT=Tĩnh chỉ|Giới hạn|Thay thế|Ẩn tàng|Đường phân nước|Bắt tiêu chuẩn độc lập|Chuyển biến|Chuyển hướng|Kiện tụng|Chờ đợi|Da|Lưng|Tối thiểu|Tối đa
+B07.TUONG_Y_TIEU_CUC=Cấm đoán|Trở ngại|Cản trở|Đè nén|Cố chấp|Chủ quan|Ngang bướng|Nhà tù|Tiêu vong
+B08.TUONG_Y_GHI_CHU=Nguồn gốc dựa vào quái tượng
+
+[C_NHAN_VAT]
+C01.GIA_DINH=Con trai nhỏ
+C02.CANH_GAC_DAN_DAU=Người gác cổng|Người dẫn đầu
+
+[D_TINH_CACH]
+D01.TICH_CUC=Thật thà phúc hậu|An tĩnh|Thật thà|Thành thực|Giữ chữ tín|Thận trọng
+D02.GIOI_HAN=Bất thường
+D03.TIEU_CUC=Bảo thủ|Cổ chấp (nguồn)|Trì trệ
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Mũi|Lưng|Mu bàn tay|Ngón tay|Dạ dày|Lá lách|Ngón chân|Da|Tay|Mu bàn chân|Khớp gối|Khớp khuỷu tay|Chân trái|Xương gò má|Vú
+E02.TAT_BENH_TIEU_HOA=Bệnh lá lách|Bệnh dạ dày|Bất thực (không ăn)|Hư trướng|Bệnh hệ tiêu hóa
+E03.TAT_BENH_TAY_CHAN_KHOP_MUI=Viêm mũi|Bệnh mu bàn tay|Bệnh mu bàn chân|Bệnh tê dại|Bệnh khớp|Bệnh ngón tay
+E04.TAT_BENH_KHAC=Khối u|Kết sỏi
+E05.TAT_BENH_KHI_HUYET=Chứng khí huyết không thông|Tuần hoàn máu không ổn định
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Có mây không mưa|Nhiều mây âm u|Gió núi|Sương mù|Điểm chuyển tiếp khí hậu
+
+[G_VAT_TUONG]
+G01.DA_GO_CUNG=Nham thạch|Hòn đá|Bia đá|Gỗ cứng|Vỏ trái cây cứng|Hỗ đất (nguồn)
+G02.NOI_THAT=Ván cửa|Ghế|Giường|Tủ|Bàn|Quầy hàng|Chỗ ngồi|Bình phong
+G03.KIEN_TRUC_CUA=Ngưỡng cửa|Tường|Bậc thềm
+G04.DO_DUNG=Đồ gốm sứ|Cái ô|Giày|Túi tiền|Găng tay
+G05.TAI_CHINH_CAT_GIU=Kho bạc
+G06.PHUONG_TIEN=Đoàn tàu
+G07.AM_PHAN_GO=Phần mộ|Gò đất|Sườn núi
+G08.KHAC=Thuốc
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT_RANG_SUNG=Các loại thú như động vật có răng, động vật có sừng, chó, chuột, sói, gấu v.v.
+H02.DONG_VAT_MO=Động vật có mỏ như chim khách, chim dẽ giun, chim cắt v.v.
+H03.DONG_VAT_KHAC=Loài bò sát|Côn trùng|Gia súc|Động vật có đuôi
+H04.DIA_HINH=Núi|Bao đất|Gò đất|Hòn non bộ|Đồi núi|Đê đập|Giao lộ|Điểm cao nhất|Cảnh giới|Đường núi|Đường nhỏ|Vùng mỏ|Mỏ đá
+H05.TON_GIAO_AM_PHAN=Phần mộ|Tông miếu|Từ đường|Chùa
+H06.KIEN_TRUC=Lâu các|Phòng ốc|Then cửa|Cái lều|Ảnh bích (tường xây làm bình phong ở cổng)|Tường thành|Tường bao|Cao ốc
+H07.KHO_NGAN_HANG=Phòng cất giữ|Nhà kho|Ngân hàng
+H08.GIAO_THONG=Bến xe
+H09.KHAC=Cương vị|Nhà tù
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Mậu|Kỷ|Thìn|Tuất|Sửu|Mùi|Bính|Đinh|Tị|Ngọ
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Giáp|Ất|Dần|Mão
+I03.THOI_GIAN_BAT_LOI_NHE=Năm tháng ngày giờ Canh|Thân|Tân|Dậu
+I04.PHUONG_VI_LOI=Đông Bắc|Tây Nam|Nam
+I05.PHUONG_VI_KY_NANG=Đông|Đông Nam
+I06.PHUONG_VI_KY_NHE=
+I07.MAU_LOI=Đỏ|Vàng
+I08.MAU_KY_NANG=Lục
+I09.MAU_KY_NHE=
+I10.KHONG_PHAN_MUC=I05|I08
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc cần thận trọng, thành thực, giữ chữ tín|Việc canh giữ, bảo vệ, quản lý kho, ngân hàng|Việc ổn định, an cư|Dừng lại đúng lúc để đánh giá
+M01.TIEU_CUC=Trở ngại, cản trở, đình chỉ không tiến|Bảo thủ, cố chấp, trì trệ|Chủ quan, ngang bướng|Đè nén, bị cấm đoán
+M01.NHAN_VAT_LIEN_QUAN=C02
+M01.REF=B05|B07|D01|D03|H07
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Giữ vững cương vị|Hậu trọng, bền chắc|Dẫn đầu giữ gìn|Tích lũy từ từ
+M02.TIEU_CUC=Phát triển đã đến đỉnh điểm, dễ đảo chiều|Trì trệ, bị cản trở|Cố chấp mất cơ hội|Nhà tù, kiện tụng
+M02.NHAN_VAT_LIEN_QUAN=C02
+M02.REF=B03|B07|D03|H09
+
+M03.TEN=Học hành
+M03.TICH_CUC=An tĩnh, thật thà|Học chắc, thận trọng|Có thầy dặn dò
+M03.TIEU_CUC=Trì trệ, không tiến|Bảo thủ không tiếp thu|Chủ quan|Tối thiểu, dừng lại giữa chừng
+M03.REF=D01|D03|B05|B07
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương thật thà phúc hậu, giữ chữ tín|An tĩnh, bình tĩnh
+M04.TINH_YEU_TIEU_CUC=Trầm tính, ưu tư, lo lắng|Cố chấp, ngang bướng|Cản trở, cấm đoán
+M04.HON_NHAN_TICH_CUC=Gia đạo an cư, ổn định|Thành thực, giữ chữ tín
+M04.HON_NHAN_TIEU_CUC=Bảo thủ, trì trệ|Đè nén nhau
+M04.QUAN_HE_KHAC_TICH_CUC=Người gác cổng, người bảo vệ đáng tin|Người nam trẻ
+M04.QUAN_HE_KHAC_TIEU_CUC=Ngăn cản, cản trở|Ngang bướng, chủ quan
+M04.REF=A07|C01|D01|D03|B07
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Giữ tiền, tích lũy, kho bạc, ngân hàng|Bất động sản, đất, gò, núi|Đầu tư thận trọng, hậu trọng
+M05.TIEU_CUC=Dòng tiền bị chặn|Trì trệ, cố chấp không linh hoạt|Chủ quan, ngang bướng
+M05.REF=G05|H04|H07|D01|D03
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Người nợ thật thà, giữ chữ tín|Đòi bằng cách chờ đợi, dặn dò
+M06.DOI_NO_TIEU_CUC=Người nợ cản trở, bất thường|Trì trệ, kéo dài
+M06.CHO_MUON_TICH_CUC=Người mượn thành thực, giữ chữ tín
+M06.CHO_MUON_TIEU_CUC=Người mượn ngang bướng, khó trả đúng hạn
+M06.REF=D01|D03|B05|B07
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Đối tác thật thà, thận trọng|Dự án bền chắc, bảo vệ|Dự án kho, bất động sản
+M07.TIEU_CUC=Đối tác cố chấp, bảo thủ|Cản trở, ngăn cản tiến độ|Bất thường
+M07.REF=D01|D02|D03|H07
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Hướng Đông Bắc, Tây Nam, Nam thuận|Đi đường núi, đường nhỏ|Ổn định lâu dài, an cư
+M08.TIEU_CUC=Hướng Đông, Đông Nam bất lợi|Trắc trở, đình chỉ giữa chừng|Bế tắc không đi được
+M08.REF=I04|I05|H04|B03
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Mua đất núi, đồi, gò, nhà vững|Xây tường, ngưỡng cửa, bậc thềm, nhà kho|Công trình bền chắc, cao ốc
+M09.TIEU_CUC=Tiến độ đình chỉ, trì trệ|Cố chấp, không chịu điều chỉnh|Phá dỡ gặp trở ngại
+M09.REF=H04|H06|H07|G03|B07
+
+M10.TEN=Gia đình
+M10.ONG_BA=Không có tượng riêng
+M10.CHA_ME=Không có tượng riêng
+M10.VO_CHONG=Không có tượng riêng
+M10.CON_CHAU=Con út|Con trai nhỏ
+M10.TICH_CUC=Gia đạo an cư, yên tĩnh|Thật thà, thành thực
+M10.TIEU_CUC=Ngang bướng, cố chấp|Trầm tính, ưu tư
+M10.REF=C01|A07|D01|D03
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04|E05
+M11.TICH_CUC=Bền, chắc
+M11.TIEU_CUC=Lá lách, dạ dày, tiêu hóa, bất thực, hư trướng|Mũi, tay chân, khớp, tê dại|U, kết sỏi|Khí huyết không thông, tuần hoàn không ổn định
+M11.REF=E01|E02|E03|E04|E05
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Người dẫn đầu|Người gác cổng|Người thật thà phúc hậu
+M12.THAY_THUOC=Bác sĩ tiêu hóa, xương khớp|Người dùng thuốc
+M12.CAU_AN=Chùa, tông miếu, từ đường
+M12.LUU_Y=Bệnh tắc nghẽn, khí huyết không thông cần điều trị kịp thời
+M12.REF=C02|E02|E05|H05|G08
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Núi, gò đất, tường thành, bình phong|Hướng Đông Bắc, Tây Nam, Nam lợi|Màu đỏ, vàng lợi, kỵ lục
+M13.TAM_LINH=Phần mộ, tông miếu, từ đường|Dừng, tĩnh, ẩn tàng
+M13.TON_GIAO=Chùa
+M13.REF=A10|A11|A12|G07|H05|I04|I07|I08
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Bên thật thà, giữ chữ tín|Có ranh giới, tiêu chuẩn rõ
+M14.TIEU_CUC=Bị cản trở, đình chỉ|Cố chấp, ngang bướng|Nhà tù|Kéo dài
+M14.REF=B06|B07|D03|H09
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Sạt lở núi, đá rơi|Tắc nghẽn giao lộ|Âm u ẩm thấp
+M15.REF=F01|H04|A04
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Chó|Chuột|Sói|Gấu|Gia súc|Loài bò sát|Côn trùng
+M16.CAY_TRAI=Trái cây|Cành cây có nhiều mấu cứng|Vỏ trái cây cứng
+M16.MUA_MANG=Hợp vùng đồi núi|Ẩm ướt, âm u
+M16.REF=H01|H03|B01|B02|G01
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Có người gác cổng, canh giữ|Tường bao, ngưỡng cửa, then cửa|Chó giữ nhà
+M17.TIEU_CUC=Kẻ trộm lẻn vào kho, ngân hàng nếu gác lơi|Cố chấp chủ quan|Nhà tù
+M17.REF=C02|G03|H06|H07|H09
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Cấm đoán có kỷ cương|Bảo vệ cẩn thận
+M18.TIEU_CUC=Cản trở, đè nén|Nhà tù|Đình trệ, bảo thủ
+M18.REF=B05|B07|H09|D03
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Vị ngọt|An tĩnh, bình tĩnh|Nề nếp, thận trọng
+M19.TIEU_CUC=Bất thực (không ăn)|Hư trướng, tiêu hóa kém|Trầm tính, ưu tư, lo lắng
+M19.REF=A06|A07|D01|E02
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_CAN_07]
+```
+8.KHÔN :
+```
+[QUE]
+ID=08
+TEN=Khôn
+KY_HIEU=☷
+
+[A_DINH_DANH]
+A01.DUC=Thuận
+A02.VAT_TUONG_CHINH=Trâu
+A03.THE_TUONG_CHINH=Bụng
+A04.QUAN_HE_CHINH=Mẹ|Lãnh đạo thứ cấp|Quần chúng đông đảo
+
+[B_TUONG_TONG_QUAT]
+B01.TUONG_CAU_NOI=Khôn là đất|Mẹ|Vải|Cái nồi|Keo kiệt|Bình quân|Bò cái có con|Xe lớn|Văn chương|Đông đúc|Chuôi cán|Đất màu đen
+B02.TUONG_Y_TICH_CUC=Cẩn thận chính trực|Cần lao nhẫn nại|Tôn thờ thần phật|Cung kính nuôi dưỡng
+B03.TUONG_Y_TRUNG_TINH_HAI_MAT=Phức tạp|Phong bế trầm mặc|Nhẫn nhục chịu đựng|Phục tàng nghi hoặc
+B04.TUONG_Y_TIEU_CUC=Keo kiệt|Thiếu quyết đoán|Nhu nhược chậm chạp|Ỷ lại suy vi|Tư tưởng hẹp hòi|Tử tang|Sai lầm
+B05.TUONG_Y_GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+B06.LOAI_SU_VAT_THUOC_KHON=Sự vật tiêu cực|Âm nhu|Hình vuông (xưa trời tròn đất vuông)|Mềm yếu vô lực|Đông đúc|Đức dày|Chịu lực|Vất vả|Tĩnh chi|Nứt ra (quái tượng là ba hào âm đều đứt ở giữa)
+B07.BAN_CHAT=Quẻ Khôn thuần âm|Tính nhu thuận|Tượng đại phát
+B08.LY_GIAI_01=Vạn vật được sinh từ đất, con người được sinh từ mẹ >> Mẹ
+B08.LY_GIAI_02=Âm nhu (mềm) >> Vải
+B08.LY_GIAI_03=Âm hư (rỗng) có thể chứa vật >> Cái nồi
+B08.LY_GIAI_04=Dương lớn âm nhỏ, Khôn là âm nhỏ >> Keo kiệt
+B08.LY_GIAI_05=Vạn vật đều sinh từ đất >> Bình quân
+B08.LY_GIAI_06=Khôn là bò, sinh sinh liên tục >> Bò cái có con
+B08.LY_GIAI_07=Đất chở vạn vật như xe chở >> Xe lớn
+B08.LY_GIAI_08=Đất sinh vạn vật >> Đông đúc
+B08.LY_GIAI_09=Thao túng vạn vật >> Chuôi cán
+B08.LY_GIAI_10=Âm thì ám (tối) >> Màu đen
+
+[C_NHAN_VAT]
+C01.QUAN_CHUC_QUAN_CHUNG=Hoàng phi|Thần tử|Quốc dân đại chúng
+C02.GIA_DINH_PHU_NU=Bà nội|Mẹ già|Mẹ kế|Vợ|Nữ chủ nhân|Phụ nữ
+C03.NHAN_CACH_TICH_CUC=Người âm khí thịnh|Người trung hậu
+C04.THAN_THE=Người bụng to
+C05.NHAN_CACH_TIEU_CUC=Nông phu tục tử (thô tục, kiến thức nông cạn)|Người keo kiệt|Người tiêu cực|Kẻ hèn nhát|Tiểu nhân
+C06.NGHE_NGHIEP=Người làm bất động sản|Thợ xây
+C07.AM_SU=Thi thể
+
+[D_TINH_CACH]
+D00.GHI_CHU=Là tính cách đa tầng
+D01.TICH_CUC=Ôn hậu nhu thuận|Cung kính khiêm nhường|Trinh tiết|Tiết kiệm|Giữ tín thành thực
+D02.TIEU_CUC=Keo kiệt|Nhu nhược|Ti tiện hẹp hòi|Tình cảm ám muội|Hư hao hiềm ác (căm ghét vô ích)|Cố chấp trì trệ|Tà ác
+
+[E_NHAN_THE_TAT_BENH]
+E01.BO_PHAN=Bụng|Dạ dày|Cơ quan tiêu hóa|Thịt|Vai phải
+E02.TAT_BENH_VUNG=Phần bụng|Ruột|Dạ dày|Bệnh đường tiêu hóa|Da|Bệnh da thịt
+E03.TRIEU_CHUNG=Ẩm thực đình trệ|Phù thũng|Mẫn ngứa|Mụn cơm|Chóng mặt|Mệt nhọc
+E04.TINH_CHAT=Trung khí hư nhược (khí trong dạ dày)|Bệnh mãn tính|Ung thư
+
+[F_THIEN_TUONG]
+F01.THOI_TIET=Mây|Trời âm u|Sương mù|Sương móc|Khí hậu ẩm ướt|Khí áp thấp
+
+[G_VAT_TUONG]
+G01.DAT_DAI_KHU_VUC=Khu dân cư thành thị|Quốc bang|Ruộng|Đất|Hầm
+G02.HINH_THE_CHAT=Vật hình vuông|Vật mềm dẻo
+G03.VAI_VOC_DO_DUNG=Vải vóc|Bông tơ|Quần áo|Đệm chăn|Vật dụng phụ nữ
+G04.VAN_HOA=Văn chương|Sách báo|Giấy
+G05.CHUA_DUNG_PHUONG_TIEN=Rương túi|Kiệu xe|Bánh xe
+G06.VAT_LIEU_XAY_DUNG=Vật trong đất|Sản phẩm gốm sứ|Vôi|Xi măng|Gạch|Cát
+G07.NONG_SAN_THUC_PHAM=Ngũ cốc|Hoa màu|Thịt bò|Dã vị (thịt rừng / chim muông)|Vật thơm ngọt
+G08.KHAC=Cuống
+
+[H_DONG_VAT_NOI_CHON]
+H01.DONG_VAT=Trâu|Bò|Ngựa cái|Bách cầm|Bách thú giống cái|Côn trùng dưới đất|Con mèo|Động vật ăn đêm
+H02.KHU_VUC_DAT_DAI=Thành thị|Thôn làng|Đồng ruộng|Bình nguyên|Bình địa|Ngoại ô|Ruộng nương|Nguyên quán|Quê hương|Thao trường|Quảng trường|Đất trống
+H03.KIEN_TRUC_NHA_O=Nhà trệt|Nông xá (nhà của nông dân ở nông thôn)|Nhà cũ
+H04.KHO_THI_TRUONG=Kho lương thực|Phòng cất giữ|Chợ nông sản|Thị trường
+H05.CHAN_NUOI_CHE_BIEN=Bãi chăn nuôi|Nhà máy chế biến thịt|Ổ gà|Chuồng lợn|Lông thỏ
+H06.GHI_CHU=Nguồn gốc còn mở rộng "v.v." (chưa liệt kê hết)
+
+[I_THOI_GIAN_PHUONG_VI_MAU_SAC]
+I01.THOI_GIAN_LOI=Năm tháng ngày giờ Mậu|Kỷ|Thìn|Tuất|Sửu|Mùi|Bính|Đinh|Tị|Ngọ
+I02.THOI_GIAN_BAT_LOI_NANG=Năm tháng ngày giờ Giáp|Ất|Dần|Mão
+I03.THOI_GIAN_BAT_LOI_NHE=Năm tháng ngày giờ Canh|Tân|Thân|Dậu
+I04.PHUONG_VI_LOI=Tây Nam|Đông Bắc|Nam
+I05.PHUONG_VI_KY_NANG=Đông|Tây|Đông Nam|Tây Bắc
+I06.PHUONG_VI_KY_NHE=
+I07.MAU_LOI=Đỏ|Vàng
+I08.MAU_KY_NANG=Lục (xanh lá cây)
+I09.MAU_KY_NHE=
+I10.KHONG_PHAN_MUC=I05|I08
+
+[M_MAP_20_MUC]
+M01.TEN=Công việc
+M01.TICH_CUC=Việc cần cần lao nhẫn nại, làm đều và cẩn thận|Việc nuôi dưỡng, hậu cần, hỗ trợ|Ngành bất động sản, xây dựng, nông nghiệp, kho vận, chế biến thực phẩm, may mặc, văn chương giấy tờ
+M01.TIEU_CUC=Thiếu quyết đoán, chậm chạp|Ỷ lại, vất vả mà ít thành quả|Phong bế, không chủ động
+M01.NHAN_VAT_LIEN_QUAN=C01|C06
+M01.REF=B02|B04|D01|D02|G06|G07
+
+M02.TEN=Sự nghiệp
+M02.TICH_CUC=Vị trí lãnh đạo thứ cấp, phụ tá, thần tử|Có nền tảng quần chúng đông đảo|Tích lũy bền bỉ, đức dày
+M02.TIEU_CUC=Thiếu quyết đoán không vươn lên cao|Ỷ lại suy vi|Bị tiểu nhân lợi dụng|Tư tưởng hẹp hòi
+M02.NHAN_VAT_LIEN_QUAN=C01|C05
+M02.REF=A04|B02|B04|D02
+
+M03.TEN=Học hành
+M03.TICH_CUC=Văn chương, sách báo, giấy|Cần lao nhẫn nại, cẩn thận|Học chắc từng bước
+M03.TIEU_CUC=Chậm chạp, nhu nhược|Tư tưởng hẹp hòi, kiến thức nông cạn|Chóng mặt, mệt nhọc|Thiếu chính kiến
+M03.REF=G04|B02|D02|E03|C05
+
+M04.TEN=Tình cảm
+M04.TINH_YEU_TICH_CUC=Đối phương ôn hậu nhu thuận|Trinh tiết, giữ tín thành thực|Cung kính khiêm nhường
+M04.TINH_YEU_TIEU_CUC=Tình cảm ám muội|Nhu nhược, ỷ lại|Hư hao hiềm ác (căm ghét vô ích)
+M04.HON_NHAN_TICH_CUC=Vợ, nữ chủ nhân đảm đang, tiết kiệm|Gia đạo nuôi dưỡng
+M04.HON_NHAN_TIEU_CUC=Keo kiệt, cố chấp trì trệ|Hẹp hòi trong quan hệ
+M04.QUAN_HE_KHAC_TICH_CUC=Quần chúng đông đảo, người trung hậu|Mẹ, bà nội gần gũi
+M04.QUAN_HE_KHAC_TIEU_CUC=Tiểu nhân|Người keo kiệt, kẻ hèn nhát|Quan hệ phục tàng, nghi hoặc
+M04.REF=C02|C03|C05|D01|D02
+
+M05.TEN=Tiền bạc, tài chính, đầu tư
+M05.TICH_CUC=Tích lũy, tiết kiệm|Đất, ruộng, bất động sản, nông sản, vật liệu xây dựng|Nguồn thu ổn định, dài hạn
+M05.TIEU_CUC=Keo kiệt bỏ lỡ cơ hội|Thiếu quyết đoán|Ỷ lại, tiền ứ đọng|Đầu tư chậm sinh lời
+M05.NHAN_VAT_LIEN_QUAN=C06
+M05.REF=B01|G01|G06|G07|H04
+
+M06.TEN=Mưu cầu quyền lợi chính đáng, đòi nợ, cho mượn
+M06.DOI_NO_TICH_CUC=Người nợ nhu thuận, thành thực|Đòi chậm nhưng thu được
+M06.DOI_NO_TIEU_CUC=Người nợ keo kiệt, chây ì|Kéo dài, thiếu quyết liệt
+M06.CHO_MUON_TICH_CUC=Người mượn giữ tín thành thực|Khoản nhỏ, hậu cần
+M06.CHO_MUON_TIEU_CUC=Người mượn ỷ lại, khó trả đúng hạn|Tiểu nhân, kẻ hèn nhát
+M06.REF=C05|D01|D02|B04
+
+M07.TEN=Hợp tác, cùng xây dựng dự định
+M07.TICH_CUC=Quần chúng đông đảo cùng làm|Đối tác thuận, giữ tín|Cùng nuôi dưỡng, xây nền
+M07.TIEU_CUC=Đối tác thiếu quyết đoán|Keo kiệt, tính toán hẹp hòi|Ỷ lại vào người khác
+M07.REF=A04|B02|B04|C03|D02
+
+M08.TEN=Thay đổi địa lý
+M08.TICH_CUC=Về quê hương, nguyên quán|Đi ngoại ô, vùng đồng bằng|Hướng Tây Nam, Đông Bắc, Nam thuận|Xe lớn, kiệu xe
+M08.TIEU_CUC=Hướng Đông, Tây, Đông Nam, Tây Bắc bất lợi|Chậm chạp, vất vả|Ì trệ, khó bứt phá
+M08.REF=H02|G05|I04|I05
+
+M09.TEN=Khởi sự (đất đai, nhà cửa, xây dựng, cải tạo, phá dỡ)
+M09.TICH_CUC=Mua đất, ruộng, nhà trệt, nhà cũ, kho|Xây bằng gạch, xi măng, cát, vôi|Cải tạo bền chắc, tích lũy từ từ
+M09.TIEU_CUC=Tiến độ chậm, tốn công vất vả|Keo kiệt khiến thiếu chất lượng|Sai lầm do thiếu quyết đoán
+M09.REF=G01|G06|H03|H04
+
+M10.TEN=Gia đình
+M10.ONG_BA=Bà nội
+M10.CHA_ME=Mẹ già|Mẹ kế|Mẹ
+M10.VO_CHONG=Vợ|Nữ chủ nhân
+M10.CON_CHAU=Đông đúc, nhiều con cháu
+M10.TICH_CUC=Gia đạo nuôi dưỡng, ấm êm|Tiết kiệm, nền nếp
+M10.TIEU_CUC=Keo kiệt, cố chấp trì trệ|Nhu nhược, ỷ lại|Tử tang
+M10.REF=C02|B01|D01|D02
+
+M11.TEN=Sức khỏe, bệnh tật
+M11.BO_PHAN=E01
+M11.TAT_BENH=E02|E03|E04
+M11.TICH_CUC=Thể chất bền, chịu đựng
+M11.TIEU_CUC=Tiêu hóa đình trệ, dạ dày, ruột|Phù thũng, da thịt, ngứa|Mệt nhọc, bệnh mãn tính|Ung thư
+M11.REF=E01|E02|E03|E04
+
+M12.TEN=Cầu an, cầu phúc, quý nhân, thầy thuốc, chữa bệnh
+M12.QUY_NHAN=Mẹ|Lãnh đạo thứ cấp|Người trung hậu
+M12.THAY_THUOC=Người chữa bệnh vùng bụng, tiêu hóa, bệnh mãn tính (cần kiên nhẫn)
+M12.CAU_AN=Tôn thờ thần phật|Cung kính nuôi dưỡng
+M12.LUU_Y=Bệnh mãn tính cần theo dõi lâu dài
+M12.REF=B02|C01|C03|E04
+
+M13.TEN=Phong thủy, tâm linh, tôn giáo
+M13.PHONG_THUY=Đất, nhà trệt, nhà cũ, vật hình vuông|Hướng Tây Nam, Đông Bắc, Nam lợi|Màu đỏ, vàng lợi, kỵ lục
+M13.TAM_LINH=Tôn thờ thần phật|Âm khí thịnh|Thi thể, tử tang (âm sự)
+M13.TON_GIAO=Cung kính nuôi dưỡng
+M13.REF=B02|C07|H03|I04|I05|I07|I08
+
+M14.TEN=Kiện tụng, tranh chấp
+M14.TICH_CUC=Bên cẩn thận chính trực|Bên có đông người ủng hộ
+M14.TIEU_CUC=Kéo dài, phức tạp|Thiếu quyết đoán, nhẫn nhục chịu thiệt|Sai lầm, bị tiểu nhân hại
+M14.REF=B02|B04|C05
+
+M15.TEN=Thời tiết, rủi ro
+M15.THOI_TIET=F01
+M15.RUI_RO=Ẩm ướt|Âm u, sương mù che tầm nhìn|Đất nứt
+M15.REF=F01|B06
+
+M16.TEN=Vật nuôi, cây trái, mùa màng
+M16.VAT_NUOI=Trâu|Bò|Ngựa cái|Mèo|Bách thú giống cái
+M16.CAY_TRAI=Ngũ cốc|Hoa màu|Vật thơm ngọt
+M16.MUA_MANG=Ruộng đất, nông sản
+M16.REF=H01|G07|H02
+
+M17.TEN=An ninh, bình an, trộm cướp
+M17.TICH_CUC=Nhà trệt, kho yên nếu có người coi
+M17.TIEU_CUC=Trộm lén, tiểu nhân|Phục tàng nghi hoặc|Hoạt động ban đêm|Tử tang
+M17.REF=C05|B03|H01|H03
+
+M18.TEN=Pháp luật, biến động xã hội
+M18.TICH_CUC=Quần chúng ổn định|Dân sinh bình quân
+M18.TIEU_CUC=Trì trệ, thiếu quyết đoán|Sai lầm, cố chấp|Quần chúng dễ bị dẫn dắt
+M18.REF=C01|B01|B04
+
+M19.TEN=Ăn uống, nghỉ ngơi, thói quen
+M19.TICH_CUC=Tiết kiệm, giữ nếp|Ngũ cốc, thịt bò, vật thơm ngọt
+M19.TIEU_CUC=Ẩm thực đình trệ, tiêu hóa kém|Trì trệ, tĩnh nhiều|Mệt nhọc
+M19.REF=G07|E02|E03|D01
+
+M20.TEN=Thời điểm thuận lợi, khó khăn
+M20.THUAN_LOI=I01
+M20.KHO_KHAN_NANG=I02
+M20.KHO_KHAN_NHE=I03
+M20.REF=I01|I02|I03
+
+[HET_QUE_KHON_08]
+```
+
+</script>
+
+<!-- LÕI ĐỌC DATA: không dùng DOM, các module có thể lấy đoạn này để chạy riêng -->
+<script id="td-core">
+const TD = (function () {
+  const EMPTY = "Không Có !";
+  const NOTE = /^không có tượng riêng$/i;
+  const REF = /^[A-I]\d{2}$/;
+  const SECS = ["A_DINH_DANH","B_TUONG_TONG_QUAT","C_NHAN_VAT","D_TINH_CACH","E_NHAN_THE_TAT_BENH",
+    "F_THIEN_TUONG","G_VAT_TUONG","H_DONG_VAT_NOI_CHON","I_THOI_GIAN_PHUONG_VI_MAU_SAC","M_MAP_20_MUC"];
+  const ALIAS = { "kiền": "càn" };
+  const norm = s => String(s).normalize("NFC").trim().toLowerCase();
+
+  function splitVals(v) {
+    const parts = v.split("|").map(s => s.trim()).filter(s => s && !NOTE.test(s));
+    return parts.length ? parts : [EMPTY];
+  }
+
+  function load(text) {
+    const issues = [], ques = [];
+    let cur = null, sec = null;
+    String(text).replace(/\r/g, "").split("\n").forEach((raw, i) => {
+      const l = raw.normalize("NFC").trim();
+      if (!l || l.startsWith("```")) return;
+      if (l === "[QUE]") {
+        cur = { meta: {}, secs: {}, list: [], byCode: {}, end: null, line: i + 1 };
+        sec = null; ques.push(cur); return;
+      }
+      if (!cur) return;
+      if (/^\[HET_/.test(l)) { cur.end = l; cur = null; sec = null; return; }
+      let m = l.match(/^\[([A-Z0-9_]+)\]$/);
+      if (m) { sec = m[1]; cur.secs[sec] = []; return; }
+      m = l.match(/^([A-Z]\d{2})\.([A-Z0-9_]+)=(.*)$/);
+      if (m && sec) {
+        const e = { sec, code: m[1], name: m[2], vals: splitVals(m[3]) };
+        e.empty = e.vals.length === 1 && e.vals[0] === EMPTY;
+        e.isRef = !e.empty && e.vals.every(x => REF.test(x));
+        if (cur.list.some(x => x.code === e.code && x.name === e.name))
+          issues.push("Dòng " + (i + 1) + ": key trùng " + m[1] + "." + m[2]);
+        cur.secs[sec].push(e); cur.list.push(e);
+        if (sec !== "M_MAP_20_MUC") {
+          if (cur.byCode[e.code]) issues.push("Dòng " + (i + 1) + ": mã trùng " + e.code);
+          cur.byCode[e.code] = e;
+        }
+        return;
+      }
+      m = l.match(/^([A-Z_]+)=(.*)$/);
+      if (m && !sec) { cur.meta[m[1]] = m[2].trim(); return; }
+      issues.push("Dòng " + (i + 1) + ": không đọc được \"" + l.slice(0, 50) + "\"");
+    });
+
+    ques.forEach(q => {
+      q.id = parseInt(q.meta.ID, 10);
+      q.ten = q.meta.TEN || EMPTY;
+      q.sec = s => q.secs[s] || [];
+      q.val = (code, name) => {
+        const e = q.list.find(x => x.code === code && (!name || x.name === name));
+        return e ? e.vals : [EMPTY];
+      };
+      q.m = n => {
+        const c = "M" + String(n).padStart(2, "0"), o = {};
+        q.sec("M_MAP_20_MUC").filter(e => e.code === c).forEach(e => { o[e.name] = e.vals; });
+        return o;
+      };
+      q.expand = vals => vals.filter(v => REF.test(v)).map(c => {
+        const e = q.byCode[c];
+        return { code: c, name: e ? e.name : null, vals: e ? e.vals : [EMPTY] };
+      });
+      const tag = "Quẻ " + (q.meta.TEN || ("dòng " + q.line));
+      if (isNaN(q.id)) issues.push(tag + ": thiếu ID");
+      if (!q.end) issues.push(tag + ": thiếu dòng [HET_QUE_...]");
+      else if (!isNaN(q.id) && !q.end.endsWith("_" + String(q.id).padStart(2, "0") + "]"))
+        issues.push(tag + ": dấu kết thúc không khớp ID (" + q.end + ")");
+      SECS.forEach(s => { if (!q.secs[s]) issues.push(tag + ": thiếu tầng [" + s + "]"); });
+      for (let n = 1; n <= 20; n++) {
+        const o = q.m(n);
+        if (!o.TEN) issues.push(tag + ": thiếu M" + String(n).padStart(2, "0") + ".TEN");
+        if (!o.REF) issues.push(tag + ": thiếu M" + String(n).padStart(2, "0") + ".REF");
+      }
+      q.list.forEach(e => {
+        if (e.isRef) e.vals.forEach(c => {
+          if (!q.byCode[c]) issues.push(tag + ": " + e.code + "." + e.name + " trỏ tới mã không có " + c);
+        });
+      });
+    });
+    const ids = ques.map(q => q.id);
+    ids.forEach((id, i) => { if (ids.indexOf(id) !== i) issues.push("ID " + id + " bị trùng giữa hai quẻ"); });
+    if (ques.length && ques.length !== 8) issues.push("Có " + ques.length + " quẻ, cần 8");
+
+    return {
+      EMPTY, ques, issues,
+      get(x) {
+        if (typeof x === "number" || /^\d+$/.test(String(x))) return ques.find(q => q.id === +x) || null;
+        const n = norm(x), t = ALIAS[n] || n;
+        return ques.find(q => norm(q.ten) === t) || null;
+      }
+    };
+  }
+  return { EMPTY, load, SECS };
+})();
+</script>
+
+<script id="td-ui">
+(function () {
+  const GLYPH = { 1:"☰", 2:"☱", 3:"☲", 4:"☳", 5:"☴", 6:"☵", 7:"☶", 8:"☷" };
+  const NAMES = { 1:"Càn", 2:"Đoài", 3:"Ly", 4:"Chấn", 5:"Tốn", 6:"Khảm", 7:"Cấn", 8:"Khôn" };
+  const SEC_TITLE = {
+    A_DINH_DANH:"Định danh", B_TUONG_TONG_QUAT:"Tượng tổng quát", C_NHAN_VAT:"Nhân vật",
+    D_TINH_CACH:"Tính cách", E_NHAN_THE_TAT_BENH:"Nhân thể và tật bệnh", F_THIEN_TUONG:"Thiên tượng",
+    G_VAT_TUONG:"Vật tượng", H_DONG_VAT_NOI_CHON:"Động vật và nơi chốn",
+    I_THOI_GIAN_PHUONG_VI_MAU_SAC:"Thời gian, phương vị, màu sắc", M_MAP_20_MUC:"20 mục ứng dụng"
+  };
+  const $ = id => document.getElementById(id);
+  function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  const raw = $("td-data").textContent;
+  const db = TD.load(raw);
+  window.TD = TD;
+  window.TuongDon = db;
+
+  const st = $("status");
+  if (!db.ques.length) {
+    st.textContent = "Chưa có data, hãy chèn text 8 quẻ vào khối td-data";
+    st.className = "status bad";
+  } else {
+    st.textContent = "Đã đọc " + db.ques.length + " quẻ, " + (db.issues.length ? db.issues.length + " điểm cần xem" : "không có lỗi");
+    st.className = "status" + (db.issues.length ? " bad" : "");
+  }
+  if (db.issues.length) {
+    const box = el("div", "issues", "Kiểm tra data:");
+    const ul = el("ul");
+    db.issues.slice(0, 40).forEach(t => ul.appendChild(el("li", null, t)));
+    if (db.issues.length > 40) ul.appendChild(el("li", null, "và " + (db.issues.length - 40) + " điểm nữa"));
+    box.appendChild(ul); $("issues").appendChild(box);
+  }
+
+  function chips(q, e) {
+    const c = el("div", "chips");
+    e.vals.forEach(v => {
+      let cls = "chip";
+      if (v === TD.EMPTY) cls += " empty"; else if (e.isRef) cls += " ref";
+      const s = el("span", cls, v);
+      if (e.isRef && q.byCode[v]) s.title = q.byCode[v].name;
+      c.appendChild(s);
+    });
+    return c;
+  }
+
+  function section(q, secName) {
+    const entries = q.sec(secName);
+    const d = el("details"); d.appendChild(el("summary", null, SEC_TITLE[secName] || secName));
+    const body = el("div", "body");
+    if (!entries.length) body.appendChild(el("div", "row")).appendChild(chips(q, { vals: [TD.EMPTY] }));
+    const groups = [], idx = {};
+    entries.forEach(e => { if (!(e.code in idx)) { idx[e.code] = groups.length; groups.push([]); } groups[idx[e.code]].push(e); });
+    groups.forEach(g => {
+      const row = el("div", "row");
+      if (secName === "M_MAP_20_MUC") {
+        const t = g.find(e => e.name === "TEN");
+        row.appendChild(el("p", "mt", g[0].code + " " + (t ? t.vals[0] : "")));
+        g.filter(e => e.name !== "TEN").forEach(e => {
+          const k = el("div", "k"); k.appendChild(el("b", null, e.name)); row.appendChild(k); row.appendChild(chips(q, e));
+        });
+      } else {
+        g.forEach(e => {
+          const k = el("div", "k"); k.appendChild(el("b", null, e.code)); k.appendChild(document.createTextNode(e.name));
+          row.appendChild(k); row.appendChild(chips(q, e));
+        });
+      }
+      body.appendChild(row);
+    });
+    d.appendChild(body); return d;
+  }
+
+  function show(id) {
+    const view = $("view"); view.textContent = "";
+    document.querySelectorAll("#glyphs button").forEach(b => b.setAttribute("aria-current", String(+b.dataset.id === id)));
+    const q = db.get(id);
+    if (!q) { view.appendChild(el("p", "meta", "Quẻ " + id + " chưa có trong data. Không Có !")); return; }
+    const head = el("div", "head");
+    head.appendChild(el("h2", null, (GLYPH[q.id] || "") + " " + q.ten));
+    view.appendChild(head);
+    const mt = ["ID " + q.meta.ID];
+    if (q.meta.TEN_KHAC) mt.push("tên khác " + q.meta.TEN_KHAC);
+    if (q.end) mt.push(q.end);
+    view.appendChild(el("p", "meta", mt.join(", ")));
+    TD.SECS.forEach(s => view.appendChild(section(q, s)));
+    history.replaceState(null, "", "#" + q.id);
+  }
+
+  const g = $("glyphs");
+  for (let i = 1; i <= 8; i++) {
+    const q = db.get(i);
+    const b = el("button"); b.type = "button"; b.dataset.id = i; b.setAttribute("role", "tab");
+    b.appendChild(el("span", "g", GLYPH[i])); b.appendChild(el("span", "n", i + " " + (q ? q.ten : NAMES[i])));
+    if (!q) b.disabled = true;
+    b.addEventListener("click", () => show(i));
+    g.appendChild(b);
+  }
+  $("openAll").addEventListener("click", () => document.querySelectorAll("#view details").forEach(d => d.open = true));
+  $("closeAll").addEventListener("click", () => document.querySelectorAll("#view details").forEach(d => d.open = false));
+  const start = parseInt(location.hash.slice(1), 10);
+  show(db.get(start) ? start : (db.ques[0] ? db.ques[0].id : 1));
+})();
+</script>
+</body>
+</html
