@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Module JS Reader</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kho dữ liệu 64 quẻ — Dịch tự bản nghĩa</title>
+<style>
+  body { font-family: sans-serif; margin: 0; padding: 16px; background: #fff; color: #222; }
+  #kho-du-lieu-que { display: block; white-space: pre-wrap; line-height: 1.6; }
+  @media (prefers-color-scheme: dark) { body { background: #1a1a1a; color: #ddd; } }
+</style>
 </head>
 <body>
 
-    <!-- BÔI ĐEN VÀ PASTE DATA CỦA BẠN VÀO THAY THẾ CHO " input here " BÊN DƯỚI -->
-    <script type="text/plain" id="dich-data">
+<!-- KHO DỮ LIỆU: bôi đen dòng "input here" bên dưới rồi paste toàn bộ data vào.
+     Module JS đọc bằng: document.getElementById('kho-du-lieu-que').textContent -->
+<script type="text/plain" id="kho-du-lieu-que">
 64 QUẺ DỊCH — DỊCH TỰ BẢN NGHĨA
 
 CUNG CÀN
@@ -1095,20 +1101,17 @@ CHẤN thượng - ĐOÀI hạ
 • Tai nạn ở mắt, chột mắt, mù mắt (mảnh kim khí bắn vào mắt).
 • Lợi giao dịch mua bán, tiến hành nhanh chóng, có lợi ( Chấn : động, Đoài : thuận có chủ ý → người bán thì muốn bán nhanh, người mua là muốn mua ngay và thuận theo giá đó nên phát giá bán, đồng ý mua luôn ai cũng thấy vừa ý ).
 ***HẾT***
-    </script>
+</script>
 
-    <!-- MODULE JS ĐỌC DỮ LIỆU -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const rawData = document.getElementById("dich-data").textContent;
-
-            // Dữ liệu thô từ HTML đã được load vào biến rawData
-            console.log("Đã tải dữ liệu thành công!");
-            console.log(rawData);
-
-            // Viết code xử lý data của bạn ở đây
-        });
-    </script>
+<!-- Hiển thị dữ liệu ra trang (để xem/kiểm tra bằng mắt). Có thể xoá nếu không cần. -->
+<pre id="hien-thi-du-lieu" style="white-space:pre-wrap;"></pre>
+<script>
+  (function () {
+    var kho = document.getElementById('kho-du-lieu-que');
+    var out = document.getElementById('hien-thi-du-lieu');
+    if (kho && out) out.textContent = kho.textContent.trim();
+  })();
+</script>
 
 </body>
 </html>
