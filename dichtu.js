@@ -1,33 +1,15 @@
 // =========================================================
-//  DICHTU.JS — Module "Dịch Tự · 64 Quẻ" (v1.0) cho trang Liên Hoa Độn Pháp
+//  DICHTU.JS — Module "Dịch Tự · 64 Quẻ" (v1.1) — bản sửa cho trang nền "Kinh Dịch Lục Hào"
 //  Dữ liệu: dichtu.html (cùng thư mục) — khối <script type="text/plain" id="kho-du-lieu-que">.
 //
-//  Cách hoạt động:
-//   • Tự lấy các Không Thời từ trang Liên Hoa ("Lập Quẻ"): 5 / 9 / 13 Không Thời.
-//   • Mỗi Không Thời có 3 quẻ kép: Chính – Hỗ – Biến. Nút số 1…N để chọn Không Thời.
-//   • Tìm quẻ trong dichtu.html theo dòng "XXX thượng - YYY hạ" của từng quẻ (không phụ thuộc cách viết tên quẻ).
-//   • Dịch tự luôn hiển thị; tích chọn thêm Cách / Tượng / Nghĩa. Mục nào thiếu hiện "Rỗng".
-//   • Mọi khung đều thu gọn / mở rộng được.
-//
-//  Cách đọc dichtu.html:
-//   • Tiêu đề quẻ: "số. TÊN QUẺ :"  (số khác = sang quẻ mới).
-//   • Dòng quái thượng - hạ (có thể nằm ngay trước tiêu đề quẻ, vẫn được nhận).
-//   • Mục: **Dịch tự :**, **Cách :**, **Tượng :**, **Nghĩa :** (chịu cả "Cách:" không dấu cách, "Tượng quẻ",
-//     "Dịch tự / Tượng người"). Dòng "•" là ý, dòng thụt vào là ý con, dòng bắt đầu "|" là bảng.
-//   • Mục khác (Ghi chú sơ đồ, Ví dụ…) đi kèm mục đứng ngay trước nó.
-//   • Gặp dòng ***HẾT*** là dừng, phần sau (bản lặp) bị bỏ qua.
-//
-//  Phụ thuộc: chỉ trang Liên Hoa (renderResults, clearAll, switchTab, #result1, #result2).
+//  v1.1: đọc Quẻ Chủ / Hào Động / Quẻ Biến trực tiếp từ trang nền
+//        (selectCung, selectQue, selectedDong, bienQueGiam, dataDich), tự suy Quẻ Hỗ.
+//        Vẫn tương thích trang Liên Hoa (#result1 / #result2) nếu có.
+//        Hook thêm vào processDich() để tự cập nhật khi đổi quẻ / hào động.
 //
 //  Cho module khác dùng (window.DichTu):
-//    DichTu.ready                    -> Promise<{ok, ques, issues}|{ok:false, loi}>
-//    DichTu.getQue(18)               -> Promise<quẻ|{loi}>     (theo số 1–64)
-//    DichTu.getByPair(7, 3)          -> Promise<quẻ|{loi}>     (quái thượng, hạ theo số Liên Hoa: 1 Kiền … 8 Khôn)
-//    DichTu.getAll()                 -> Promise<mảng quẻ>
-//    DichTu.getKhongThoi(i)          -> Promise<{kt, hao, chinh, ho, bien}>  (mỗi phần là quẻ hoặc {loi})
-//    DichTu.getAllKhongThoi()        -> Promise<mảng>
-//    DichTu.plain(quẻ.cach)          -> chuỗi text thuần của một mục
-//    DichTu.getState(), selectKT(i), getTicked(), onChange(fn), sự kiện 'dichtu:change'
+//    DichTu.ready, getQue(so), getByPair(thuong, ha), getAll(), getKhongThoi(i), getAllKhongThoi(),
+//    plain(field), getState(), selectKT(i), getTicked(), onChange(fn), sự kiện 'dichtu:change'
 //    quẻ = { so, ten, cung, quai, thuong, ha, dichtu, cach, tuong, nghia }  (mục thiếu = null)
 // =========================================================
 (function (root) {
@@ -41,7 +23,7 @@
         { key: 'dichtu', ten: 'Dịch tự' }, { key: 'cach', ten: 'Cách' },
         { key: 'tuong', ten: 'Tượng' }, { key: 'nghia', ten: 'Nghĩa' }
     ];
-    const CHON = MUC.filter(m => m.key !== 'dichtu');         // 3 ô tích chọn
+    const CHON = MUC.filter(m => m.key !== 'dichtu');
 
     function boDau(s) {
         return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
@@ -71,7 +53,7 @@
     }
     function themBang(target, t) {
         const cells = t.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
-        if (cells.every(c => /^[•\-:\s]*$/.test(c))) return;          // dòng gạch ngăn |•••|•••|
+        if (cells.every(c => /^[•\-:\s]*$/.test(c))) return;
         const last = target.blocks[target.blocks.length - 1];
         if (last && last.t === 'tb') last.rows.push(cells);
         else target.blocks.push({ t: 'tb', rows: [cells] });
@@ -90,7 +72,7 @@
         for (let i = 0; i < lines.length; i++) {
             const l = lines[i].replace(/\s+$/, '');
             const t = l.trim();
-            if (reHet.test(t)) break;                                  // hết dữ liệu hợp lệ
+            if (reHet.test(t)) break;
             if (!t) continue;
 
             let m = t.match(reCung);
@@ -112,7 +94,7 @@
                 continue;
             }
 
-            if (/^•{2,}$/.test(t)) continue;                            // dòng ngăn cách •••
+            if (/^•{2,}$/.test(t)) continue;
             if (!cur) continue;
 
             if (t.charAt(0) === '|') { if (target) themBang(target, t); continue; }
@@ -137,7 +119,6 @@
             if (target) themDong(target, l);
         }
 
-        // chỉ mục theo (thượng, hạ)
         const byPair = {}, bySo = {};
         ques.forEach(q => {
             if (q.quai) { q.thuong = q.quai.thuong; q.ha = q.quai.ha; q.quaiGoc = q.quai.goc; }
@@ -187,7 +168,7 @@
                 if (!text.trim() || /^input here$/i.test(text.trim())) throw new Error('khối dữ liệu đang trống');
                 return parse(text);
             })
-            .catch(e => { _loadP = null; return { ok: false, loi: 'Không tải được ' + CONFIG.dataUrl + ' (' + e.message + ').' }; });
+            .catch(e => { _loadP = null; return { ok: false, loi: 'Không tải được ' + CONFIG.dataUrl + ' (' + e.message + '). Nếu mở bằng file:// hãy chạy qua web server.' }; });
         return _loadP;
     }
 
@@ -203,26 +184,62 @@
         return d.byPair[thuong + '-' + ha] || { loi: 'Không tìm thấy quẻ ' + tenQ(thuong) + ' thượng - ' + tenQ(ha) + ' hạ trong ' + CONFIG.dataUrl + '.' };
     }
 
-    // ---------- ĐỌC KHÔNG THỜI TỪ TRANG LIÊN HOA ----------
+    // ---------- ĐỌC TRẠNG THÁI TỪ TRANG ----------
+    // Mã quẻ của trang nền: 6 ký tự, ký tự đầu = hào 6 … ký tự cuối = hào 1
+    // Quái 3 ký tự (đầu = hào trên cùng) -> số Liên Hoa (1 Kiền … 8 Khôn)
+    const TRI_SO = { '111': 1, '011': 2, '101': 3, '001': 4, '110': 5, '010': 6, '100': 7, '000': 8 };
+    function tachQuai(c) { return { thuong: TRI_SO[c.slice(0, 3)], ha: TRI_SO[c.slice(3, 6)] }; }
+    function tachHo(c)   { return { hoThuong: TRI_SO[c.slice(1, 4)], hoHa: TRI_SO[c.slice(2, 5)] }; }
+
+    function docTrangThaiNen() {
+        const cs = document.getElementById('selectCung'), qs = document.getElementById('selectQue');
+        if (!cs || !qs || !cs.value || !qs.value) return null;
+        let dd;
+        try { dd = (typeof dataDich !== 'undefined') ? dataDich : null; } catch (e) { dd = null; }
+        if (!dd || !dd[cs.value]) return null;
+        const chu = dd[cs.value].quẻ[qs.value];
+        if (!chu || !chu.c) return null;
+
+        let dong = [];
+        try { if (typeof selectedDong !== 'undefined') dong = selectedDong.slice(); } catch (e) {}
+
+        const r = Object.assign({}, tachQuai(chu.c), tachHo(chu.c),
+            { hao: dong.length ? dong.join(', ') : 'không (quẻ tĩnh)' });
+
+        if (dong.length) {
+            let bq = null;
+            try { if (typeof bienQueGiam !== 'undefined') bq = bienQueGiam; } catch (e) {}
+            if (bq && bq.data && bq.data.c) {
+                const b = tachQuai(bq.data.c);
+                r.bienThuong = b.thuong; r.bienHa = b.ha;
+            }
+        }
+        return { nguon: 'nen', results: [r], soKT: 1 };
+    }
+
     function docTrangThai() {
+        if (!document.getElementById('result1') && !document.getElementById('result2')) return docTrangThaiNen();
         const act = document.querySelector('.tab-panel.active');
         const id = act && act.id === 'panel2' ? 'result2' : 'result1';
         const a = document.getElementById(id);
         if (!a || !a.classList.contains('visible') || !Array.isArray(a._results) || !a._results.length) return null;
         return { nguon: id, results: a._results, soKT: a._results.length };
     }
+
     function bo3(q) {
-        return [
+        const ds = [
             { vt: 'chinh', role: 'Chính', thuong: q.thuong, ha: q.ha },
             { vt: 'ho', role: 'Hỗ', thuong: q.hoThuong, ha: q.hoHa },
             { vt: 'bien', role: 'Biến', thuong: q.bienThuong, ha: q.bienHa }
         ];
+        return ds.filter(x => x.thuong && x.ha);          // quẻ tĩnh -> không có Biến
     }
     async function getKhongThoi(i) {
         if (!cur || !cur.results[i - 1]) return { loi: 'Không có Không Thời ' + i + '.' };
         const q = cur.results[i - 1];
-        const [c, h, b] = await Promise.all(bo3(q).map(x => getByPair(x.thuong, x.ha)));
-        return { kt: i, hao: q.hao, chinh: c, ho: h, bien: b };
+        const out = { kt: i, hao: q.hao, chinh: null, ho: null, bien: null };
+        await Promise.all(bo3(q).map(async x => { out[x.vt] = await getByPair(x.thuong, x.ha); }));
+        return out;
     }
     async function getAllKhongThoi() {
         if (!cur) return [];
@@ -250,14 +267,14 @@
         st.id = 'dtCss';
         st.textContent =
             '.dt-box{margin-top:24px;border-top:1px solid var(--border,#5c3d1e);padding-top:20px}' +
-            '.dt-title{font-family:"Cinzel Decorative",serif;font-size:.95rem;color:var(--gold-light,#e8b84b);margin-bottom:12px}' +
+            '.dt-title{font-size:.95rem;font-weight:600;color:var(--gold-light,var(--gold,#e8b84b));margin-bottom:12px}' +
             '.dt-empty{font-size:.85rem;color:#888;text-align:center}' +
             '.dt-lbl{font-size:.7rem;font-weight:600;color:#aaa;text-transform:uppercase;margin:12px 0 6px}' +
             '.dt-nums{display:flex;flex-wrap:wrap;gap:6px}' +
-            '.dt-n{min-width:42px;padding:8px 6px;background:transparent;color:var(--gold-light,#e8b84b);border:1px solid var(--gold,#c9922a);border-radius:8px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer}' +
+            '.dt-n{min-width:42px;padding:8px 6px;background:transparent;color:var(--gold-light,var(--gold,#e8b84b));border:1px solid var(--gold,#c9922a);border-radius:8px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer}' +
             '.dt-n.on{background:var(--gold,#c9922a);color:#000}' +
             '.dt-info{font-size:.78rem;color:var(--text,#e8d9c0);line-height:1.6;margin:10px 0 0;padding:8px 10px;background:rgba(0,0,0,.25);border:1px solid rgba(92,61,30,.5);border-radius:6px}' +
-            '.dt-info b{color:var(--gold-light,#e8b84b)}' +
+            '.dt-info b{color:var(--gold-light,var(--gold,#e8b84b))}' +
             '.dt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}' +
             '.dt-chip{padding:9px 3px;background:#252525;color:#bbb;border:1px solid #444;border-radius:8px;font-family:inherit;font-size:.8rem;text-align:center;cursor:pointer}' +
             '.dt-chip.on{background:var(--gold,#c9922a);color:#000;border-color:var(--gold,#c9922a);font-weight:700}' +
@@ -266,7 +283,7 @@
             '.dt-dem{font-size:.7rem;color:#888;margin-left:auto}' +
             '.dt-note{font-size:.7rem;color:#c9a14a;margin-top:8px;line-height:1.4}' +
             '.dt-panel{margin-top:10px;border:1px solid var(--gold,#c9922a);border-radius:10px;overflow:hidden;background:#201a14}' +
-            '.dt-ph{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;background:#2a2118;color:var(--gold-light,#e8b84b);font-weight:600;font-size:.9rem}' +
+            '.dt-ph{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;background:#2a2118;color:var(--gold-light,var(--gold,#e8b84b));font-weight:600;font-size:.9rem}' +
             '.dt-ph span:last-child,.dt-sh span:last-child{font-size:.68rem;font-weight:400;color:#aaa;white-space:nowrap}' +
             '.dt-pb{padding:6px 8px 8px}' +
             '.dt-meta{font-size:.7rem;color:#9aa;margin:2px 2px 6px}' +
@@ -294,7 +311,6 @@
         if (text != null) e.textContent = text;
         return e;
     }
-    // **đậm** và *nghiêng* trong dữ liệu
     function veInline(parent, text) {
         String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/).forEach(p => {
             if (!p) return;
@@ -403,21 +419,24 @@
         if (!bodyEl) return;
         bodyEl.innerHTML = '';
         ketQuaEl = null;
-        if (!cur) { bodyEl.appendChild(el('div', 'dt-empty', 'Chưa lập quẻ. Hãy nhập số và bấm "Lập Quẻ" ở phía trên.')); return; }
+        if (!cur) { bodyEl.appendChild(el('div', 'dt-empty', 'Chưa lập quẻ. Hãy chọn Họ Quẻ và Tên Quẻ Chủ ở phía trên.')); return; }
 
         const n = cur.soKT, q = cur.results[ktSel - 1];
-        bodyEl.appendChild(el('div', 'dt-lbl', 'Chọn Không Thời (' + n + ' Không Thời)'));
-        const nums = el('div', 'dt-nums');
-        for (let i = 1; i <= n; i++) {
-            const b = el('button', 'dt-n' + (i === ktSel ? ' on' : ''), String(i));
-            b.type = 'button';
-            b.onclick = function () { ktSel = i; render(); emit(); };
-            nums.appendChild(b);
+
+        if (n > 1) {
+            bodyEl.appendChild(el('div', 'dt-lbl', 'Chọn Không Thời (' + n + ' Không Thời)'));
+            const nums = el('div', 'dt-nums');
+            for (let i = 1; i <= n; i++) {
+                const b = el('button', 'dt-n' + (i === ktSel ? ' on' : ''), String(i));
+                b.type = 'button';
+                b.onclick = function () { ktSel = i; render(); emit(); };
+                nums.appendChild(b);
+            }
+            bodyEl.appendChild(nums);
         }
-        bodyEl.appendChild(nums);
 
         const info = el('div', 'dt-info');
-        info.innerHTML = '<b>Không Thời ' + ktSel + (ktSel === 1 ? ' (quẻ chính)' : '') + '</b> · hào động ' + q.hao;
+        info.innerHTML = '<b>' + (cur.nguon === 'nen' ? 'Quẻ đang lập' : 'Không Thời ' + ktSel + (ktSel === 1 ? ' (quẻ chính)' : '')) + '</b> · hào động: ' + q.hao;
         bodyEl.appendChild(info);
 
         bodyEl.appendChild(el('div', 'dt-lbl', 'Tích chọn mục (Dịch tự luôn hiển thị)'));
@@ -459,7 +478,7 @@
 
     function capNhat(ep) {
         let st = null;
-        try { st = docTrangThai(); } catch (e) { st = null; }
+        try { st = docTrangThai(); } catch (e) { console.error('[DichTu]', e); st = null; }
         const sig = st ? st.nguon + '#' + st.results.map(q => [q.thuong, q.ha, q.hao, q.hoThuong, q.hoHa, q.bienThuong, q.bienHa].join(',')).join('|') : '';
         if (!ep && sig === curSig) return;
         curSig = sig;
@@ -469,7 +488,7 @@
         emit();
     }
 
-    // ---------- GẮN VÀO TRANG LIÊN HOA ----------
+    // ---------- GẮN VÀO TRANG ----------
     function bao(ten) {
         if (typeof root[ten] !== 'function' || root[ten].__dt) return;
         const goc = root[ten];
@@ -486,11 +505,25 @@
         if (document.getElementById('dtBody')) return;
         themCss();
         tick = docLuu();
-        const box = el('div', 'dt-box');
+        const box = el('div', 'dt-box box');
         box.innerHTML = '<div class="dt-title">' + CONFIG.tieuDe + '</div><div id="dtBody"></div>';
-        (document.querySelector('.container') || document.body).appendChild(box);
+        // đặt ngay sau khung kết quả quẻ nếu có, nếu không thì cuối .container
+        const container = document.querySelector('.container') || document.body;
+        const slots = document.getElementById('module-slots');
+        if (slots && slots.parentNode === container) container.insertBefore(box, slots);
+        else container.appendChild(box);
         bodyEl = document.getElementById('dtBody');
-        ['renderResults', 'clearAll', 'switchTab'].forEach(bao);
+
+        ['renderResults', 'clearAll', 'switchTab', 'processDich'].forEach(bao);
+
+        // đổi quẻ / hào động đều đi qua processDich; thêm lưới an toàn bằng sự kiện change
+        ['selectCung', 'selectQue'].forEach(id => {
+            const s = document.getElementById(id);
+            if (s) s.addEventListener('change', function () { setTimeout(capNhat, 0); });
+        });
+        const ds = document.getElementById('dongSelector');
+        if (ds) ds.addEventListener('click', function () { setTimeout(capNhat, 0); });
+
         try {
             const mo = new MutationObserver(function () { capNhat(); });
             ['result1', 'result2'].forEach(id => {
@@ -498,12 +531,13 @@
                 if (a) mo.observe(a, { attributes: true, attributeFilter: ['class'], childList: true });
             });
         } catch (e) {}
+
         capNhat(true);
         root.DichTu.ready.then(d => { _dataLast = d; render(); });
     }
 
     root.DichTu = {
-        version: '1.0', CONFIG: CONFIG, MUC: MUC,
+        version: '1.1', CONFIG: CONFIG, MUC: MUC,
         ready: load(), load: load,
         getAll: getAll, getQue: getQue, getByPair: getByPair,
         getKhongThoi: getKhongThoi, getAllKhongThoi: getAllKhongThoi,
