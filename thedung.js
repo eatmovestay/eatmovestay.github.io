@@ -1,6 +1,9 @@
 // =========================================================
 //  THEDUNG.JS — Module "Thể Dụng · 64 Quẻ" (v1.0) cho trang Liên Hoa Độn Pháp
-//  Dữ liệu: thedung.html (cùng thư mục), khối nằm trong <pre> (hoặc <script type="text/plain">).
+//  Dữ liệu: 3 trang cùng thư mục — thedung.html (20 quẻ), thedungp2.html (20 quẻ), thedungp3.html (24 quẻ);
+//  mỗi trang có khối dữ liệu trong <pre> (hoặc <script type="text/plain">). Module tải cả 3 trang song song,
+//  gộp lại và tự tìm quẻ cần dùng theo cặp quái thượng–hạ, không cần biết quẻ nằm ở trang nào.
+//  Trang nào chưa có/không tải được thì các trang còn lại vẫn chạy (ghi chú hiện dưới lưới).
 //
 //  Cách hoạt động:
 //   • Tự lấy các Không Thời từ trang Liên Hoa ("Lập Quẻ"): 5 / 9 / 13 Không Thời. Nút số để chọn.
@@ -27,9 +30,10 @@
 //  Phụ thuộc: chỉ trang Liên Hoa (renderResults, clearAll, switchTab, #result1, #result2).
 //
 //  Cho module khác dùng (window.TheDung):
-//    TheDung.ready                   -> Promise<{ok, ques, issues, thongKe}|{ok:false, loi}>
+//    TheDung.ready                   -> Promise<{ok, ques, issues, thongKe, trang}|{ok:false, loi}>
 //    TheDung.getByPair(1, 5)         -> Promise<quẻ|{loi}>   (quái thượng, hạ theo số Liên Hoa: 1 Kiền … 8 Khôn)
-//    TheDung.getQue(1), getAll()
+//    TheDung.getQue('Thiên Trạch Lý' | {thuong:1, ha:2} | số), getByTen('Thiên Trạch Lý'), getAll(), getTrang()
+//    quẻ.nguon = trang chứa quẻ (vd 'thedungp2.html'); CONFIG.trang = danh sách trang + tên quẻ dự kiến của từng trang
 //    TheDung.getKhongThoi(i)         -> Promise<{kt, hao, dungViTri, cap:[{vt, role, thuong, ha, the, dung, chieuMacDinh, que|loi}]}>
 //    TheDung.getAllKhongThoi()
 //    TheDung.section(quẻ, 'P1', 'y2')-> {tieuDe, blocks} | null   (chiều 'P1'|'P2'; mục 'soluoc'|'y1'|'y2'|'y3')
@@ -40,7 +44,22 @@
 (function (root) {
     'use strict';
 
-    const CONFIG = { dataUrl: 'thedung.html', tieuDe: 'Thể Dụng · 64 Quẻ', khoa: 'td_chon' };
+    // Danh sách quẻ dự kiến của từng trang (theo thứ tự nạp). Module tìm quẻ trong CẢ 3 trang theo cặp quái thượng–hạ;
+    // danh sách này chỉ dùng để chẩn đoán (trang nào thiếu quẻ nào, tên/quái ghi sai) và để ghi chú quẻ chưa nạp.
+    const CONFIG = {
+        trang: [
+            { url: 'thedung.html', ten: ['Thuần Càn', 'Thuần Khôn', 'Thủy Lôi Truân', 'Sơn Thủy Mông', 'Thủy Thiên Nhu', 'Thiên Thủy Tụng', 'Địa Thủy Sư', 'Thủy Địa Tỷ',
+                'Phong Thiên Tiểu Súc', 'Thiên Trạch Lý', 'Địa Thiên Thái', 'Thiên Địa Bĩ', 'Thiên Hỏa Đồng Nhân', 'Hỏa Thiên Đại Hữu', 'Địa Sơn Khiêm', 'Lôi Địa Dự',
+                'Trạch Lôi Tùy', 'Sơn Phong Cổ', 'Địa Trạch Lâm', 'Phong Địa Quan'] },
+            { url: 'thedungp2.html', ten: ['Hỏa Lôi Phệ Hạp', 'Sơn Hỏa Bí', 'Sơn Địa Bác', 'Địa Lôi Phục', 'Thiên Lôi Vô Vọng', 'Sơn Thiên Đại Súc', 'Sơn Lôi Di', 'Trạch Phong Đại Quá',
+                'Thuần Khảm', 'Thuần Ly', 'Trạch Sơn Hàm', 'Lôi Phong Hằng', 'Thiên Sơn Độn', 'Lôi Thiên Đại Tráng', 'Hỏa Địa Tấn', 'Địa Hỏa Minh Di',
+                'Phong Hỏa Gia Nhân', 'Hỏa Trạch Khuê', 'Thủy Sơn Kiển', 'Lôi Thủy Giải'] },
+            { url: 'thedungp3.html', ten: ['Sơn Trạch Tổn', 'Phong Lôi Ích', 'Trạch Thiên Quải', 'Thiên Phong Cấu', 'Trạch Địa Tụy', 'Địa Phong Thăng', 'Trạch Thủy Khốn', 'Thủy Phong Tỉnh',
+                'Trạch Hỏa Cách', 'Hỏa Phong Đỉnh', 'Thuần Chấn', 'Thuần Cấn', 'Phong Sơn Tiệm', 'Lôi Trạch Quy Muội', 'Lôi Hỏa Phong', 'Hỏa Sơn Lữ',
+                'Thuần Tốn', 'Thuần Đoài', 'Phong Thủy Hoán', 'Thủy Trạch Tiết', 'Phong Trạch Trung Phu', 'Lôi Sơn Tiểu Quá', 'Thủy Hỏa Ký Tế', 'Hỏa Thủy Vị Tế'] }
+        ],
+        tieuDe: 'Thể Dụng · 64 Quẻ', khoa: 'td_chon'
+    };
     const TEN_LH = ['', 'Kiền', 'Đoài', 'Ly', 'Chấn', 'Tốn', 'Khảm', 'Cấn', 'Khôn'];
     const tenQ = n => TEN_LH[n] || '?';
     const QUAI_SO = { 'CÀN': 1, 'KIỀN': 1, 'ĐOÀI': 2, 'LY': 3, 'CHẤN': 4, 'TỐN': 5, 'KHẢM': 6, 'CẤN': 7, 'KHÔN': 8 };
@@ -119,6 +138,9 @@
         const L = q.lines;
         const pos = {};
         L.forEach((l, i) => { const m = l.trim().match(/^P([123])\s*\.\s*(.*?)\s*:?\s*$/); if (m && !('p' + m[1] in pos)) pos['p' + m[1]] = { i: i, ten: m[2] }; });
+        const dem = { 1: 0, 2: 0, 3: 0 };
+        L.forEach(l => { const m = l.trim().match(/^P([123])\s*\./); if (m) dem[m[1]]++; });
+        q.nhieuP = [1, 2, 3].filter(k => dem[k] > 1).map(k => 'P' + k);
         const moc = Object.keys(pos).map(k => pos[k].i).sort((a, b) => a - b);
         const dau = moc.length ? moc[0] : L.length;
         const sau = i => { const c = moc.filter(x => x > i); return c.length ? c[0] : L.length; };
@@ -151,22 +173,30 @@
 
     function parse(text) {
         const issues = [], ques = [];
-        const reHead = /^\s*(\d{1,3})\.\s+(.+?)\s*:\s*$/;
+        const reHead = /^\s*(\d{1,3})\.\s+(.+?)\s*(:)?\s*$/;                 // "10. Thiên Trạch Lý" (dấu ":" cuối có hay không đều nhận)
+        const reTenDam = /^\s*\*\*[^*]+\*\*\s*\.?\s*$/;
         const reRao = /^\s*\*{3,}\s*$/;
         const reHet = /^\s*\*{2,}\s*HẾT\s*\*{2,}\s*$/i;
+        const L = String(text || '').replace(/\r/g, '').split('\n');
+        // dòng không rỗng kế tiếp (để nhận tiêu đề quẻ không có dấu ":")
+        const ketiep = i => { for (let j = i + 1; j < L.length && j <= i + 4; j++) if (L[j].trim()) return L[j]; return ''; };
         let cur = null;
-        String(text || '').replace(/\r/g, '').split('\n').forEach(l => {
-            if (reHet.test(l)) { cur = null; return; }
-            if (reRao.test(l)) { cur = null; return; }
+        for (let i = 0; i < L.length; i++) {
+            const l = L[i];
+            if (reHet.test(l) || reRao.test(l)) { cur = null; continue; }
             const m = l.match(reHead);
             if (m && !/^\s*P\d/.test(l)) {
-                cur = { so: +m[1], ten: m[2].replace(/\*+/g, '').trim(), quai: '', thuong: null, ha: null, lines: [] };
-                ques.push(cur); return;
+                const nx = ketiep(i);
+                // có dấu ":" cuối dòng, hoặc ngay dưới là dòng tên đậm "**Tên quẻ**" / "Quái tượng:" thì là tiêu đề quẻ mới
+                if (m[3] || reTenDam.test(nx) || /^\s*Quái\s*tượng\s*:/i.test(nx)) {
+                    cur = { so: +m[1], ten: m[2].replace(/\*+/g, '').trim(), quai: '', thuong: null, ha: null, lines: [] };
+                    ques.push(cur); continue;
+                }
             }
-            if (!cur) return;
-            if (/^\s*(→|->|-->|<!--)+\s*$/.test(l)) return;
+            if (!cur) continue;
+            if (/^\s*(→|->|-->|<!--)+\s*$/.test(l)) continue;
             cur.lines.push(l);
-        });
+        }
 
         const byPair = {}, bySo = {};
         ques.forEach(q => {
@@ -178,6 +208,7 @@
                 const k = q.thuong + '-' + q.ha;
                 if (byPair[k]) issues.push(tag + ': trùng cặp quái với quẻ ' + byPair[k].so); else byPair[k] = q;
             }
+            if (q.nhieuP && q.nhieuP.length) issues.push(tag + ': có nhiều hơn một ' + q.nhieuP.join(', ') + ' (có thể thiếu tiêu đề quẻ kế tiếp dạng "N. Tên quẻ :")');
             if (!q.P1) issues.push(tag + ': thiếu P1');
             if (!q.P2) issues.push(tag + ': thiếu P2');
             if (!q.nhanDien) issues.push(tag + ': thiếu P3 Nhận diện');
@@ -218,30 +249,97 @@
         return ta.value;
     }
 
+    // ---------- TÊN QUẺ <-> CẶP QUÁI (suy từ tên: "Thiên Trạch Lý" = Càn thượng, Đoài hạ) ----------
+    const chuanTen = s => boDau(String(s || '').normalize('NFC')).toLowerCase().replace(/\s+/g, ' ').trim();
+    const NGUYEN_TO = { thien: 1, trach: 2, hoa: 3, loi: 4, phong: 5, thuy: 6, son: 7, dia: 8 };
+    function capTuTen(ten) {
+        const w = chuanTen(ten).split(' ');
+        if (w[0] === 'thuan') { const n = soQuai(w.slice(1).join(' ')); return n ? { thuong: n, ha: n } : null; }
+        const a = NGUYEN_TO[w[0]], b = NGUYEN_TO[w[1]];
+        return a && b ? { thuong: a, ha: b } : null;
+    }
+    const DUKIEN = {};         // 'thuong-ha' -> { ten, url }
+    const TEN_DUKIEN = {};     // tên chuẩn hóa -> { url, cap }
+    CONFIG.trang.forEach(t => t.ten.forEach(ten => {
+        const cap = capTuTen(ten);
+        TEN_DUKIEN[chuanTen(ten)] = { url: t.url, cap: cap };
+        if (cap) DUKIEN[cap.thuong + '-' + cap.ha] = { ten: ten, url: t.url };
+    }));
+    const tongDuKien = CONFIG.trang.reduce((n, t) => n + t.ten.length, 0);
+
+    // ---------- TẢI 3 trang (song song), gộp lại ----------
     let _loadP = null, _dataLast = null;
+
+    async function taiMotTrang(t) {
+        try {
+            const r = await fetch(t.url, { cache: 'no-cache' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const text = layKho(await r.text());
+            if (!text.trim() || /^input here$/i.test(text.trim())) throw new Error('khối dữ liệu đang trống');
+            return { t: t, d: parse(text) };
+        } catch (e) { return { t: t, loi: e.message }; }
+    }
+
     function load() {
         if (_loadP) return _loadP;
-        _loadP = fetch(CONFIG.dataUrl, { cache: 'no-cache' })
-            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-            .then(html => {
-                const text = layKho(html);
-                if (!text.trim() || /^input here$/i.test(text.trim())) throw new Error('khối dữ liệu đang trống');
-                return parse(text);
-            })
-            .catch(e => { _loadP = null; return { ok: false, loi: 'Không tải được ' + CONFIG.dataUrl + ' (' + e.message + ').' }; });
+        _loadP = (async function () {
+            const kq = await Promise.all(CONFIG.trang.map(taiMotTrang));
+            const tai = kq.filter(x => x.d);
+            if (!tai.length) {
+                _loadP = null;
+                return { ok: false, loi: 'Không tải được dữ liệu: ' + kq.map(x => x.t.url + ' (' + x.loi + ')').join('; ') + '.' };
+            }
+            const ques = [], byPair = {}, bySo = {}, byTen = {}, issues = [];
+            kq.forEach(x => {
+                if (!x.d) { issues.push(x.t.url + ': không tải được (' + x.loi + ')'); return; }
+                x.d.issues.forEach(i => issues.push(x.t.url + ' · ' + i));
+                x.d.ques.forEach(q => {
+                    q.nguon = x.t.url;
+                    ques.push(q);
+                    const tag = x.t.url + ' · Quẻ ' + q.so + ' ' + q.ten;
+                    if (!bySo[q.so]) bySo[q.so] = q;
+                    byTen[chuanTen(q.ten)] = byTen[chuanTen(q.ten)] || q;
+                    // đối chiếu tên quẻ với dòng "Quái tượng"
+                    const dk = TEN_DUKIEN[chuanTen(q.ten)];
+                    if (!dk) issues.push(tag + ': tên không có trong danh sách 64 quẻ (sai chính tả?)');
+                    else if (dk.cap && q.thuong && q.ha && (dk.cap.thuong !== q.thuong || dk.cap.ha !== q.ha))
+                        issues.push(tag + ': theo tên là ' + tenQ(dk.cap.thuong) + ' thượng - ' + tenQ(dk.cap.ha) + ' hạ nhưng dòng "Quái tượng" ghi ' + tenQ(q.thuong) + ' thượng - ' + tenQ(q.ha) + ' hạ');
+                    if (q.thuong && q.ha) {
+                        const k = q.thuong + '-' + q.ha;
+                        if (byPair[k] && byPair[k].nguon !== q.nguon) issues.push(tag + ': trùng cặp quái với quẻ ' + byPair[k].so + ' ' + byPair[k].ten + ' (' + byPair[k].nguon + ')');
+                        else if (!byPair[k]) byPair[k] = q;
+                    }
+                });
+            });
+            const trang = kq.map(x => ({ url: x.t.url, ok: !!x.d, loi: x.loi || null, soQue: x.d ? x.d.ques.length : 0, duKien: x.t.ten.length }));
+            const thongKe = 'Đã nạp ' + ques.length + '/' + tongDuKien + ' quẻ — ' +
+                trang.map(t => t.url + (t.ok ? ' ' + t.soQue + '/' + t.duKien : ' (không tải được)')).join(' · ');
+            return { ok: true, ques: ques, byPair: byPair, bySo: bySo, byTen: byTen, issues: issues, thongKe: thongKe, trang: trang };
+        })();
         return _loadP;
     }
 
-    async function getAll() { const d = await load(); return d.ok ? d.ques : { loi: d.loi }; }
-    async function getQue(so) {
-        const d = await load();
-        if (!d.ok) return { loi: d.loi };
-        return d.bySo[+so] || { loi: 'Chưa nạp quẻ số ' + so + ' trong ' + CONFIG.dataUrl + '.' };
+    function chuaNap(thuong, ha) {
+        const dk = DUKIEN[thuong + '-' + ha];
+        return 'Chưa nạp quẻ ' + (dk ? dk.ten + ' (' : '') + tenQ(thuong) + ' thượng - ' + tenQ(ha) + ' hạ' + (dk ? ', dự kiến ở ' + dk.url + ')' : '') + '.';
     }
+
+    async function getAll() { const d = await load(); return d.ok ? d.ques : { loi: d.loi }; }
     async function getByPair(thuong, ha) {
         const d = await load();
         if (!d.ok) return { loi: d.loi };
-        return d.byPair[thuong + '-' + ha] || { loi: 'Chưa nạp quẻ ' + tenQ(thuong) + ' thượng - ' + tenQ(ha) + ' hạ trong ' + CONFIG.dataUrl + '.' };
+        return d.byPair[thuong + '-' + ha] || { loi: chuaNap(thuong, ha) };
+    }
+    async function getByTen(ten) {
+        const d = await load();
+        if (!d.ok) return { loi: d.loi };
+        return d.byTen[chuanTen(ten)] || { loi: 'Chưa nạp quẻ "' + ten + '".' };
+    }
+    // x: số thứ tự (nếu các trang đánh số liên tục), tên quẻ, hoặc {thuong, ha}
+    async function getQue(x) {
+        if (x && typeof x === 'object') return getByPair(x.thuong, x.ha);
+        if (/^\d+$/.test(String(x))) { const d = await load(); return d.ok ? (d.bySo[+x] || { loi: 'Chưa có quẻ số ' + x + '.' }) : { loi: d.loi }; }
+        return getByTen(x);
     }
 
     // ---------- ĐỌC KHÔNG THỜI TỪ TRANG LIÊN HOA ----------
@@ -404,13 +502,14 @@
     function taoPanel(x) {
         const que = _dataLast.byPair[x.thuong + '-' + x.ha];
         const khoa = ktSel + ':' + x.vt;
-        const tieu = x.role + ': ' + (que ? que.ten : tenQ(x.thuong) + '/' + tenQ(x.ha));
+        const dk = DUKIEN[x.thuong + '-' + x.ha];
+        const tieu = x.role + ': ' + (que ? que.ten : dk ? dk.ten : tenQ(x.thuong) + '/' + tenQ(x.ha));
         return khoiGap('q', 'p:' + khoa, tieu, que ? 'Quẻ ' + que.so : 'chưa nạp', function (b) {
             if (!que) {
-                b.appendChild(el('div', 'td-miss', 'Chưa nạp quẻ ' + tenQ(x.thuong) + ' thượng - ' + tenQ(x.ha) + ' hạ trong ' + CONFIG.dataUrl + '.'));
+                b.appendChild(el('div', 'td-miss', chuaNap(x.thuong, x.ha)));
                 return;
             }
-            b.appendChild(el('div', 'td-meta', tenQ(x.thuong) + ' thượng - ' + tenQ(x.ha) + ' hạ' + (que.quai ? ' (' + que.quai + ')' : '')));
+            b.appendChild(el('div', 'td-meta', tenQ(x.thuong) + ' thượng - ' + tenQ(x.ha) + ' hạ' + (que.quai ? ' (' + que.quai + ')' : '') + ' · nguồn ' + que.nguon));
             b.appendChild(el('div', 'td-de', 'Đề xuất: Thể = ' + tenQ(x.the.so) + ' (' + VT[x.the.viTri] + ') · Dụng = ' + tenQ(x.dung.so) +
                 ' (' + VT[x.dung.viTri] + ', vị trí quái động) → chiều ' + x.chieuMacDinh));
 
@@ -464,7 +563,7 @@
         if (!ketQuaEl) return;
         ketQuaEl.innerHTML = '';
         ids = [];
-        if (!_dataLast) { ketQuaEl.appendChild(el('div', 'td-note', 'Đang tải ' + CONFIG.dataUrl + '…')); return; }
+        if (!_dataLast) { ketQuaEl.appendChild(el('div', 'td-note', 'Đang tải dữ liệu…')); return; }
         if (!_dataLast.ok) { ketQuaEl.appendChild(el('div', 'td-miss', _dataLast.loi)); return; }
         const tools = el('div', 'td-tools');
         const g = el('button', 'td-mini', 'Thu gọn tất cả'); g.type = 'button';
@@ -597,7 +696,8 @@
     root.TheDung = {
         version: '1.0', CONFIG: CONFIG, MUC: MUC,
         ready: load(), load: load,
-        getAll: getAll, getQue: getQue, getByPair: getByPair,
+        getAll: getAll, getQue: getQue, getByPair: getByPair, getByTen: getByTen,
+        getTrang: function () { return _dataLast && _dataLast.ok ? _dataLast.trang.slice() : []; },
         getKhongThoi: getKhongThoi, getAllKhongThoi: getAllKhongThoi,
         section: section, plain: plain,
         getState: function () { return cur ? { nguon: cur.nguon, results: cur.results, soKT: cur.soKT, kt: ktSel } : null; },
