@@ -1,40 +1,31 @@
 /* =========================================================================
    MODULE 03: LUẬN GIẢI CẶP LÁ CÙNG ĐỨNG (Đ) TRONG 3 KHÓM (FILE 03)
-   - Tự động lấy bài lật từ ngulinh_bts.html qua sự kiện ngulinh:completed
-   - Độc lập hoàn toàn, tránh trùng lặp biến với m01 và m02
+   - Độc lập hoàn toàn, bóc tách dữ liệu an toàn
    ========================================================================= */
 
 (function () {
     const FILE03_URL = 'file03_bts.html';
     let file03DataText = null;
 
-    /**
-     * Tải và trích xuất chuỗi THU_VIEN_DATA từ file03_bts.html
-     */
     async function loadFile03Data() {
         if (file03DataText) return file03DataText;
         try {
             const response = await fetch(FILE03_URL);
-            if (!response.ok) throw new Error(`Không thể tải File03: ${response.statusText}`);
+            if (!response.ok) throw new Error(`Không thể tải File03 (${response.status})`);
             const htmlText = await response.text();
 
-            // Trích xuất chuỗi nằm giữa const THU_VIEN_DATA = ` ... `;
             const match = htmlText.match(/const\s+THU_VIEN_DATA\s*=\s*`([\s\S]*?)`;/);
             if (match && match[1]) {
                 file03DataText = match[1];
                 return file03DataText;
-            } else {
-                throw new Error('Không tìm thấy biến THU_VIEN_DATA trong file03_bts.html');
             }
+            return null;
         } catch (error) {
-            console.error('Lỗi khi đọc File03:', error);
+            console.error('Module 03 - Lỗi tải dữ liệu:', error);
             return null;
         }
     }
 
-    /**
-     * Thuật toán tra cứu chuẩn của File 03
-     */
     function timKiemFile03(chu, gap, layBenPhai, dataText) {
         if (!dataText) return null;
         let cleanChu = chu.trim().toUpperCase();
@@ -64,9 +55,6 @@
         return null;
     }
 
-    /**
-     * Chuẩn hóa định dạng lá bài cho đúng chuẩn File 03 (Ví dụ: "TƯỚNG XANH Đ")
-     */
     function formatCardM03(card, globalColor) {
         if (!card) return '';
         const name = card.n ? card.n.toUpperCase().trim() : '';
@@ -80,16 +68,9 @@
         return `${name} ${color} Đ`.trim();
     }
 
-    /**
-     * Xử lý luận giải cho Module 03
-     */
     async function processModule03(state) {
         if (!state || !state.khoms || state.khoms.length === 0) return;
 
-        const dataText = await loadFile03Data();
-        if (!dataText) return;
-
-        // Tạo hoặc lấy khung chứa kết quả m03
         let container = document.getElementById('module03-results');
         if (!container) {
             container = document.createElement('div');
@@ -99,9 +80,16 @@
             container.style.border = '1px solid var(--gold)';
 
             const finalReport = document.getElementById('finalReport');
-            if (finalReport) {
-                finalReport.appendChild(container);
-            }
+            if (finalReport) finalReport.appendChild(container);
+        }
+
+        const dataText = await loadFile03Data();
+        if (!dataText) {
+            container.innerHTML = `
+                <div class="khom-label" style="color: var(--gold-light); font-size: 13px; text-align: center;">✦ LUẬN GIẢI FILE 03 ✦</div>
+                <div style="color: #ff9999; font-style: italic; text-align: center; margin-top: 8px;">❌ Không thể tải dữ liệu từ file03_bts.html (Hãy kiểm tra lại vị trí file)</div>
+            `;
+            return;
         }
 
         const khomLabels = ['QUÁ KHỨ', 'HIỆN TẠI', 'TƯƠNG LAI'];
@@ -114,16 +102,13 @@
 
         let totalPairsFound = 0;
 
-        // Duyệt qua 3 Khóm bài (Mỗi Khóm 4 lá)
         state.khoms.forEach((khomCards, kIdx) => {
             let khomPairHtml = '';
 
-            // Xét 3 cặp bài liên tiếp trong từng Khóm: (Lá 1-2), (Lá 2-3), (Lá 3-4)
             for (let i = 0; i < khomCards.length - 1; i++) {
                 const card1 = khomCards[i];
                 const card2 = khomCards[i + 1];
 
-                // ĐIỀU KIỆN LỌC CỐT LÕI: Chỉ xét khi CẢ 2 LÁ ĐỀU ĐỨNG ('Đ' hoặc 'D')
                 const isCard1Dung = (card1.f === 'Đ' || card1.f === 'D');
                 const isCard2Dung = (card2.f === 'Đ' || card2.f === 'D');
 
@@ -170,7 +155,6 @@
         container.innerHTML = htmlOutput;
     }
 
-    // Lắng nghe sự kiện hoàn tất bài lật từ ngulinh_bts.html
     window.addEventListener('ngulinh:completed', (event) => {
         processModule03(event.detail);
     });
