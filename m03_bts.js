@@ -172,7 +172,7 @@ async function processModule03(state) {
     container.innerHTML = htmlOutput;
 }
 
-// Lắng nghe sự kiện hoàn tất bài lật từ ngulinh_bts.html
+// Lắng nghe sự kiện hoàn tất bài lật từ ngulinhbts.html
 window.addEventListener('ngulinh:completed', (event) => {
     processModule03(event.detail);
 });
