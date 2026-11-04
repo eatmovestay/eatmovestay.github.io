@@ -1,12 +1,16 @@
 /* =========================================================================
    MODULE 02: LUẬN GIẢI CHI TIẾT DỊCH LÝ TỨ SẮC (FILE 02)
-   - Độc lập hoàn toàn, không gây đứt đoạn các module khác
+   - Bóc tách đối tượng `data` trực tiếp bằng Regex (không dùng iframe)
+   - Độc lập tuyệt đối, xử lý mượt mà 100%
    ========================================================================= */
 
 (function () {
     const FILE02_URL = 'file02_bts.html';
     let file02DataObj = null;
 
+    /**
+     * Tải file02_bts.html và trích xuất object data bằng Function Constructor
+     */
     async function loadFile02Data() {
         if (file02DataObj) return file02DataObj;
         try {
@@ -14,34 +18,24 @@
             if (!response.ok) throw new Error(`Không thể tải File02 (${response.status})`);
             const htmlText = await response.text();
 
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlText, 'text/html');
-            const scripts = doc.querySelectorAll('script');
-            
-            let scriptContent = '';
-            scripts.forEach(s => {
-                if (s.textContent.includes('const data =')) {
-                    scriptContent = s.textContent;
-                }
-            });
-
-            if (scriptContent) {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-                
-                iframe.contentWindow.eval(scriptContent);
-                file02DataObj = iframe.contentWindow.data;
-                document.body.removeChild(iframe);
+            // Trích xuất đoạn khai báo: const data = { ... };
+            const match = htmlText.match(/const\s+data\s*=\s*(\{[\s\S]*?\});\s*const\s+types/);
+            if (match && match[1]) {
+                // Parse an toàn object data mà không chạy toàn bộ script trong file
+                file02DataObj = (new Function(`return ${match[1]};`))();
                 return file02DataObj;
+            } else {
+                throw new Error('Không tìm thấy cấu trúc `const data` trong file02_bts.html');
             }
-            return null;
         } catch (error) {
             console.error('Module 02 - Lỗi tải dữ liệu:', error);
             return null;
         }
     }
 
+    /**
+     * Chuẩn hóa tên màu về 4 màu gốc: XANH, VÀNG, TRẮNG, ĐỎ
+     */
     function getNormalizedColorM02(colorName) {
         if (!colorName) return 'XANH';
         let c = colorName.toUpperCase();
@@ -52,6 +46,9 @@
         return 'XANH';
     }
 
+    /**
+     * Tra cứu ý nghĩa lá bài từ object data của File02
+     */
     function lookupCardData(card, globalColor, dataObj) {
         if (!card || !dataObj) return { meaning: 'Chưa tìm thấy dữ liệu giải mã.' };
 
@@ -65,6 +62,9 @@
         return { type, color, pos, meaning: 'Không tìm thấy kết quả phù hợp trong File02.' };
     }
 
+    /**
+     * Xử lý chính khi nhận dữ liệu bài lật
+     */
     async function processModule02(state) {
         if (!state) return;
 
@@ -84,7 +84,7 @@
         if (!dataObj) {
             container.innerHTML = `
                 <div class="khom-label" style="color: var(--gold-light); font-size: 13px; text-align: center;">✦ LUẬN GIẢI FILE 02 ✦</div>
-                <div style="color: #ff9999; font-style: italic; text-align: center; margin-top: 8px;">❌ Không thể tải dữ liệu từ file02_bts.html (Hãy kiểm tra lại vị trí file hoặc server)</div>
+                <div style="color: #ff9999; font-style: italic; text-align: center; margin-top: 8px;">❌ Không thể trích xuất cấu trúc data từ file02_bts.html</div>
             `;
             return;
         }
@@ -96,6 +96,7 @@
             <div style="font-family: 'EB Garamond', serif; color: var(--parchment); font-size: 14px; line-height: 1.6; margin-top: 12px;">
         `;
 
+        // 1. Giải mã Ngũ Lá Linh Hồn (5 Lá)
         if (state.souls && state.souls.length > 0) {
             html += `<div style="font-family: 'Cinzel', serif; color: var(--gold); font-weight: bold; margin-bottom: 8px; font-size: 13px;">❖ NGŨ LÁ LINH HỒN (5 LÁ):</div>`;
             state.souls.forEach((card, idx) => {
@@ -109,6 +110,7 @@
             });
         }
 
+        // 2. Giải mã 3 Khóm bài (12 Lá)
         if (state.khoms && state.khoms.length > 0) {
             const khomLabels = ['QUÁ KHỨ', 'HIỆN TẠI', 'TƯƠNG LAI'];
             state.khoms.forEach((khomCards, kIdx) => {
@@ -129,6 +131,7 @@
         container.innerHTML = html;
     }
 
+    // Lắng nghe sự kiện trải bài xong
     window.addEventListener('ngulinh:completed', (event) => {
         processModule02(event.detail);
     });
