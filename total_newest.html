@@ -177,8 +177,10 @@
                 <option value="Tý">Tý (23h-1h)</option>
                 <option value="Sửu">Sửu (1h-3h)</option>
                 <option value="Dần">Dần (3h-5h)</option>
-                <option value="Mão">Mão (7h-9h)</option>
-                <option value="Thìn">Thìn (5h-7h)</option>
+                <option value="Mão">Mão 
+(5h-7h)</option>
+                <option value="Thìn">Thìn
+(7h-9h)</option>
                 <option value="Tỵ">Tỵ (9h-11h)</option>
                 <option value="Ngọ">Ngọ (11h-13h)</option>
                 <option value="Mùi">Mùi (13h-15h)</option>
@@ -442,13 +444,6 @@ function toggleDong(num) {
     });
 
     updateDongCounter();
-
-    // --- TỰ ĐỘNG ĐỒNG BỘ SANG KHỐI TỨ TRỊ & MODULES ---
-    const inputHaoDong = document.getElementById("mHaoDong");
-    if (inputHaoDong) {
-        inputHaoDong.value = selectedDong.join(",");
-    }
-
     processDich();
 }
 
@@ -967,13 +962,7 @@ function processModuleLogic() {
     const nguyet = document.getElementById('mNguyet').value.trim();
     const thaiTue = document.getElementById('mThaiTue').value.trim();
     const tuanKhong = document.getElementById('mTuanKhong').value.trim();
-    let haoDongStr = document.getElementById('mHaoDong').value.trim();
-
-    // Nếu ô mHaoDong trống nhưng selectedDong từ Chặng 1 đã có, tự lấy selectedDong
-    if (!haoDongStr && typeof selectedDong !== 'undefined' && selectedDong.length > 0) {
-        haoDongStr = selectedDong.join(",");
-        document.getElementById('mHaoDong').value = haoDongStr;
-    }
+    const haoDongStr = document.getElementById('mHaoDong').value.trim();
 
     const outputEl = document.getElementById('mOutput');
 
@@ -999,15 +988,19 @@ function processModuleLogic() {
     }
 
     resText += `\n=== BẮT ĐẦU KẾT NỐI VỚI THUẬT TOÁN TRAINING ===\n`;
-    resText += `-> Đã xác thực Can Chi Dương / Âm khớp logic thành công.\n`;
+    resText += `-> Đã xác thựcCan Chi Dương / Âm khớp logic thành công.\n`;
     resText += `-> Dữ liệu đã sẵn sàng để chèn trực tiếp vào hệ thống Lục Hào.`;
 
     outputEl.value = resText;
     outputEl.style.display = 'block';
 
-    // Đồng bộ lại selectedDong và vẽ lại quẻ biến
-    if (typeof selectedDong !== 'undefined') {
-        selectedDong = listHaoDong;
+    if (typeof selectedDong !== 'undefined' && typeof toggleDong === 'function') {
+        selectedDong = [];
+        listHaoDong.forEach(h => {
+            if (h <= 4 && !selectedDong.includes(h)) {
+                selectedDong.push(h);
+            }
+        });
         if (typeof updateDongCounter === 'function') updateDongCounter();
         if (typeof processDich === 'function') processDich();
     }
@@ -1069,18 +1062,20 @@ populateChiSelects();
 <!-- Thư viện Âm Lịch & Calendar Core -->
 <script src="https://cdn.jsdelivr.net/npm/@nghiavuive/lunar_date_vi@latest/dist/index.umd.js"></script>
 <script src="calendar-core.js"></script>
+<!-- thư viện lịch âm → calendar-core.js → mtrachcat.js -->
+<script src="mtrachcat.js"></script>
 
 <!-- DANH SÁCH MODULE RỜI NẠP TỰ ĐỘNG -->
-<script src="mchienluoc.js" defer></script>
+<script src="mchienluoc.js"></script>
 <script src="m01.js" defer></script>
 <script src="m02.js" defer></script>
 <script src="m03.js" defer></script>
 <script src="m04.js" defer></script>
 <script src="m05.js" defer></script>
-<script src="m06.js" defer></script>
 <script src="quedon.js" defer></script>
 <script src="quetuong.js" defer></script>
 <script src="tuongdonplus.js" defer></script>
+<script src="m06.js" defer></script>
 <script src="m07.js" defer></script>
 <script src="m08.js" defer></script>
 <script src="m09.js" defer></script>
